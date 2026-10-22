@@ -40,3 +40,16 @@ jobs:
             -configuration Debug \
             -destination 'platform=macOS' \
             -derivedDataPath build/DerivedData
+
+      - name: Check app icon
+        run: |
+          app=build/DerivedData/Build/Products/Debug/DuoLapse.app
+          icon_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconName' "$app/Contents/Info.plist")"
+          if [[ "$icon_name" != "AppIcon" ]]; then
+            echo "::error::CFBundleIconName is '$icon_name', expected AppIcon"
+            exit 1
+          fi
+          if [[ -e "$app/Contents/Resources/AppIcon.icon" ]]; then
+            echo "::error::AppIcon.icon was copied as a plain resource instead of being compiled"
+            exit 1
+          fi
