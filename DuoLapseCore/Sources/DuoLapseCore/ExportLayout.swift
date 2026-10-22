@@ -44,6 +44,7 @@ public enum OverlaySize: String, Codable, Sendable, CaseIterable {
 
 public struct CameraOverlay: Hashable, Codable, Sendable {
     public static let maximumCornerRadiusFraction = 0.5
+    public static let defaultCornerRadiusFraction = maximumCornerRadiusFraction * 0.2
 
     public var corner: OverlayCorner
     public var size: OverlaySize
@@ -53,7 +54,7 @@ public struct CameraOverlay: Hashable, Codable, Sendable {
     public init(
         corner: OverlayCorner = .bottomTrailing,
         size: OverlaySize = .medium,
-        cornerRadiusFraction: Double = 0.12,
+        cornerRadiusFraction: Double = CameraOverlay.defaultCornerRadiusFraction,
         isCircular: Bool = false
     ) {
         self.corner = corner

@@ -110,4 +110,9 @@ struct LayoutEngineTests {
         #expect(plan.camera?.contentMode == .fill)
         #expect(plan.screen == nil)
     }
+
+    @Test func defaultCornerRadiusIsTwentyPercentOfMaximum() {
+        let ratio = CameraOverlay().cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction
+        #expect(abs(ratio - 0.2) < 1e-9)
+    }
 }
