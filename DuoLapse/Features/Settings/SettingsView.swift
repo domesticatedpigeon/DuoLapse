@@ -26,7 +26,8 @@ struct SettingsView: View {
             }
         }
         .frame(width: 480)
-        .scenePadding()
+        .defaultScrollAnchor(.top)
+        .scrollBounceBehavior(.basedOnSize)
     }
 }
 
