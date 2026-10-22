@@ -25,8 +25,12 @@ struct NewTimelapseView: View {
                     }
                 }
             }
-            ScreenSourceSection(model: model)
-            CameraSourceSection(model: model)
+            if model.capturesScreen || model.capturesCamera {
+                Section("Sources") {
+                    ScreenSourceRows(model: model)
+                    CameraSourceRows(model: model)
+                }
+            }
             TimingSection(model: model)
             if library.activeRecorder != nil {
                 Section {
@@ -132,12 +136,12 @@ private struct SourcePreviewSection: View {
     }
 }
 
-private struct ScreenSourceSection: View {
+private struct ScreenSourceRows: View {
     @Bindable var model: NewTimelapseModel
 
     var body: some View {
         if model.capturesScreen {
-            Section("Screen") {
+            Group {
                 if model.isScreenCaptureAllowed {
                     Picker("Display", selection: $model.selectedDisplayUUID) {
                         ForEach(model.displays) { display in
@@ -157,12 +161,12 @@ private struct ScreenSourceSection: View {
     }
 }
 
-private struct CameraSourceSection: View {
+private struct CameraSourceRows: View {
     @Bindable var model: NewTimelapseModel
 
     var body: some View {
         if model.capturesCamera {
-            Section("Camera") {
+            Group {
                 switch model.cameraPermission {
                 case .granted where model.cameras.isEmpty:
                     Text("No camera found. Connect a camera to record it.")
