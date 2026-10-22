@@ -5,10 +5,11 @@ MINIMUM_IDLE_SHARE = 0.5
 THREAD_HEADER = re.compile(r"^\s{4}(\d+) Thread_")
 SAMPLE_COUNT = re.compile(r"^[\s+!:|]*(\d+) ")
 IDLE_FRAME = "__CFRunLoopServiceMachPort"
+MAIN_THREAD_HEADER = re.compile(r"Thread_\d+.*(com\.apple\.main-thread|Main Thread)")
 
 
 def main_thread_lines(lines):
-    start = next(index for index, line in enumerate(lines) if "com.apple.main-thread" in line)
+    start = next(index for index, line in enumerate(lines) if MAIN_THREAD_HEADER.search(line))
     end = next(
         (index for index in range(start + 1, len(lines)) if THREAD_HEADER.match(lines[index])),
         len(lines),
