@@ -9,7 +9,7 @@ struct MenuBarLabel: View {
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
 
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 2) {
             Image(systemName: symbolName)
                 .font(.system(size: NSFont.systemFontSize))
             if let elapsedSeconds {
@@ -20,7 +20,7 @@ struct MenuBarLabel: View {
                 .font(.system(size: NSFont.smallSystemFontSize, weight: .medium).monospacedDigit())
             }
         }
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 4)
         .fixedSize()
         .frame(height: NSStatusBar.system.thickness)
         .clipped()
