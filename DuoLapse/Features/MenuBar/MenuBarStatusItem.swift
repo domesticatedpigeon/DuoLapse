@@ -29,24 +29,24 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         let navigation = navigation
 
         if let active = library.activeRecorder {
-            menu.addItem(InformationMenuItem(title: "Recording \(active.session.title)"))
-            menu.addItem(ActionMenuItem(title: "Pause Recording") { Task { try? await library.pause(active) } })
-            menu.addItem(ActionMenuItem(title: "Close Timelapse") { Task { try? await library.stop(active) } })
+            menu.addItem(informationItem("Recording \(active.session.title)"))
+            menu.addItem(actionItem("Pause Recording") { Task { try? await library.pause(active) } })
+            menu.addItem(actionItem("Close Timelapse") { Task { try? await library.stop(active) } })
         } else if let paused = library.latestPausedRecorder {
             menu.addItem(
-                ActionMenuItem(title: "Resume \(paused.session.title)") { Task { try? await library.record(paused) } }
+                actionItem("Resume \(paused.session.title)") { Task { try? await library.record(paused) } }
             )
         }
 
         menu.addItem(
-            ActionMenuItem(title: "New Timelapse…") {
+            actionItem("New Timelapse…") {
                 navigation.selection = .newTimelapse
                 navigation.showLibrary()
             }
         )
         if let exportable = library.latestExportableRecorder {
             menu.addItem(
-                ActionMenuItem(title: "Export \(exportable.session.title)…") {
+                actionItem("Export \(exportable.session.title)…") {
                     navigation.requestExport(of: exportable.session.id)
                     navigation.showLibrary()
                 }
@@ -54,13 +54,28 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         }
 
         menu.addItem(.separator())
-        menu.addItem(ActionMenuItem(title: "Show DuoLapse") { navigation.showLibrary() })
-        menu.addItem(ActionMenuItem(title: "Settings…", keyEquivalent: ",") { navigation.showSettings() })
+        menu.addItem(actionItem("Show DuoLapse") { navigation.showLibrary() })
+        menu.addItem(actionItem("Settings…", keyEquivalent: ",") { navigation.showSettings() })
         if updater.isAvailable {
-            menu.addItem(ActionMenuItem(title: "Check for Updates…") { [updater] in updater.checkForUpdates() })
+            menu.addItem(actionItem("Check for Updates…") { [updater] in updater.checkForUpdates() })
         }
         menu.addItem(.separator())
-        menu.addItem(ActionMenuItem(title: "Quit DuoLapse", keyEquivalent: "q") { NSApplication.shared.terminate(nil) })
+        menu.addItem(actionItem("Quit DuoLapse", keyEquivalent: "q") { NSApplication.shared.terminate(nil) })
+    }
+
+    private func actionItem(_ title: String, keyEquivalent: String = "", perform: @escaping () -> Void) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: #selector(performMenuAction(_:)), keyEquivalent: keyEquivalent)
+        item.target = self
+        item.representedObject = MenuAction(perform: perform)
+        return item
+    }
+
+    private func informationItem(_ title: String) -> NSMenuItem {
+        NSMenuItem(title: title, action: nil, keyEquivalent: "")
+    }
+
+    @objc private func performMenuAction(_ sender: NSMenuItem) {
+        (sender.representedObject as? MenuAction)?.perform()
     }
 
     private func makeStatusItem() -> NSStatusItem {
@@ -91,31 +106,10 @@ private final class PassthroughHostingView<Content: View>: NSHostingView<Content
     }
 }
 
-private final class ActionMenuItem: NSMenuItem {
-    private let handler: () -> Void
+private final class MenuAction {
+    let perform: () -> Void
 
-    init(title: String, keyEquivalent: String = "", handler: @escaping () -> Void) {
-        self.handler = handler
-        super.init(title: title, action: #selector(performHandler), keyEquivalent: keyEquivalent)
-        target = self
-    }
-
-    required init(coder: NSCoder) {
-        fatalError("ActionMenuItem is created in code only")
-    }
-
-    @objc private func performHandler() {
-        handler()
-    }
-}
-
-private final class InformationMenuItem: NSMenuItem {
-    init(title: String) {
-        super.init(title: title, action: nil, keyEquivalent: "")
-        isEnabled = false
-    }
-
-    required init(coder: NSCoder) {
-        fatalError("InformationMenuItem is created in code only")
+    init(perform: @escaping () -> Void) {
+        self.perform = perform
     }
 }
