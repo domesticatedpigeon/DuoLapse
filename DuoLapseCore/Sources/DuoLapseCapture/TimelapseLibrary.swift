@@ -53,10 +53,6 @@ public final class TimelapseLibrary {
         openRecorders.first { $0.session.state == .paused || $0.session.state == .idlePaused }
     }
 
-    public var latestExportableRecorder: TimelapseRecorder? {
-        recorders.first { !$0.isCapturing && $0.session.capturedFrameCount > 0 }
-    }
-
     public func dismissInterruptedRecording() {
         interruptedRecorder = nil
     }

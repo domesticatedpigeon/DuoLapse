@@ -56,14 +56,6 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
                 navigation.showLibrary()
             }
         )
-        if let exportable = library.latestExportableRecorder {
-            menu.addItem(
-                actionItem("Export \(exportable.session.title)…") {
-                    navigation.requestExport(of: exportable.session.id)
-                    navigation.showLibrary()
-                }
-            )
-        }
 
         menu.addItem(.separator())
         menu.addItem(actionItem("Show Library") { navigation.showLibrary() })
