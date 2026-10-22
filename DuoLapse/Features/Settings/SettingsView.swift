@@ -21,7 +21,8 @@ struct SettingsView: View {
         .navigationTitle((selection ?? .general).title)
         .toolbar(removing: .title)
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .frame(minWidth: 620, idealWidth: 640, minHeight: 440, idealHeight: 500)
+        .frame(width: 600)
+        .frame(minHeight: 440, idealHeight: 500)
     }
 
     private static let sidebarWidth: CGFloat = 220
