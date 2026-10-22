@@ -60,6 +60,24 @@ final class ExportModel {
         source?.frames.count ?? 0
     }
 
+    func framingMatters(for captureSource: CaptureSource) -> Bool {
+        guard let source else { return false }
+        let plan = LayoutEngine.plan(
+            layout: settings.layout,
+            screenSize: source.screenSize,
+            cameraSize: source.cameraSize,
+            longEdge: source.session.settings.storageResolution.screenLongEdge
+        )
+        switch captureSource {
+        case .screen:
+            guard let placement = plan.screen, let size = source.screenSize else { return false }
+            return placement.framingMatters(forSourceOfSize: size)
+        case .camera:
+            guard let placement = plan.camera, let size = source.cameraSize else { return false }
+            return placement.framingMatters(forSourceOfSize: size)
+        }
+    }
+
     var hasScreenAndCamera: Bool {
         source?.screenSize != nil && source?.cameraSize != nil
     }

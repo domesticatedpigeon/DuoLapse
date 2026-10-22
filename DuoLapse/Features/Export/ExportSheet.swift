@@ -169,17 +169,36 @@ private struct ExportLayoutSection: View {
                         Text("Screen").tag(VerticalOrder.screenOnTop)
                         Text("Camera").tag(VerticalOrder.cameraOnTop)
                     }
+                    LabeledContent("Screen height") {
+                        HStack {
+                            Slider(
+                                value: $model.settings.layout.verticalScreenShare,
+                                in: ExportLayout.verticalScreenShareRange,
+                                step: 0.05
+                            )
+                            .accessibilityValue(Text(screenSharePercentage))
+                            Text(screenSharePercentage)
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                                .frame(minWidth: 40, alignment: .trailing)
+                                .accessibilityHidden(true)
+                        }
+                    }
                 }
             }
 
-            if model.source?.screenSize != nil {
+            if model.framingMatters(for: .screen) {
                 FramingPicker(title: "Screen", framing: $model.settings.layout.screenFraming)
             }
-            if model.source?.cameraSize != nil {
+            if model.framingMatters(for: .camera) {
                 FramingPicker(title: "Camera", framing: $model.settings.layout.cameraFraming)
             }
             Toggle("Show timestamp", isOn: $model.settings.includesTimestamp)
         }
+    }
+
+    private var screenSharePercentage: String {
+        model.settings.layout.verticalScreenShare.formatted(.percent.precision(.fractionLength(0)))
     }
 }
 

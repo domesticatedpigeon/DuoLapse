@@ -39,10 +39,20 @@ public struct LayoutPlan: Hashable, Sendable {
     public let timestampCorner: OverlayCorner
 }
 
+extension Placement {
+    static let matchingAspectRatioTolerance = 0.01
+
+    public func framingMatters(forSourceOfSize size: PixelSize) -> Bool {
+        guard size.width > 0, size.height > 0, frame.width > 0, frame.height > 0 else { return false }
+        let sourceAspectRatio = Double(size.width) / Double(size.height)
+        let frameAspectRatio = frame.width / frame.height
+        return abs(sourceAspectRatio / frameAspectRatio - 1) > Self.matchingAspectRatioTolerance
+    }
+}
+
 public enum LayoutEngine {
     static let defaultCameraAspectRatio = 9.0 / 16.0
     public static let overlayMarginFraction = 0.025
-    static let verticalScreenMaximumFraction = 0.6
 
     public static func plan(
         layout: ExportLayout,
@@ -129,7 +139,7 @@ public enum LayoutEngine {
         let height = Double(canvas.height)
         let fullCanvas = LayoutRect(x: 0, y: 0, width: width, height: height)
 
-        guard let screenSize, cameraSize != nil else {
+        guard screenSize != nil, cameraSize != nil else {
             return LayoutPlan(
                 canvasSize: canvas,
                 screen: screenSize.map { _ in
@@ -142,7 +152,9 @@ public enum LayoutEngine {
             )
         }
 
-        let screenHeight = min(width * aspectRatio(of: screenSize), height * verticalScreenMaximumFraction).rounded()
+        let range = ExportLayout.verticalScreenShareRange
+        let screenShare = min(max(layout.verticalScreenShare, range.lowerBound), range.upperBound)
+        let screenHeight = (height * screenShare).rounded()
         let cameraHeight = height - screenHeight
         let screenOnTop = layout.verticalOrder == .screenOnTop
         return LayoutPlan(

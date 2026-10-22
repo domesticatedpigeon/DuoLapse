@@ -68,22 +68,34 @@ struct LayoutEngineTests {
         let layout = ExportLayout(orientation: .vertical, verticalOrder: .screenOnTop)
         let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
         #expect(plan.canvasSize == PixelSize(width: 1080, height: 1920))
-        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 1080, height: 675))
-        #expect(plan.camera?.frame == LayoutRect(x: 0, y: 675, width: 1080, height: 1245))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 1080, height: 960))
+        #expect(plan.camera?.frame == LayoutRect(x: 0, y: 960, width: 1080, height: 960))
     }
 
     @Test func verticalCanPutCameraOnTop() {
-        let layout = ExportLayout(orientation: .vertical, verticalOrder: .cameraOnTop)
+        let layout = ExportLayout(orientation: .vertical, verticalOrder: .cameraOnTop, verticalScreenShare: 0.4)
         let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
-        #expect(plan.camera?.frame == LayoutRect(x: 0, y: 0, width: 1080, height: 1245))
-        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 1245, width: 1080, height: 675))
+        #expect(plan.camera?.frame == LayoutRect(x: 0, y: 0, width: 1080, height: 1152))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 1152, width: 1080, height: 768))
     }
 
-    @Test func verticalCapsPortraitScreenHeight() {
-        let layout = ExportLayout(orientation: .vertical)
-        let portrait = PixelSize(width: 1080, height: 1920)
-        let plan = LayoutEngine.plan(layout: layout, screenSize: portrait, cameraSize: camera, longEdge: 1920)
-        #expect(plan.screen?.frame.height == 1152)
+    @Test func verticalScreenShareStaysWithinRange() {
+        let layout = ExportLayout(orientation: .vertical, verticalScreenShare: 0.95)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.screen?.frame.height == 1440)
+    }
+
+    @Test func layoutSavedBeforeScreenShareSplitsEvenly() throws {
+        let json = """
+            {
+              "orientation": "vertical",
+              "horizontalArrangement": "pictureInPicture",
+              "verticalOrder": "screenOnTop",
+              "cameraOverlay": {"corner": "bottomTrailing", "size": "medium", "cornerRadiusFraction": 0.1, "isCircular": false}
+            }
+            """
+        let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
+        #expect(layout.verticalScreenShare == ExportLayout.defaultVerticalScreenShare)
     }
 
     @Test func highQualityUsesLongerEdge() {
@@ -154,5 +166,19 @@ struct LayoutEngineTests {
     @Test(arguments: [(SourceFraming.fill, "fill"), (.fit, "fit")])
     func framingRawValueIsStable(framing: SourceFraming, rawValue: String) {
         #expect(framing.rawValue == rawValue)
+    }
+
+    @Test func screenFramingDoesNotMatterWhenItsAreaMatchesItsShape() throws {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        let screen = try #require(plan.screen)
+        #expect(!screen.framingMatters(forSourceOfSize: macBookScreen))
+    }
+
+    @Test func cameraFramingMattersInATallVerticalArea() throws {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(orientation: .vertical), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        let cameraPlacement = try #require(plan.camera)
+        #expect(cameraPlacement.framingMatters(forSourceOfSize: camera))
     }
 }
