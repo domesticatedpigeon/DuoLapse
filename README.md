@@ -78,6 +78,8 @@ xcodegen generate
 open DuoLapse.xcodeproj
 ```
 
+To keep Screen Recording and Camera permission across rebuilds, sign local builds with the project's signing identity and install them with `scripts/install-local.sh`. See “Sign local builds with the same identity” in [`RELEASING.md`](RELEASING.md).
+
 `DuoLapse.xcodeproj` isn’t stored in the repository. `xcodegen generate` creates it in the repository root from `project.yml`. Run it again after pulling changes that touch `project.yml` or add files.
 
 Run the core tests with `swift test --package-path DuoLapseCore`.

@@ -43,7 +43,7 @@ if openssl pkcs12 -help 2>&1 | grep -q -- "-legacy"; then
   legacy_flag=(-legacy)
 fi
 
-openssl pkcs12 -export "${legacy_flag[@]}" \
+openssl pkcs12 -export ${legacy_flag[@]+"${legacy_flag[@]}"} \
   -inkey private-key.pem \
   -in certificate.pem \
   -name "$identity_name" \

@@ -21,7 +21,26 @@ This creates `~/DuoLapse Signing` with a 10-year certificate named “DuoLapse S
 
 Back up the folder somewhere private. macOS ties Screen Recording and Camera permission to this certificate, so every release must use it. If it’s lost, users have to grant both permissions again after the next update.
 
-### 2. Create the Sparkle update keys
+### 2. Sign local builds with the same identity
+
+macOS ties Screen Recording and Camera permission to the app's signature. Xcode's default ad-hoc signature changes on every build, so each rebuild asks for both permissions again. Import the identity into your login keychain once:
+
+```sh
+security import "$HOME/DuoLapse Signing/DuoLapse-signing.p12" \
+  -k "$HOME/Library/Keychains/login.keychain-db" \
+  -P "$(cat "$HOME/DuoLapse Signing/DuoLapse-signing.password")" \
+  -T /usr/bin/codesign
+```
+
+Then build, sign and install with:
+
+```sh
+scripts/install-local.sh
+```
+
+Grant the permissions once more after the first signed install; later rebuilds and releases keep them.
+
+### 3. Create the Sparkle update keys
 
 Sparkle checks that each update was published by you, using its own EdDSA key pair.
 

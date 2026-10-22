@@ -91,26 +91,7 @@ jobs:
           echo "SIGNING_IDENTITY=$identity_hash" >> "$GITHUB_ENV"
 
       - name: Sign app
-        run: |
-          sign() {
-            codesign --force --options runtime --timestamp=none \
-              --keychain "$SIGNING_KEYCHAIN" --sign "$SIGNING_IDENTITY" "$@"
-          }
-          sparkle="$APP_PATH/Contents/Frameworks/Sparkle.framework"
-          if [[ -d "$sparkle" ]]; then
-            for component in XPCServices/Installer.xpc Autoupdate Updater.app; do
-              if [[ -e "$sparkle/Versions/B/$component" ]]; then
-                sign "$sparkle/Versions/B/$component"
-              fi
-            done
-            if [[ -e "$sparkle/Versions/B/XPCServices/Downloader.xpc" ]]; then
-              sign --preserve-metadata=entitlements "$sparkle/Versions/B/XPCServices/Downloader.xpc"
-            fi
-            sign "$sparkle"
-          fi
-          sign --entitlements DuoLapse/DuoLapse.entitlements "$APP_PATH"
-          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
-          codesign --display --requirements - "$APP_PATH"
+        run: scripts/sign-app.sh "$APP_PATH" "$SIGNING_IDENTITY" "$SIGNING_KEYCHAIN"
 
       - name: Package app
         run: |
