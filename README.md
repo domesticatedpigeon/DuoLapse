@@ -1,18 +1,29 @@
 # DuoLapse
-Native macOS app for recording lightweight time-lapses of the chosen screen and webcam.
+
+Simple native macOS app for recording lightweight time-lapses of the chosen screen and webcam.
 
 ## Features
 
-- Choose from which screen to start the timelapse.
-- Choose from which webcam to start the timelapse.
-- Timestamp.
-- Automatically stop and resume when no user input is detected for 5 minutes.
-- Select the rate of capture between screenshots.
-- Exporter: stitch screenshots together.
-- Choose video frame rate or video duration.
+- **Multi-Source Support:** Select which screen or webcam to record from.
+- **Custom Capture Rate:** Select the interval in seconds between screenshots.
+- **Smart Pause:** Automatically stop and resume recording when no user input is detected for a minute.
+- **Built-in Exporter:** Stitch screenshots together into a final timelapse.
+- **Video Export Options:** Choose your preferred video frame rate or total duration.
+- **Timestamp Export:** Include or exclude timestamps in your final video.
+- **Crash Recovery:** Automatically restore your recording session after a crash or system outage.
+
+## How to Install
+
+Install instructions go here.
+
+## Build
+
+Build goes here.
 
 ## Stack
-Stack goes there.
+
+Stack goes here.
 
 ## License
-License goes there.
+
+License goes here.
