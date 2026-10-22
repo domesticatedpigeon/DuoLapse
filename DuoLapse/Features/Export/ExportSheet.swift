@@ -22,10 +22,13 @@ struct ExportSheet: View {
                     settingsForm
                 }
             } else {
-                ExportPreview(image: model.previewImage, maximumHeight: 240)
-                    .padding([.horizontal, .top], 20)
-                    .padding(.bottom, 8)
                 settingsForm
+                    .safeAreaInset(edge: .top, spacing: 0) {
+                        ExportPreview(image: model.previewImage, maximumHeight: 240)
+                            .padding([.horizontal, .top], 20)
+                            .padding(.bottom, 8)
+                            .background(.regularMaterial)
+                    }
             }
 
             Divider()
