@@ -10,7 +10,7 @@ struct SettingsView: View {
     @State private var searchText = ""
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: .constant(.all)) {
             List(matchingPanes, selection: $selection) { pane in
                 Label(pane.title, systemImage: pane.symbolName)
                     .tag(pane)
