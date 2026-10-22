@@ -111,7 +111,8 @@ private struct ExportLayoutSection: View {
                 Text("Horizontal").tag(ExportOrientation.horizontal)
                 Text("Vertical").tag(ExportOrientation.vertical)
             }
-            .pickerStyle(.segmented)
+            .pickerStyle(.radioGroup)
+            .horizontalRadioGroupLayout()
 
             if model.hasScreenAndCamera {
                 switch model.settings.layout.orientation {
