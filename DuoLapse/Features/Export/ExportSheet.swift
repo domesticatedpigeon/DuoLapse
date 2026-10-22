@@ -66,7 +66,7 @@ struct ExportSheet: View {
         .defaultScrollAnchor(.top)
         .scrollPosition($settingsScrollPosition)
         .onChange(of: isEditable) { _, isReady in
-            guard isReady else { return }
+            guard isReady, case .ready = model.phase else { return }
             Task {
                 await Task.yield()
                 settingsScrollPosition.scrollTo(edge: .top)
@@ -80,7 +80,7 @@ struct ExportSheet: View {
     }
 
     private var isEditable: Bool {
-        if case .ready = model.phase { true } else { false }
+        model.acceptsSettingChanges
     }
 
     private func close() {

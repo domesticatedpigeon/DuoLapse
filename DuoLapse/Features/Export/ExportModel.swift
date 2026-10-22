@@ -23,6 +23,7 @@ final class ExportModel {
         didSet {
             persistSettings()
             refreshPreview()
+            returnToReadyAfterExport()
         }
     }
 
@@ -176,6 +177,19 @@ final class ExportModel {
             let image = try? await exporter.previewImage(of: source, settings: settings)
             guard !Task.isCancelled else { return }
             previewImage = image ?? nil
+        }
+    }
+
+    var acceptsSettingChanges: Bool {
+        switch phase {
+        case .ready, .finished: true
+        case .preparing, .exporting, .failed: false
+        }
+    }
+
+    private func returnToReadyAfterExport() {
+        if case .finished = phase {
+            phase = .ready
         }
     }
 
