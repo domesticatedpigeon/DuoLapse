@@ -31,7 +31,7 @@ struct LibraryView: View {
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 240, ideal: 280)
+            .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
             .toolbar {
                 ToolbarItem {
                     SettingsLink {
@@ -42,8 +42,9 @@ struct LibraryView: View {
             }
         } detail: {
             detail
+                .navigationSplitViewColumnWidth(min: 480, ideal: 640)
         }
-        .frame(minWidth: 760, minHeight: 520)
+        .frame(minWidth: 720, minHeight: 520)
         .task {
             library.reload()
         }
