@@ -20,6 +20,18 @@ public struct CaptureSettings: Hashable, Codable, Sendable {
         .seconds(captureIntervalSeconds)
     }
 
+    public func switchingDisplay(to uuid: String) -> CaptureSettings {
+        var settings = self
+        if displayUUID != nil { settings.displayUUID = uuid }
+        return settings
+    }
+
+    public func switchingCamera(to id: String) -> CaptureSettings {
+        var settings = self
+        if cameraID != nil { settings.cameraID = id }
+        return settings
+    }
+
     public var sources: [CaptureSource] {
         [displayUUID.map { _ in .screen }, cameraID.map { _ in .camera }].compactMap(\.self)
     }

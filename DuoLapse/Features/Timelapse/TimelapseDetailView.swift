@@ -31,6 +31,10 @@ struct TimelapseDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            SourceSwitcherSection(library: library, recorder: recorder) { message in
+                errorMessage = message
+            }
         }
         .formStyle(.grouped)
         .navigationTitle(recorder.session.title)

@@ -83,6 +83,19 @@ public final class TimelapseRecorder {
         try updateState(.finished)
     }
 
+    public func changeCaptureSettings(to settings: CaptureSettings) async throws {
+        guard settings != session.settings, session.state != .finished else { return }
+        let wasCapturing = isCapturing
+        if wasCapturing {
+            await stopCapturing()
+        }
+        session.settings = settings
+        try updateState(wasCapturing ? .paused : session.state)
+        if wasCapturing {
+            try await record()
+        }
+    }
+
     public func rename(to name: String) throws {
         session.rename(to: name)
         session.updatedAt = .now

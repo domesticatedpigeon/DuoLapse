@@ -38,4 +38,21 @@ struct CaptureSettingsTests {
         #expect(settings.displayUUID == "DISPLAY")
         #expect(settings.cameraID == nil)
     }
+
+    @Test func switchingDisplayKeepsTheCamera() {
+        let settings = CaptureSettings(
+            captureIntervalSeconds: 5, storageResolution: .standard, displayUUID: "LEFT", cameraID: "CAMERA")
+        let switched = settings.switchingDisplay(to: "RIGHT")
+        #expect(switched.displayUUID == "RIGHT")
+        #expect(switched.cameraID == "CAMERA")
+    }
+
+    @Test func switchingNeverAddsASource() {
+        let screenOnly = CaptureSettings(
+            captureIntervalSeconds: 5, storageResolution: .standard, displayUUID: "LEFT", cameraID: nil)
+        #expect(screenOnly.switchingCamera(to: "CAMERA") == screenOnly)
+        let cameraOnly = CaptureSettings(
+            captureIntervalSeconds: 5, storageResolution: .standard, displayUUID: nil, cameraID: "CAMERA")
+        #expect(cameraOnly.switchingDisplay(to: "RIGHT") == cameraOnly)
+    }
 }

@@ -128,6 +128,14 @@ public final class TimelapseLibrary {
         try await recorder.stop()
     }
 
+    public func switchDisplay(of recorder: TimelapseRecorder, to uuid: String) async throws {
+        try await recorder.changeCaptureSettings(to: recorder.session.settings.switchingDisplay(to: uuid))
+    }
+
+    public func switchCamera(of recorder: TimelapseRecorder, to id: String) async throws {
+        try await recorder.changeCaptureSettings(to: recorder.session.settings.switchingCamera(to: id))
+    }
+
     public func rename(_ recorder: TimelapseRecorder, to name: String) throws {
         try recorder.rename(to: name)
     }
