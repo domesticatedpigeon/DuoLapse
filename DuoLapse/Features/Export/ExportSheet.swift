@@ -60,7 +60,6 @@ struct ExportSheet: View {
         Form {
             ExportLengthSection(model: model)
             ExportLayoutSection(model: model)
-            ExportFileSection(model: model)
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
@@ -282,21 +281,6 @@ private struct HorizontalLayoutControls: View {
     private var cornerRadiusPercentage: String {
         (layout.cameraOverlay.cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction)
             .formatted(.percent.precision(.fractionLength(0)))
-    }
-}
-
-private struct ExportFileSection: View {
-    let model: ExportModel
-
-    var body: some View {
-        Section("File") {
-            LabeledContent("Saves as", value: model.filenamePreview)
-            LabeledContent("In", value: model.outputFolder.lastPathComponent)
-            SettingsLink {
-                Text("Change File Settings…")
-            }
-            .buttonStyle(.glass)
-        }
     }
 }
 

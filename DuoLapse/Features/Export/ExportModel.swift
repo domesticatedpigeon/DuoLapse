@@ -95,10 +95,6 @@ final class ExportModel {
         set { settings.duration = newValue.duration(customSeconds: customDurationSeconds) }
     }
 
-    var filenamePreview: String {
-        settings.filenameTemplate.filename(for: session.createdAt) + ".mp4"
-    }
-
     var isExporting: Bool {
         if case .exporting = phase { true } else { false }
     }
