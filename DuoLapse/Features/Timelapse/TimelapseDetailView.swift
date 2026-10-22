@@ -16,6 +16,10 @@ struct TimelapseDetailView: View {
                 RecorderSourcesPreview(recorder: recorder, store: library.store)
             }
 
+            SourceSwitcherSection(library: library, recorder: recorder) { message in
+                errorMessage = message
+            }
+
             Section("Status") {
                 LabeledContent("State", value: recorder.session.state.displayName)
                 TimelineView(.periodic(from: .now, by: 1)) { _ in
@@ -31,9 +35,6 @@ struct TimelapseDetailView: View {
                 }
             }
 
-            SourceSwitcherSection(library: library, recorder: recorder) { message in
-                errorMessage = message
-            }
         }
         .formStyle(.grouped)
         .navigationTitle("Library")
