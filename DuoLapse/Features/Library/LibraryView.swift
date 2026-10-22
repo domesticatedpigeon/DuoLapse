@@ -7,6 +7,7 @@ struct LibraryView: View {
     @Bindable var navigation: AppNavigation
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.accessibilityReduceMotion) private var reducesMotion
     @State private var renamingID: UUID?
     @State private var trashCandidate: TimelapseRecorder?
     @State private var errorMessage: String?
@@ -34,6 +35,8 @@ struct LibraryView: View {
                     }
                 }
             }
+            .animation(listAnimation, value: isDrafting)
+            .animation(listAnimation, value: sidebarLayout)
             .contextMenu(forSelectionType: LibrarySelection.self, menu: contextMenu(for:)) { selection in
                 if let recorder = singleRecorder(in: selection) {
                     beginRenaming(recorder)
@@ -118,6 +121,15 @@ struct LibraryView: View {
                 "DuoLapse quit while recording the timelapse from \(recorder.session.title). Frames up to that moment are saved."
             )
         }
+    }
+
+    private var listAnimation: Animation? {
+        reducesMotion ? nil : .smooth(duration: 0.3)
+    }
+
+    private var sidebarLayout: [String] {
+        library.openRecorders.map { "open-\($0.session.id)" }
+            + library.closedRecorders.map { "closed-\($0.session.id)" }
     }
 
     private var isDrafting: Bool {
