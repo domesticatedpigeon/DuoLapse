@@ -17,11 +17,12 @@
           }
         },
         {
-          "fill" : "automatic",
           "fill-specializations" : [
             {
               "appearance" : "dark",
-              "value" : "system-light"
+              "value" : {
+                "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+              }
             }
           ],
           "glass" : true,
@@ -33,7 +34,13 @@
               0,
               0
             ]
-          }
+          },
+          "blend-mode-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ]
         }
       ],
       "shadow" : {
