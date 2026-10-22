@@ -8,7 +8,9 @@ struct RecordingStatusSection: View {
     var body: some View {
         Section("Timelapse") {
             LabeledContent("Status", value: recorder.session.state.displayName)
-            LabeledContent("Frames captured", value: recorder.capturedFrameCount.formatted())
+            ForEach(recorder.session.settings.sources, id: \.self) { source in
+                LabeledContent(source.framesLabel, value: recorder.capturedFrameCounts[source, default: 0].formatted())
+            }
             LabeledContent("Size on disk", value: Int64(recorder.bytesOnDisk).formatted(.byteCount(style: .file)))
             if let lastCaptureError = recorder.lastCaptureError {
                 Label(lastCaptureError, systemImage: "exclamationmark.triangle")
@@ -25,6 +27,15 @@ extension TimelapseState {
         case .paused: "Paused"
         case .idlePaused: "Paused while idle"
         case .finished: "Finished"
+        }
+    }
+}
+
+extension CaptureSource {
+    fileprivate var framesLabel: String {
+        switch self {
+        case .screen: "Screen frames"
+        case .camera: "Camera frames"
         }
     }
 }

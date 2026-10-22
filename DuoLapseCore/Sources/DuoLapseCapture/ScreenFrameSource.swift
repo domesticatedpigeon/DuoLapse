@@ -12,7 +12,7 @@ enum ScreenFrameSource {
         else {
             throw ScreenCaptureError.displayUnavailable
         }
-        let size = resolution.storageSize(for: DisplayCatalog.pixelSize(of: display))
+        let size = resolution.screenStorageSize(for: DisplayCatalog.pixelSize(of: display))
         let configuration = SCStreamConfiguration()
         configuration.width = size.width
         configuration.height = size.height

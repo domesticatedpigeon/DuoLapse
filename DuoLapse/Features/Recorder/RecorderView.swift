@@ -5,22 +5,19 @@ struct RecorderView: View {
     @State private var model = RecorderModel()
 
     var body: some View {
-        Group {
-            if model.isScreenCaptureAllowed {
-                RecorderForm(model: model)
-            } else {
-                ScreenRecordingPermissionView(onRequestAccess: model.requestScreenCaptureAccess)
+        RecorderForm(model: model)
+            .frame(minWidth: 440, idealWidth: 480, minHeight: 480)
+            .task {
+                await model.refreshDevicesAndPermissions()
             }
-        }
-        .frame(minWidth: 440, idealWidth: 480, minHeight: 380)
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            model.refreshScreenCapturePermission()
-        }
-        .alert("Something Went Wrong", isPresented: isShowingError, presenting: model.errorMessage) { _ in
-            Button("OK") {}
-        } message: { message in
-            Text(message)
-        }
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                Task { await model.refreshDevicesAndPermissions() }
+            }
+            .alert("Something Went Wrong", isPresented: isShowingError, presenting: model.errorMessage) { _ in
+                Button("OK") {}
+            } message: { message in
+                Text(message)
+            }
     }
 
     private var isShowingError: Binding<Bool> {

@@ -23,15 +23,16 @@ public struct SessionStore: Sendable {
         rootDirectory.appending(path: id.uuidString, directoryHint: .isDirectory)
     }
 
-    public func screenSegmentsDirectory(for id: UUID) -> URL {
-        directory(for: id).appending(path: "screen", directoryHint: .isDirectory)
+    public func segmentsDirectory(for id: UUID, source: CaptureSource) -> URL {
+        directory(for: id).appending(path: source.rawValue, directoryHint: .isDirectory)
     }
 
     public func save(_ session: TimelapseSession) throws {
-        try FileManager.default.createDirectory(
-            at: screenSegmentsDirectory(for: session.id),
-            withIntermediateDirectories: true
-        )
+        let segmentDirectories = session.settings.sources.map { segmentsDirectory(for: session.id, source: $0) }
+        let directories = [directory(for: session.id)] + segmentDirectories
+        for directory in directories {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
         try Self.encoder.encode(session).write(to: manifestURL(for: session.id), options: .atomic)
     }
 
@@ -39,10 +40,10 @@ public struct SessionStore: Sendable {
         try Self.decoder.decode(TimelapseSession.self, from: Data(contentsOf: manifestURL(for: id)))
     }
 
-    public func screenSegments(of id: UUID) -> [URL] {
+    public func segments(of id: UUID, source: CaptureSource) -> [URL] {
         let contents =
             (try? FileManager.default.contentsOfDirectory(
-                at: screenSegmentsDirectory(for: id),
+                at: segmentsDirectory(for: id, source: source),
                 includingPropertiesForKeys: nil
             )) ?? []
         return

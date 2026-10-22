@@ -147,6 +147,8 @@ A running `AVCaptureSession` keeps the camera light on. Stopping between frames 
 - Keep the session running while recording. The light stays on steadily, which is also the honest privacy signal while the camera is being recorded.
 - Throttle the device to its lowest supported frame rate (`activeVideoMinFrameDuration`) at 720p, and keep only the latest frame. This keeps CPU use low.
 - Stop the session on pause, idle pause and stop, so the light goes off whenever nothing is being recorded.
+- Ignore frames for the first second after the camera starts, while auto-exposure settles, and treat a frame older than 5 s as missing so a stalled camera shows an error instead of repeating a stale picture.
+- Scale camera frames to 1280 px on the long edge in the capture output, so no extra scaling step is needed.
 - Recover from interruptions (`AVCaptureSession.wasInterruptedNotification`, `runtimeErrorNotification`) and from the device disconnecting, by restarting the session on the same device ID.
 
 ### 4.3 Sleep, wake and the webcam
