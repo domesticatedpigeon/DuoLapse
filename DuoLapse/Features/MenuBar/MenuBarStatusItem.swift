@@ -54,7 +54,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         }
 
         menu.addItem(.separator())
-        menu.addItem(actionItem("Show DuoLapse") { navigation.showLibrary() })
+        menu.addItem(actionItem("Show Library") { navigation.showLibrary() })
         menu.addItem(actionItem("Settings…", keyEquivalent: ",") { navigation.showSettings() })
         if updater.isAvailable {
             menu.addItem(actionItem("Check for Updates…") { [updater] in updater.checkForUpdates() })
