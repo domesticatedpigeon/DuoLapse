@@ -6,28 +6,81 @@ import SwiftUI
 
 struct SettingsView: View {
     let preferences: AppPreferences
+    @State private var selection: SettingsPane? = .general
+    @State private var searchText = ""
 
     var body: some View {
-        TabView {
-            Tab("General", systemImage: "gearshape") {
-                GeneralSettings(preferences: preferences)
+        NavigationSplitView {
+            List(matchingPanes, selection: $selection) { pane in
+                Label(pane.title, systemImage: pane.symbolName)
+                    .tag(pane)
             }
-            Tab("Recording", systemImage: "record.circle") {
-                RecordingSettings()
+            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
+            .searchable(text: $searchText, placement: .sidebar)
+        } detail: {
+            Group {
+                switch selection ?? .general {
+                case .general: GeneralSettings(preferences: preferences)
+                case .recording: RecordingSettings()
+                case .export: ExportFileSettings()
+                case .shortcuts: ShortcutSettings()
+                case .permissions: PermissionSettings()
+                }
             }
-            Tab("Export", systemImage: "square.and.arrow.up") {
-                ExportFileSettings()
-            }
-            Tab("Shortcuts", systemImage: "keyboard") {
-                ShortcutSettings()
-            }
-            Tab("Permissions", systemImage: "lock.shield") {
-                PermissionSettings()
-            }
+            .navigationTitle((selection ?? .general).title)
+            .defaultScrollAnchor(.top)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .frame(width: 480)
-        .defaultScrollAnchor(.top)
-        .scrollBounceBehavior(.basedOnSize)
+        .frame(minWidth: 680, idealWidth: 720, minHeight: 440, idealHeight: 500)
+    }
+
+    private var matchingPanes: [SettingsPane] {
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return SettingsPane.allCases }
+        return SettingsPane.allCases.filter { pane in
+            ([pane.title] + pane.keywords).contains { $0.localizedCaseInsensitiveContains(query) }
+        }
+    }
+}
+
+enum SettingsPane: String, CaseIterable, Identifiable {
+    case general
+    case recording
+    case export
+    case shortcuts
+    case permissions
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .general: "General"
+        case .recording: "Recording"
+        case .export: "Export"
+        case .shortcuts: "Shortcuts"
+        case .permissions: "Permissions"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .general: "gearshape"
+        case .recording: "record.circle"
+        case .export: "square.and.arrow.up"
+        case .shortcuts: "keyboard"
+        case .permissions: "lock.shield"
+        }
+    }
+
+    var keywords: [String] {
+        switch self {
+        case .general: ["login", "startup", "menu bar", "dock", "version"]
+        case .recording: ["smart pause", "idle", "keep awake", "sleep", "webcam"]
+        case .export: ["format", "hevc", "h.264", "folder", "file name", "save"]
+        case .shortcuts: ["keyboard", "hotkey", "start", "pause"]
+        case .permissions:
+            ["sources", "record screen", "record camera", "screen recording", "camera", "privacy", "access"]
+        }
     }
 }
 
