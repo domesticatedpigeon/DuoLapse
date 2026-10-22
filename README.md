@@ -3,7 +3,7 @@
 Simple native macOS app for recording lightweight time-lapses of the chosen screen and webcam.
 
 ## Features
-
+- **Lightweight:** Low memory and CPU footprint.
 - **Multi-source support:** Capture chosen screen with ScreenCaptureKit, and webcam with AVFoundation.
 - **Custom capture rate:** Select the interval in seconds between screenshots.
 - **Smart pause:** Automatically stop and resume recording when no user input is detected for a minute.
@@ -17,6 +17,7 @@ Simple native macOS app for recording lightweight time-lapses of the chosen scre
 - **Run on startup:** Automatically start DuoLapse when you log in.
 - **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.
 - **Timestamp export:** Include or hide timestamps in your final video.
+- low memory and CPU footprint.
 
 ## How to Install
 
