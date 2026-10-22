@@ -21,12 +21,12 @@ struct ExportSheet: View {
                 }
             } else {
                 settingsForm
-                    .safeAreaInset(edge: .top, spacing: 0) {
+                    .safeAreaBar(edge: .top, spacing: 0) {
                         ExportPreview(image: model.previewImage, maximumHeight: 240)
                             .padding([.horizontal, .top], 20)
                             .padding(.bottom, 8)
-                            .background(.regularMaterial)
                     }
+                    .scrollEdgeEffectStyle(.soft, for: .top)
             }
 
             Divider()
