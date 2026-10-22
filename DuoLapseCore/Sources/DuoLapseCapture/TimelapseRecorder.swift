@@ -83,6 +83,12 @@ public final class TimelapseRecorder {
         try updateState(.finished)
     }
 
+    public func rename(to name: String) throws {
+        session.rename(to: name)
+        session.updatedAt = .now
+        try store.save(session)
+    }
+
     public func reopen() throws {
         guard session.state.canReopen else { return }
         try updateState(.paused)

@@ -1,3 +1,4 @@
+import AppKit
 import DuoLapseCapture
 import SwiftUI
 
@@ -6,9 +7,14 @@ struct LibraryView: View {
     @Bindable var navigation: AppNavigation
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
+    @State private var columnVisibility = NavigationSplitViewVisibility.automatic
+    @State private var renamingRecorder: TimelapseRecorder?
+    @State private var proposedName = ""
+    @State private var trashCandidate: TimelapseRecorder?
+    @State private var errorMessage: String?
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $navigation.selection) {
                 Label("New Timelapse", systemImage: "plus.circle")
                     .tag(LibrarySelection.newTimelapse)
@@ -16,8 +22,7 @@ struct LibraryView: View {
                 if !library.openRecorders.isEmpty {
                     Section("Open") {
                         ForEach(library.openRecorders, id: \.session.id) { recorder in
-                            TimelapseRow(recorder: recorder, store: library.store)
-                                .tag(LibrarySelection.timelapse(recorder.session.id))
+                            row(for: recorder)
                         }
                     }
                 }
@@ -25,8 +30,7 @@ struct LibraryView: View {
                 if !library.closedRecorders.isEmpty {
                     Section("Closed") {
                         ForEach(library.closedRecorders, id: \.session.id) { recorder in
-                            TimelapseRow(recorder: recorder, store: library.store)
-                                .tag(LibrarySelection.timelapse(recorder.session.id))
+                            row(for: recorder)
                         }
                     }
                 }
@@ -43,6 +47,14 @@ struct LibraryView: View {
         } detail: {
             detail
                 .navigationSplitViewColumnWidth(min: 480, ideal: 640)
+                .toolbar {
+                    if columnVisibility == .detailOnly, navigation.selection != .newTimelapse {
+                        ToolbarItem(placement: .navigation) {
+                            Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
+                                .help("New Timelapse")
+                        }
+                    }
+                }
         }
         .frame(minWidth: 720, minHeight: 520)
         .task {
@@ -51,6 +63,33 @@ struct LibraryView: View {
         .onAppear {
             navigation.openWindowAction = openWindow
             navigation.openSettingsAction = openSettings
+        }
+        .alert("Rename Timelapse", isPresented: isRenaming, presenting: renamingRecorder) { recorder in
+            TextField("Name", text: $proposedName, prompt: Text(recorder.session.title))
+            Button("Rename") {
+                perform { try library.rename(recorder, to: proposedName) }
+            }
+            .keyboardShortcut(.defaultAction)
+            Button("Cancel", role: .cancel) {}
+        } message: { _ in
+            Text("Leave the name empty to use the recording’s start date.")
+        }
+        .confirmationDialog(
+            "Move this timelapse to the Trash?",
+            isPresented: isConfirmingTrash,
+            titleVisibility: .visible,
+            presenting: trashCandidate
+        ) { recorder in
+            Button("Move to Trash", role: .destructive) {
+                moveToTrash(recorder)
+            }
+        } message: { _ in
+            Text("Its recorded frames are deleted when you empty the Trash. Exported videos are kept.")
+        }
+        .alert("Something Went Wrong", isPresented: isShowingError, presenting: errorMessage) { _ in
+            Button("OK") {}
+        } message: { message in
+            Text(message)
         }
         .alert(
             "Resume Recording?",
@@ -69,6 +108,78 @@ struct LibraryView: View {
                 "DuoLapse quit while recording the timelapse from \(recorder.session.title). Frames up to that moment are saved."
             )
         }
+    }
+
+    private func row(for recorder: TimelapseRecorder) -> some View {
+        TimelapseRow(recorder: recorder, store: library.store)
+            .tag(LibrarySelection.timelapse(recorder.session.id))
+            .contextMenu {
+                TimelapseContextMenu(
+                    library: library,
+                    recorder: recorder,
+                    perform: perform,
+                    onExport: { navigation.requestExport(of: recorder.session.id) },
+                    onRename: { beginRenaming(recorder) },
+                    onShowInFinder: { showInFinder(recorder) },
+                    onMoveToTrash: { trashCandidate = recorder }
+                )
+            }
+    }
+
+    private func beginRenaming(_ recorder: TimelapseRecorder) {
+        proposedName = recorder.session.name ?? ""
+        renamingRecorder = recorder
+    }
+
+    private func showInFinder(_ recorder: TimelapseRecorder) {
+        NSWorkspace.shared.activateFileViewerSelecting([library.store.directory(for: recorder.session.id)])
+    }
+
+    private func moveToTrash(_ recorder: TimelapseRecorder) {
+        let wasSelected = navigation.selection == .timelapse(recorder.session.id)
+        perform {
+            try await library.moveToTrash(recorder)
+            if wasSelected {
+                navigation.selection = .newTimelapse
+            }
+        }
+    }
+
+    private func perform(_ action: @escaping @MainActor () async throws -> Void) {
+        Task {
+            do {
+                try await action()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private var isRenaming: Binding<Bool> {
+        Binding(
+            get: { renamingRecorder != nil },
+            set: { isPresented in
+                if !isPresented { renamingRecorder = nil }
+            }
+        )
+    }
+
+    private var isConfirmingTrash: Binding<Bool> {
+        Binding(
+            get: { trashCandidate != nil },
+            set: { isPresented in
+                if !isPresented { trashCandidate = nil }
+            }
+        )
+    }
+
+    private var isShowingError: Binding<Bool> {
+        Binding(
+            get: { errorMessage != nil },
+            set: { isPresented in
+                if !isPresented { errorMessage = nil }
+            }
+        )
     }
 
     private var isShowingInterruption: Binding<Bool> {

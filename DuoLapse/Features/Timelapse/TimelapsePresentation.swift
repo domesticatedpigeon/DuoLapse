@@ -3,7 +3,7 @@ import Foundation
 
 extension TimelapseSession {
     var title: String {
-        createdAt.formatted(date: .abbreviated, time: .shortened)
+        name ?? createdAt.formatted(date: .abbreviated, time: .shortened)
     }
 }
 

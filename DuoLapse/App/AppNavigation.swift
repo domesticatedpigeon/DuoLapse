@@ -35,6 +35,11 @@ final class AppNavigation {
         }
     }
 
+    func showNewTimelapse() {
+        selection = .newTimelapse
+        showLibrary()
+    }
+
     func showSettings() {
         NSApplication.shared.activate()
         openSettingsAction?()

@@ -45,7 +45,7 @@ DuoLapse.app
 
 ```
 ~/Library/Application Support/DuoLapse/Sessions/<uuid>/
-├── session.json          settings, state, created and updated dates
+├── session.json          settings, state, optional name, created and updated dates
 ├── screen/<start-epoch-ms>.mp4   HEVC segment; sample time = offset from the segment start
 └── camera/<start-epoch-ms>.mp4
 ```
@@ -96,7 +96,7 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 ### M4: Library and multi-session
 - Library window listing timelapses with thumbnail, duration, frame count, size on disk and state.
 - Open several timelapses. Starting one pauses whichever is recording (`RecordingController` enforces this).
-- Close and delete a timelapse (moved to the Trash), reopen a closed timelapse to keep recording, re-export.
+- Close and delete a timelapse (moved to the Trash), reopen a closed timelapse to keep recording, rename, re-export. Each library row has a context menu with these actions.
 - `session.json` also tracks recorded time and frame count (checkpointed every 30 frames), so the library can show them without reading video files.
 - On launch, a timelapse left in `recording` by a crash is loaded as `paused`. M5 adds the resume prompt and closes out its open segment.
 

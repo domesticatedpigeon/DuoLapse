@@ -128,6 +128,10 @@ public final class TimelapseLibrary {
         try await recorder.stop()
     }
 
+    public func rename(_ recorder: TimelapseRecorder, to name: String) throws {
+        try recorder.rename(to: name)
+    }
+
     public func reopen(_ recorder: TimelapseRecorder) throws {
         try recorder.reopen()
     }

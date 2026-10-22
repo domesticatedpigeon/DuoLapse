@@ -21,6 +21,10 @@ struct DuoLapseApp: App {
             CommandGroup(after: .appInfo) {
                 CheckForUpdatesButton(updater: appDelegate.updater)
             }
+            CommandGroup(replacing: .newItem) {
+                Button("New Timelapse", action: appDelegate.navigation.showNewTimelapse)
+                    .keyboardShortcut("n")
+            }
         }
 
         Settings {

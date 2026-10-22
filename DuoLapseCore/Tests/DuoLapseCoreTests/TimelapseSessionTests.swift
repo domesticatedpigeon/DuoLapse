@@ -4,6 +4,13 @@ import Testing
 @testable import DuoLapseCore
 
 struct TimelapseSessionTests {
+    let settings = CaptureSettings(
+        captureIntervalSeconds: 5,
+        storageResolution: .standard,
+        displayUUID: "DISPLAY",
+        cameraID: nil
+    )
+
     @Test func decodesSessionSavedBeforeStatisticsWereTracked() throws {
         let json = """
             {
@@ -20,15 +27,28 @@ struct TimelapseSessionTests {
         #expect(session.recordedSeconds == 0)
         #expect(session.capturedFrameCount == 0)
         #expect(session.state == .paused)
+        #expect(session.name == nil)
+    }
+
+    @Test func renamingTrimsWhitespace() {
+        var session = TimelapseSession(state: .paused, settings: settings)
+        session.rename(to: "  Sketching a logo \n")
+        #expect(session.name == "Sketching a logo")
+    }
+
+    @Test func renamingToBlankClearsTheName() {
+        var session = TimelapseSession(state: .paused, settings: settings, name: "Logo")
+        session.rename(to: "   ")
+        #expect(session.name == nil)
+    }
+
+    @Test func nameRoundTripsThroughSessionFile() throws {
+        let session = TimelapseSession(state: .finished, settings: settings, name: "Logo")
+        let decoded = try JSONDecoder().decode(TimelapseSession.self, from: JSONEncoder().encode(session))
+        #expect(decoded.name == "Logo")
     }
 
     @Test func onlyFinishedSessionsAreClosed() {
-        let settings = CaptureSettings(
-            captureIntervalSeconds: 5,
-            storageResolution: .standard,
-            displayUUID: "DISPLAY",
-            cameraID: nil
-        )
         let openStates = TimelapseState.allCases.filter { TimelapseSession(state: $0, settings: settings).isOpen }
         #expect(openStates == [.recording, .paused, .idlePaused])
     }
