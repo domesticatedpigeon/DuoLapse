@@ -33,7 +33,6 @@ public struct LayoutPlan: Hashable, Sendable {
 public enum LayoutEngine {
     static let defaultCameraAspectRatio = 9.0 / 16.0
     public static let overlayMarginFraction = 0.025
-    static let sideBySideScreenFraction = 0.7
     static let verticalScreenMaximumFraction = 0.6
 
     public static func plan(
@@ -78,27 +77,29 @@ public enum LayoutEngine {
                 timestampCorner: overlay.corner == .topTrailing ? .topLeading : .topTrailing
             )
         case .sideBySide:
-            let screenWidth = (Double(canvas.width) * sideBySideScreenFraction).rounded()
-            return LayoutPlan(
-                canvasSize: canvas,
-                screen: Placement(
-                    frame: LayoutRect(x: 0, y: 0, width: screenWidth, height: Double(canvas.height)),
-                    contentMode: .fit,
-                    cornerRadius: 0
-                ),
-                camera: Placement(
-                    frame: LayoutRect(
-                        x: screenWidth,
-                        y: 0,
-                        width: Double(canvas.width) - screenWidth,
-                        height: Double(canvas.height)
-                    ),
-                    contentMode: .fill,
-                    cornerRadius: 0
-                ),
-                timestampCorner: .topLeading
-            )
+            return sideBySidePlan(screenSize: screenSize ?? reference, cameraSize: cameraSize, longEdge: longEdge)
         }
+    }
+
+    private static func sideBySidePlan(screenSize: PixelSize, cameraSize: PixelSize, longEdge: Int) -> LayoutPlan {
+        let widthPerHeight = 1 / aspectRatio(of: screenSize) + 1 / aspectRatio(of: cameraSize)
+        let canvas = PixelSize(width: longEdge, height: evenDimension(Double(longEdge) / widthPerHeight))
+        let height = Double(canvas.height)
+        let screenWidth = (height / aspectRatio(of: screenSize)).rounded()
+        return LayoutPlan(
+            canvasSize: canvas,
+            screen: Placement(
+                frame: LayoutRect(x: 0, y: 0, width: screenWidth, height: height),
+                contentMode: .fit,
+                cornerRadius: 0
+            ),
+            camera: Placement(
+                frame: LayoutRect(x: screenWidth, y: 0, width: Double(canvas.width) - screenWidth, height: height),
+                contentMode: .fill,
+                cornerRadius: 0
+            ),
+            timestampCorner: .topLeading
+        )
     }
 
     private static func verticalPlan(

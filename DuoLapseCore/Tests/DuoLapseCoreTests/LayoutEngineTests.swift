@@ -46,11 +46,21 @@ struct LayoutEngineTests {
         #expect(plan.timestampCorner == .topLeading)
     }
 
-    @Test func sideBySideGivesScreenSeventyPercent() {
+    @Test func sideBySideShowsBothSourcesWholeAtEqualHeight() {
         let layout = ExportLayout(horizontalArrangement: .sideBySide)
         let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
-        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 1344, height: 1200))
-        #expect(plan.camera?.frame == LayoutRect(x: 1344, y: 0, width: 576, height: 1200))
+        #expect(plan.canvasSize == PixelSize(width: 1920, height: 568))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 909, height: 568))
+        #expect(plan.camera?.frame == LayoutRect(x: 909, y: 0, width: 1011, height: 568))
+    }
+
+    @Test func sideBySideKeepsPortraitCameraUncropped() throws {
+        let layout = ExportLayout(horizontalArrangement: .sideBySide)
+        let portraitCamera = PixelSize(width: 720, height: 1280)
+        let plan = LayoutEngine.plan(
+            layout: layout, screenSize: macBookScreen, cameraSize: portraitCamera, longEdge: 1920)
+        let cameraFrame = try #require(plan.camera?.frame)
+        #expect(abs(cameraFrame.width / cameraFrame.height - 720.0 / 1280.0) < 0.01)
     }
 
     @Test func verticalStacksScreenAtFullWidthOnTop() {

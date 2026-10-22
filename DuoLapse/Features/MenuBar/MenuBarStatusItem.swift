@@ -92,8 +92,9 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
             label.translatesAutoresizingMaskIntoConstraints = false
             button.addSubview(label)
             NSLayoutConstraint.activate([
-                label.centerXAnchor.constraint(equalTo: button.centerXAnchor),
-                label.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+                label.leadingAnchor.constraint(equalTo: button.leadingAnchor),
+                label.topAnchor.constraint(equalTo: button.topAnchor),
+                label.bottomAnchor.constraint(equalTo: button.bottomAnchor),
             ])
         }
         return item

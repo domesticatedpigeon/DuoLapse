@@ -14,13 +14,15 @@ struct MenuBarLabel: View {
             if let elapsedSeconds {
                 Text(RecordingTimeFormat.compact(seconds: Double(elapsedSeconds)))
                     .monospacedDigit()
-                    .contentTransition(.numericText(value: Double(elapsedSeconds)))
+                    .contentTransition(.numericText(countsDown: true))
                     .animation(reducesMotion ? nil : .snappy, value: elapsedSeconds)
             }
         }
-        .font(Font(NSFont.menuBarFont(ofSize: 0)))
+        .font(.system(size: NSFont.systemFontSize))
         .padding(.horizontal, 6)
         .fixedSize()
+        .frame(height: NSStatusBar.system.thickness)
+        .clipped()
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.width
         } action: { width in
