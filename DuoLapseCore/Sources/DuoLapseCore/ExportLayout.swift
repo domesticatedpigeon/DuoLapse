@@ -102,6 +102,10 @@ public struct ExportLayout: Hashable, Codable, Sendable {
         self.cameraOverlay = cameraOverlay
     }
 
+    public var overlaysCamera: Bool {
+        orientation == .horizontal && horizontalArrangement == .pictureInPicture
+    }
+
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         orientation = try container.decode(ExportOrientation.self, forKey: .orientation)

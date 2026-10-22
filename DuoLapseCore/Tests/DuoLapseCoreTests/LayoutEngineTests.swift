@@ -210,4 +210,16 @@ struct LayoutEngineTests {
         #expect(plan.screen?.verticalAlignment == (screenOnTop ? .bottom : .top))
         #expect(plan.camera?.verticalAlignment == (screenOnTop ? .top : .bottom))
     }
+
+    @Test func onlyHorizontalPictureInPictureOverlaysTheCamera() {
+        #expect(ExportLayout(horizontalArrangement: .pictureInPicture).overlaysCamera)
+        #expect(!ExportLayout(horizontalArrangement: .sideBySide).overlaysCamera)
+        #expect(!ExportLayout(orientation: .vertical, horizontalArrangement: .pictureInPicture).overlaysCamera)
+    }
+
+    @Test func pictureInPictureCameraAlwaysFills() {
+        let layout = ExportLayout(cameraFraming: .fit, cameraOverlay: CameraOverlay(isCircular: true))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.contentMode == .fill)
+    }
 }

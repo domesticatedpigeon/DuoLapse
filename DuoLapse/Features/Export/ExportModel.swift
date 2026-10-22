@@ -74,7 +74,8 @@ final class ExportModel {
             guard let placement = plan.screen, let size = source.screenSize else { return false }
             return placement.framingMatters(forSourceOfSize: size)
         case .camera:
-            guard let placement = plan.camera, let size = source.cameraSize else { return false }
+            guard !settings.layout.overlaysCamera, let placement = plan.camera, let size = source.cameraSize
+            else { return false }
             return placement.framingMatters(forSourceOfSize: size)
         }
     }

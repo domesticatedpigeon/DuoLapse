@@ -34,7 +34,8 @@ struct ExportSheet: View {
     private static let verticalPreviewHeight: CGFloat = verticalPreviewWidth * 16 / 9
     private static let verticalPreviewColumnChrome: CGFloat = 160
     private static let placeholderSheetHeight: CGFloat = 600
-    private static let maximumSheetHeight: CGFloat = 900
+    private static let maximumHorizontalSheetHeight: CGFloat = 720
+    private static let maximumVerticalSheetHeight: CGFloat = 900
 
     private var sheetHeight: CGFloat {
         guard settingsContentHeight > 0 else { return Self.placeholderSheetHeight }
@@ -42,7 +43,8 @@ struct ExportSheet: View {
             isVertical
             ? max(settingsContentHeight, Self.verticalPreviewHeight + Self.verticalPreviewColumnChrome)
             : settingsContentHeight
-        return min(contentHeight.rounded(.up), Self.maximumSheetHeight)
+        let maximumHeight = isVertical ? Self.maximumVerticalSheetHeight : Self.maximumHorizontalSheetHeight
+        return min(contentHeight.rounded(.up), maximumHeight)
     }
 
     @ViewBuilder
