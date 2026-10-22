@@ -10,6 +10,7 @@ Simple native macOS app for recording lightweight time-lapses of the chosen scre
 - **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
 - **Built-in exporter:** Stitch screenshots together into a final timelapse.
 - **Video export options:** Choose your preferred video frame rate or total duration.
+- **Vertical video:** Choose to export videos in a vertical aspect ratio for mobile devices.
 - **Crash recovery:** Automatically restore your recording session after a crash or power outage.
 - **Storage:** Choose where to save exported videos. The default folder is `Movies`.
 - **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
