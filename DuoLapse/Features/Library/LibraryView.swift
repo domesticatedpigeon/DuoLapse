@@ -14,11 +14,16 @@ struct LibraryView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $navigation.selection) {
-                Label("New Timelapse", systemImage: "plus.circle")
-                    .tag(LibrarySelection.newTimelapse)
+                Button("New Timelapse", systemImage: "plus.circle", action: navigation.showNewTimelapse)
+                    .buttonStyle(.borderless)
+                    .selectionDisabled()
 
-                if !library.openRecorders.isEmpty {
+                if isDrafting || !library.openRecorders.isEmpty {
                     Section("Open") {
+                        if isDrafting {
+                            DraftTimelapseRow()
+                                .tag(LibrarySelection.newTimelapse)
+                        }
                         ForEach(library.openRecorders, id: \.session.id) { recorder in
                             row(for: recorder)
                         }
@@ -40,8 +45,13 @@ struct LibraryView: View {
             }
             .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 320)
             .onDeleteCommand {
-                if case .timelapse(let id) = navigation.selection {
+                switch navigation.selection {
+                case .timelapse(let id):
                     trashCandidate = library.recorder(for: id)
+                case .newTimelapse:
+                    navigation.selection = nil
+                case nil:
+                    break
                 }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -109,6 +119,10 @@ struct LibraryView: View {
         }
     }
 
+    private var isDrafting: Bool {
+        navigation.selection == .newTimelapse
+    }
+
     private func row(for recorder: TimelapseRecorder) -> some View {
         TimelapseRow(
             recorder: recorder,
@@ -160,7 +174,7 @@ struct LibraryView: View {
         perform {
             try await library.moveToTrash(recorder)
             if wasSelected {
-                navigation.selection = .newTimelapse
+                navigation.selection = nil
             }
         }
     }
@@ -212,9 +226,18 @@ struct LibraryView: View {
             } else {
                 ContentUnavailableView("Timelapse Not Found", systemImage: "questionmark.folder")
             }
-        case .newTimelapse, nil:
+        case .newTimelapse:
             NewTimelapseView(library: library) { id in
                 navigation.show(id)
+            }
+        case nil:
+            ContentUnavailableView {
+                Label("No Timelapse Selected", systemImage: "timer")
+            } description: {
+                Text("Choose a timelapse in the sidebar, or start a new one.")
+            } actions: {
+                Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
+                    .buttonStyle(.glassProminent)
             }
         }
     }

@@ -9,7 +9,7 @@ enum LibrarySelection: Hashable {
 
 @Observable
 final class AppNavigation {
-    var selection: LibrarySelection? = .newTimelapse
+    var selection: LibrarySelection?
     var exportRequestID: UUID?
     @ObservationIgnored var openWindowAction: OpenWindowAction?
     @ObservationIgnored var openSettingsAction: OpenSettingsAction?
