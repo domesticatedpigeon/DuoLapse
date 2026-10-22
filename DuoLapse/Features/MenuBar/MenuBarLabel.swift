@@ -9,16 +9,17 @@ struct MenuBarLabel: View {
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 3) {
             Image(systemName: symbolName)
+                .font(.system(size: NSFont.systemFontSize))
             if let elapsedSeconds {
-                Text(RecordingTimeFormat.compact(seconds: Double(elapsedSeconds)))
-                    .monospacedDigit()
-                    .contentTransition(.numericText(countsDown: true))
-                    .animation(reducesMotion ? nil : .snappy, value: elapsedSeconds)
+                RollingDigits(
+                    text: RecordingTimeFormat.compact(seconds: Double(elapsedSeconds)),
+                    animation: reducesMotion ? nil : .smooth(duration: 0.35)
+                )
+                .font(.system(size: NSFont.smallSystemFontSize, weight: .medium).monospacedDigit())
             }
         }
-        .font(.system(size: NSFont.systemFontSize))
         .padding(.horizontal, 6)
         .fixedSize()
         .frame(height: NSStatusBar.system.thickness)
@@ -45,5 +46,28 @@ struct MenuBarLabel: View {
     private var accessibilityDescription: String {
         guard let elapsedSeconds else { return "DuoLapse" }
         return "DuoLapse recording, \(RecordingTimeFormat.compact(seconds: Double(elapsedSeconds)))"
+    }
+}
+
+private struct RollingDigits: View {
+    let text: String
+    let animation: Animation?
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(slotsFromTrailingEdge, id: \.slot) { entry in
+                ZStack {
+                    Text(String(entry.character))
+                        .id(entry.character)
+                        .transition(.push(from: .top))
+                }
+                .clipped()
+                .animation(animation, value: entry.character)
+            }
+        }
+    }
+
+    private var slotsFromTrailingEdge: [(slot: Int, character: Character)] {
+        text.enumerated().map { (slot: text.count - $0.offset, character: $0.element) }
     }
 }
