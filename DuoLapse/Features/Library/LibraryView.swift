@@ -67,7 +67,6 @@ struct LibraryView: View {
                         ToolbarItem(placement: .primaryAction) {
                             Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
                                 .fontWeight(.semibold)
-                                .imageScale(.large)
                                 .help("New Timelapse")
                         }
                     }
