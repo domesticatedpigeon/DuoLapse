@@ -40,7 +40,10 @@ struct TimelapseRow: View {
                 HStack(spacing: 4) {
                     Image(systemName: recorder.session.state.symbolName)
                         .foregroundStyle(recorder.session.state.symbolColor)
-                        .symbolEffect(.pulse, isActive: recorder.isCapturing && !reducesMotion)
+                        .symbolEffect(
+                            .pulse.wholeSymbol, options: .repeat(.continuous),
+                            isActive: recorder.isCapturing && !reducesMotion
+                        )
                         .accessibilityHidden(true)
                     TimelineView(.periodic(from: .now, by: 1)) { _ in
                         Text(summary)
