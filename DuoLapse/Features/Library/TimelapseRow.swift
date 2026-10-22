@@ -5,6 +5,11 @@ import SwiftUI
 struct TimelapseRow: View {
     let recorder: TimelapseRecorder
     let store: SessionStore
+    let isRenaming: Bool
+    let onRename: (String) -> Void
+    let onCancelRename: () -> Void
+    @State private var draftName = ""
+    @FocusState private var isNameFieldFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
 
     var body: some View {
@@ -14,8 +19,22 @@ struct TimelapseRow: View {
                 .clipShape(.rect(cornerRadius: 6))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(recorder.session.title)
-                    .lineLimit(1)
+                if isRenaming {
+                    TextField("Name", text: $draftName, prompt: Text(recorder.session.title))
+                        .focused($isNameFieldFocused)
+                        .onSubmit { onRename(draftName) }
+                        .onExitCommand(perform: onCancelRename)
+                        .onChange(of: isNameFieldFocused) { _, isFocused in
+                            if !isFocused { onRename(draftName) }
+                        }
+                        .onAppear {
+                            draftName = recorder.session.name ?? ""
+                            isNameFieldFocused = true
+                        }
+                } else {
+                    Text(recorder.session.title)
+                        .lineLimit(1)
+                }
                 HStack(spacing: 4) {
                     Image(systemName: recorder.session.state.symbolName)
                         .foregroundStyle(recorder.session.state.symbolColor)
@@ -32,7 +51,7 @@ struct TimelapseRow: View {
             }
         }
         .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: isRenaming ? .contain : .combine)
     }
 
     private var summary: String {

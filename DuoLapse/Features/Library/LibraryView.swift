@@ -7,8 +7,7 @@ struct LibraryView: View {
     @Bindable var navigation: AppNavigation
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
-    @State private var renamingRecorder: TimelapseRecorder?
-    @State private var proposedName = ""
+    @State private var renamingID: UUID?
     @State private var trashCandidate: TimelapseRecorder?
     @State private var errorMessage: String?
 
@@ -32,6 +31,11 @@ struct LibraryView: View {
                             row(for: recorder)
                         }
                     }
+                }
+            }
+            .contextMenu(forSelectionType: LibrarySelection.self, menu: contextMenu(for:)) { selection in
+                if let recorder = singleRecorder(in: selection) {
+                    beginRenaming(recorder)
                 }
             }
             .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 320)
@@ -67,16 +71,6 @@ struct LibraryView: View {
         .onAppear {
             navigation.openWindowAction = openWindow
             navigation.openSettingsAction = openSettings
-        }
-        .alert("Rename Timelapse", isPresented: isRenaming, presenting: renamingRecorder) { recorder in
-            TextField("Name", text: $proposedName, prompt: Text(recorder.session.title))
-            Button("Rename") {
-                perform { try library.rename(recorder, to: proposedName) }
-            }
-            .keyboardShortcut(.defaultAction)
-            Button("Cancel", role: .cancel) {}
-        } message: { _ in
-            Text("Leave the name empty to use the recording’s start date.")
         }
         .confirmationDialog(
             "Move this timelapse to the Trash?",
@@ -115,24 +109,44 @@ struct LibraryView: View {
     }
 
     private func row(for recorder: TimelapseRecorder) -> some View {
-        TimelapseRow(recorder: recorder, store: library.store)
-            .tag(LibrarySelection.timelapse(recorder.session.id))
-            .contextMenu {
-                TimelapseContextMenu(
-                    library: library,
-                    recorder: recorder,
-                    perform: perform,
-                    onExport: { navigation.requestExport(of: recorder.session.id) },
-                    onRename: { beginRenaming(recorder) },
-                    onShowInFinder: { showInFinder(recorder) },
-                    onMoveToTrash: { trashCandidate = recorder }
-                )
-            }
+        TimelapseRow(
+            recorder: recorder,
+            store: library.store,
+            isRenaming: renamingID == recorder.session.id,
+            onRename: { name in finishRenaming(recorder, to: name) },
+            onCancelRename: { renamingID = nil }
+        )
+        .tag(LibrarySelection.timelapse(recorder.session.id))
+    }
+
+    @ViewBuilder
+    private func contextMenu(for selection: Set<LibrarySelection>) -> some View {
+        if let recorder = singleRecorder(in: selection) {
+            TimelapseContextMenu(
+                library: library,
+                recorder: recorder,
+                perform: perform,
+                onExport: { navigation.requestExport(of: recorder.session.id) },
+                onRename: { beginRenaming(recorder) },
+                onShowInFinder: { showInFinder(recorder) },
+                onMoveToTrash: { trashCandidate = recorder }
+            )
+        }
+    }
+
+    private func singleRecorder(in selection: Set<LibrarySelection>) -> TimelapseRecorder? {
+        guard selection.count == 1, case .timelapse(let id) = selection.first else { return nil }
+        return library.recorder(for: id)
     }
 
     private func beginRenaming(_ recorder: TimelapseRecorder) {
-        proposedName = recorder.session.name ?? ""
-        renamingRecorder = recorder
+        renamingID = recorder.session.id
+    }
+
+    private func finishRenaming(_ recorder: TimelapseRecorder, to name: String) {
+        guard renamingID == recorder.session.id else { return }
+        renamingID = nil
+        perform { try library.rename(recorder, to: name) }
     }
 
     private func showInFinder(_ recorder: TimelapseRecorder) {
@@ -157,15 +171,6 @@ struct LibraryView: View {
                 errorMessage = error.localizedDescription
             }
         }
-    }
-
-    private var isRenaming: Binding<Bool> {
-        Binding(
-            get: { renamingRecorder != nil },
-            set: { isPresented in
-                if !isPresented { renamingRecorder = nil }
-            }
-        )
     }
 
     private var isConfirmingTrash: Binding<Bool> {
