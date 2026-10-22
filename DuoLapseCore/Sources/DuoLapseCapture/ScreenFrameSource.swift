@@ -16,7 +16,7 @@ enum ScreenFrameSource {
         let configuration = SCStreamConfiguration()
         configuration.width = size.width
         configuration.height = size.height
-        configuration.pixelFormat = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+        configuration.pixelFormat = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
         configuration.showsCursor = true
         let filter = SCContentFilter(display: display, excludingWindows: [])
         return try await SCScreenshotManager.captureSampleBuffer(contentFilter: filter, configuration: configuration)

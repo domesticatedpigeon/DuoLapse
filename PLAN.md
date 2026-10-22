@@ -142,7 +142,7 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 
 Figures are estimates for typical desktop use; M1 measures them. The budget is **≤ 250 MB per recording hour at a 1 s interval**, and proportionally less at longer intervals (about 50 MB per hour at 5 s).
 
-Measured: at HEVC quality 0.5, real recordings came out near 1 KB per frame, far under budget, with visible blocking and banding in gradients. Storage now encodes at quality 0.8, and exports at 0.25 bits per pixel for HEVC and 0.4 for H.264.
+Measured: at HEVC quality 0.5, real recordings came out near 1 KB per frame, far under budget, with visible blocking and banding in gradients. Storage now encodes at quality 0.9 from full-range screen frames, and exports at 0.35 bits per pixel for HEVC and 0.5 for H.264. Removing the last of the banding would take 10-bit (HEVC Main 10) storage and export.
 
 **Storage resolution:**
 - Screen: 1920 px on the long edge by default, with an optional “High” setting of 2560 px. Every export layout (§5) fits inside 1920 px, so storing more costs space without improving the default output. “High” is for people who zoom into small text.

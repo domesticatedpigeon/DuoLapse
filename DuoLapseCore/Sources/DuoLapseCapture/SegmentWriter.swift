@@ -75,7 +75,7 @@ final class SegmentWriter {
         }
     }
 
-    static let storageQuality = 0.8
+    static let storageQuality = 0.9
 
     private static func outputSettings(
         size: PixelSize,

@@ -150,7 +150,7 @@ public struct VideoExporter: Sendable {
 
     private static func outputSettings(canvas: PixelSize, codec: ExportCodec) -> [String: Any] {
         let pixelsPerSecond = Double(canvas.width * canvas.height * ExportDuration.framesPerSecond)
-        let bitsPerPixel = codec == .hevc ? 0.25 : 0.4
+        let bitsPerPixel = codec == .hevc ? 0.35 : 0.5
         return [
             AVVideoCodecKey: codec == .hevc ? AVVideoCodecType.hevc : AVVideoCodecType.h264,
             AVVideoWidthKey: canvas.width,
