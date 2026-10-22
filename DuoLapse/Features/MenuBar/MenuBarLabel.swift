@@ -9,6 +9,7 @@ struct MenuBarLabel: View {
     static let timeFont = NSFont.monospacedDigitSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .regular)
     static let timeLineHeight = (timeFont.ascender - timeFont.descender + timeFont.leading).rounded(.up)
     static let timeBaselineCorrection = timeFont.ascender.rounded() - timeFont.ascender
+    static let timeOpticalCenteringOffset: CGFloat = -1
 
     let library: TimelapseLibrary
     let onWidthChange: (CGFloat) -> Void
@@ -29,7 +30,7 @@ struct MenuBarLabel: View {
                     .contentTransition(.numericText(countsDown: true))
                     .animation(reducesMotion ? nil : .smooth, value: elapsed)
                     .frame(height: Self.timeLineHeight, alignment: .top)
-                    .offset(y: Self.timeBaselineCorrection)
+                    .offset(y: Self.timeBaselineCorrection + Self.timeOpticalCenteringOffset)
                 }
             }
         }
