@@ -16,7 +16,7 @@ struct MenuBarLabel: View {
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 3) {
             Image(.menuBarIcon)
                 .renderingMode(.template)
                 .resizable()
