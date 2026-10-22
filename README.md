@@ -9,15 +9,15 @@ A simple, native macOS app for recording lightweight time-lapses of your screen 
 - **Multi-session support:** Keep multiple timelapses open at once, allowing you to easily pause and resume sessions from the library. Note that only one timelapse can be recorded at a time.
 - **Custom capture rate:** Select the interval in seconds between screenshots.
 - **Smart pause:** Automatically stop and resume recording when no user input is detected for a minute.
-- **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
+- **Keep awake:** Prevents your Mac and webcam from sleeping during recording, even with smart pause on. The display can still sleep, and recording resumes when it wakes.
 - **Crash recovery:** Automatically restore your recording session after a crash or power outage.
 
 ### Export & Output
 - **Built-in exporter:** Stitch screenshots together into a final `30 fps` timelapse.
-- **Video export options:** Choose your preferred video duration. Presets are `30 seconds`, `60 seconds`, `7 minutes`, `Full length`.
+- **Video export options:** Choose your preferred video duration. Presets are `30 seconds`, `60 seconds`, `3 minutes`, `Full length`, or set a custom duration.
 - **Vertical video:** Choose to export videos in a vertical aspect ratio for mobile devices.
 - **Storage:** Choose where to save exported videos. The default folder is `~/Movies/DuoLapse Recordings`.
-- **Custom filename format:** Define how exported videos are named, with support for dynamic date and time variables. The default is `DuoLapse Recording YYYY-MM-DDThh:mm:ss`
+- **Custom filename format:** Define how exported videos are named, with support for dynamic date and time variables. The default is `DuoLapse Recording YYYY-MM-DD at hh.mm.ss`
 - **Timestamp export:** Include or hide timestamps in your final video.
 
 ### Customization & Controls

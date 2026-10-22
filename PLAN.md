@@ -11,16 +11,16 @@ Native macOS time-lapse recorder for screen and webcam, built from the feature l
 | UI | SwiftUI (`Window`, `MenuBarExtra`, `Settings`), AppKit only where SwiftUI has gaps | Native look, small codebase. |
 | State | `@Observable` models, one `RecordingController` actor owning the active session | Enforces “one active recording” in a single place. |
 | Screen capture | `SCScreenshotManager.captureImage` per tick | Grabs a single frame on demand. No running stream, so near-zero idle cost. |
-| Webcam capture | `AVCaptureSession` + `AVCaptureVideoDataOutput`, keep latest frame only | See §4.2 for the start/stop trade-off. |
-| Frame storage | HEIC files on disk, one per tick, per source | Crash-safe by construction, and enables re-export at any duration. |
-| Export | `AVAssetWriter`, HEVC (H.264 fallback), 30 fps, Core Image compositing | Hardware-encoded, no third-party dependencies. |
+| Webcam capture | `AVCaptureSession` + `AVCaptureVideoDataOutput` at a throttled frame rate, keep latest frame only | See §4.2. |
+| Frame storage | HEVC video segments (fragmented MP4), one track per source, one sample per tick | Smallest on disk by a wide margin; see §4.1. |
+| Export | `AVAssetReader` → Core Image compositing → `AVAssetWriter`, HEVC (H.264 fallback), 30 fps | Hardware-encoded, no third-party dependencies. |
 | Hotkeys | `KeyboardShortcuts` (sindresorhus) | Proven recorder UI plus global registration. The only third-party runtime dependency. |
 | Login item | `SMAppService.mainApp` | Current API; no helper app needed. |
 | Updates | Sparkle 2 | Required for out-of-store distribution. |
-| Distribution | Developer ID + notarization → GitHub Releases + Homebrew cask | Matches the README’s install sections. Avoids App Sandbox friction. |
+| Distribution | Developer ID + notarization → GitHub Releases + Homebrew cask. No Mac App Store. | Matches the README’s install sections. Avoids App Sandbox friction. |
 | Project | Xcode project with a local Swift package `DuoLapseCore` | Core logic is unit-testable via `swift test` without the app target. |
 | Tests | Swift Testing | Covers core logic; capture is verified manually. |
-| CI | GitHub Actions on a `macos-26` runner: build, test, `swift-format` lint | The cloud dev container is Linux, so CI is the only build check outside a Mac. |
+| CI | GitHub Actions on a `macos-26` runner: build, test, `swift-format` lint | The cloud dev container is Linux, so CI is the only build check outside a Mac. See §6. |
 
 ## 2. Architecture
 
@@ -28,31 +28,34 @@ Native macOS time-lapse recorder for screen and webcam, built from the feature l
 DuoLapse.app
 ├── App/                  @main, scenes, AppDelegate (activation policy, recovery)
 ├── Features/
-│   ├── Library/          session list, open / resume / delete / export
-│   ├── Recorder/         active session view, preview, controls
-│   ├── Export/           export sheet and progress
+│   ├── Library/          timelapse list, open / resume / delete / export
+│   ├── Recorder/         active timelapse view, preview, controls
+│   ├── Export/           export sheet, layout picker, progress
 │   ├── MenuBar/          MenuBarExtra, timer label, quick access
 │   └── Settings/         General, Capture, Export, Shortcuts
 └── DuoLapseCore (package)
     ├── Capture/          ScreenSource, CameraSource, CaptureScheduler
-    ├── Session/          Session, SessionStore, FrameStore, Recovery
-    ├── Export/           FrameSampler, Compositor, TimestampRenderer, VideoWriter
-    ├── System/           IdleMonitor, SleepAssertion, LoginItem, Permissions
+    ├── Session/          Session, SessionStore, SegmentWriter, Recovery
+    ├── Export/           FrameSampler, LayoutEngine, TimestampRenderer, VideoWriter
+    ├── System/           IdleMonitor, PowerAssertions, DisplayStateMonitor, LoginItem, Permissions
     └── Naming/           FilenameTemplate
 ```
 
-### Session on disk
+### Timelapse on disk
 
 ```
 ~/Library/Application Support/DuoLapse/Sessions/<uuid>/
 ├── session.json          settings, state, created and updated dates
-├── screen/<epoch-ms>.heic
-└── camera/<epoch-ms>.heic
+├── screen/0001.mp4       HEVC segment; each sample's timestamp is its capture time
+├── screen/0002.mp4
+└── camera/0001.mp4
 ```
 
-- Capture timestamps are the filenames. No frame index to corrupt.
+- A new segment starts on every resume and every 10 minutes of recording. Old segments are closed and finalized, so at most the open segment is exposed to a crash.
+- The open segment is written as a fragmented MP4 (`movieFragmentInterval` = 10 s). After a crash or power loss it’s readable up to its last fragment.
 - `session.json` is written atomically (`Data.write(options: .atomic)`) on every state change.
-- Session states: `recording`, `paused`, `idlePaused`, `finished`.
+- Timelapse states: `recording`, `paused`, `idlePaused`, `finished`.
+- Frames are kept after export, so a timelapse can be re-exported at any duration or layout. They’re removed only when the user deletes the timelapse from the library. The folder is moved to the Trash, so an accidental delete can be undone; space is freed when the Trash is emptied.
 
 ## 3. Milestones
 
@@ -61,46 +64,47 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 ### M0: Scaffolding
 - Xcode project, `DuoLapseCore` package, app icon placeholder.
 - `CLAUDE.md` with build and test commands, conventions and architecture summary (the README already points to it).
-- CI workflow, `swift-format` config, `.gitignore`.
+- CI workflow, `swift-format` config, `.gitignore`, `LICENSE`.
 - Fill the README sections for Build, Stack and License.
 
 ### M1: Screen capture MVP
 - Screen Recording permission flow, with an explainer when it’s denied.
-- Display picker using `SCShareableContent`.
+- Display picker using `SCShareableContent`. The chosen display is stored by its UUID (`CGDisplayCreateUUIDFromDisplayID`), not its display ID, which can change across sleep and reconnects.
 - `CaptureScheduler`: a `ContinuousClock`-based loop at the user’s interval, which skips (never queues) a tick if the previous capture is still running.
-- `FrameStore` writes downscaled HEIC frames off the main actor.
+- `SegmentWriter` downscales each frame to the storage resolution (§4.1) and appends it to the open HEVC segment, off the main actor.
 - Start, pause, resume and stop from a single window.
+- Measure storage per hour against the §4.1 budget.
 
 ### M2: Webcam
 - Camera permission flow and device picker.
-- `CameraSource` holds the latest `CVPixelBuffer`, which the scheduler samples on each tick.
-- Per-session toggles: screen, camera, or both.
+- `CameraSource` per §4.2.
+- Per-timelapse toggles: screen, camera, or both.
 
 ### M3: Export
 - `FrameSampler` is a pure function: (frame timestamps, preset) → ordered frame list.
-  - Preset frame count = seconds × 30. With more frames than that, it samples evenly. With fewer, it uses every frame and the video comes out shorter, and the UI says so before export.
+  - Presets: `30 seconds`, `60 seconds`, `3 minutes`, `Full length`, plus a custom duration.
+  - Preset frame count = seconds × 30. With more frames than that, it samples evenly. A preset longer than the recording allows is disabled, showing the longest possible length.
   - “Full length” uses every frame.
-- `Compositor`:
-  - Landscape: screen fills the frame, with the camera as a rounded picture-in-picture in a chosen corner.
-  - Vertical (9:16): screen on top, camera below. If only one source is enabled, it’s centre-cropped.
+- `LayoutEngine` per §5.
 - `TimestampRenderer` burns in capture time via `CIAttributedTextImageGenerator`.
-- `VideoWriter` uses `AVAssetWriter` + pixel buffer pool, reports progress and supports cancellation.
+- `VideoWriter` uses `AVAssetWriter` + pixel buffer pool, reports progress and supports cancellation. No audio track.
 - Output folder (default `~/Movies/DuoLapse Recordings`), stored as a security-scoped bookmark.
-- `FilenameTemplate` handles tokens, preview and sanitising (see §4.4).
+- `FilenameTemplate` handles tokens, preview and sanitising. Default: `DuoLapse Recording YYYY-MM-DD at hh.mm.ss`. Any `:` or `/` typed by the user is swapped for `.` and `-`.
 
 ### M4: Library and multi-session
-- Library window listing sessions with thumbnail, duration, frame count and state.
-- Open several sessions. Starting one pauses whichever is recording (`RecordingController` enforces this).
-- Delete a session (moved to Trash), re-export.
+- Library window listing timelapses with thumbnail, duration, frame count, size on disk and state.
+- Open several timelapses. Starting one pauses whichever is recording (`RecordingController` enforces this).
+- Close and delete a timelapse (moved to the Trash), re-export.
 
 ### M5: Reliability
 - **Smart pause:** `IdleMonitor` polls `CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .null)` (any input, no Accessibility permission). It pauses after 60 s idle and resumes on the next input.
-- **Keep awake:** `IOPMAssertionCreateWithName` (`PreventUserIdleSystemSleep`, plus `PreventUserIdleDisplaySleep` while capturing the screen). Released on pause, stop and quit.
-- **Crash recovery:** on launch, any session left in `recording` is set to `paused` and the app offers to resume it. Frames up to the last completed write survive.
+- **Keep awake:** see §4.3.
+- **Display sleep and wake:** see §4.3.
+- **Crash recovery:** on launch, any timelapse left in `recording` is set to `paused`, its open segment is closed out, and the app offers to resume it.
 - Disk-space guard: pause and warn below a threshold (e.g. 2 GB free).
 
 ### M6: Controls and polish
-- `MenuBarExtra` with live elapsed timer and a quick-access menu (start/stop, open session, export, settings).
+- `MenuBarExtra` with live elapsed timer and a quick-access menu (start/stop, open timelapse, export, settings).
 - Global shortcuts for start, stop and toggle.
 - Run on startup toggle.
 - Dock icon toggle via `NSApp.setActivationPolicy(.accessory / .regular)`.
@@ -112,37 +116,106 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - Sparkle appcast, GitHub Release, Homebrew cask.
 - README install instructions.
 
-## 4. Risks and pushback on the README
+## 4. Technical notes
 
-### 4.1 Storage grows fast
-A 5K display captured every second for 8 hours is about 28,800 frames. At full resolution that’s roughly 30 GB.
-**Plan:** store frames at most at 4K (configurable down to 1080p), HEIC quality ~0.7. Show the session’s size in the library.
+### 4.1 Storage format and resolution
 
-### 4.2 The webcam stays on
-A running `AVCaptureSession` keeps the camera LED on and costs CPU continuously. Starting the camera for each frame avoids that, but each frame then needs ~0.5–1 s of warm-up for auto-exposure and the LED blinks.
-**Plan:** keep the session running at a low preset for intervals under 10 s, and start/stop per tick above that. Validate this with measurements in M2.
+**Store frames as HEVC video segments, not as individual images.** Consecutive time-lapse frames are nearly identical. Video coding stores only what changed since the previous frame, while any still-image format (HEIC, AVIF, JPEG XL) re-encodes the whole frame every time.
 
-### 4.3 Smart pause vs keep awake
-“Prevent sleep even with smart pause on” is fine for system sleep. Holding a display assertion while idle-paused, though, keeps the screen lit for no captured output. “And devices” has no API meaning beyond the system and the display.
-**Plan:** while idle-paused, hold only the system-sleep assertion. Drop “and devices” from the README unless it means something specific.
+| Format | Per frame, 1080p screen | 8 h at 1 s, screen + camera |
+| --- | --- | --- |
+| Full-resolution HEIC (old plan) | ~1 MB | ~30 GB |
+| 1080p HEIC | ~80–150 KB | ~4–6 GB |
+| 1080p AVIF / JPEG XL | ~60–120 KB | ~3–5 GB, and encoding is CPU-only on Mac |
+| **1080p HEVC segments** | **~15–40 KB average** | **~1–2 GB** |
 
-### 4.4 The default filename contains colons
-`DuoLapse Recording YYYY-MM-DDThh:mm:ss` shows `/` in Finder, because `:` is the classic path separator, and it breaks some cloud-sync tools.
-**Plan:** default to `DuoLapse Recording YYYY-MM-DD at hh.mm.ss`, matching macOS screenshot naming. Swap any `:` and `/` out when saving.
+Figures are estimates for typical desktop use; M1 measures them. The budget is **≤ 250 MB per recording hour at a 1 s interval**, and proportionally less at longer intervals (about 50 MB per hour at 5 s).
 
-### 4.5 The “7 minutes” preset
-At 30 fps that’s 12,600 frames, which most sessions won’t reach. Under the §M3 rule, those exports come out shorter than 7 minutes. Consider replacing it with `3 minutes` or making presets editable.
+**Storage resolution:**
+- Screen: 1920 px on the long edge by default, with an optional “High” setting of 2560 px. Every export layout (§5) fits inside 1920 px, so storing more costs space without improving the default output. “High” is for people who zoom into small text.
+- Camera: 1280 × 720.
+- Export: 1080p by default (1920 × 1080 landscape, 1080 × 1920 vertical), 1440p when storage is “High”.
 
-### 4.6 The “Duo” layout is unspecified
-The README never says how screen and camera combine. §M3 assumes picture-in-picture for landscape and stacked for vertical. This needs confirming before M3.
+HEVC is hardware-encoded on every Mac that runs macOS 26, so encoding one frame per tick costs almost no CPU.
 
-### 4.7 The dev environment can’t build
-This container is Linux. Every build and test runs on the CI macOS runner, so M0’s CI is a hard prerequisite.
+### 4.2 Webcam
 
-## 5. Open questions
+A running `AVCaptureSession` keeps the camera light on. Stopping between frames turns the light off but makes it blink each tick, and every frame then needs ~0.5–1 s warm-up for auto-exposure.
 
-1. Is the screen + camera layout in §4.6 correct? Should the camera corner and size be user-adjustable?
-2. Is the App Store a goal? It would require the App Sandbox and drop Sparkle. The plan currently targets Developer ID only.
-3. License (MIT, GPL-3.0, proprietary)?
-4. Should exported videos include audio (silence, a music track)? The current plan is no.
-5. Should frames be deleted after export, or kept for re-export? The current plan is to keep them until the user deletes the session.
+**Plan:**
+- Keep the session running while recording. The light stays on steadily, which is also the honest privacy signal while the camera is being recorded.
+- Throttle the device to its lowest supported frame rate (`activeVideoMinFrameDuration`) at 720p, and keep only the latest frame. This keeps CPU use low.
+- Stop the session on pause, idle pause and stop, so the light goes off whenever nothing is being recorded.
+- Recover from interruptions (`AVCaptureSession.wasInterruptedNotification`, `runtimeErrorNotification`) and from the device disconnecting, by restarting the session on the same device ID.
+
+### 4.3 Sleep, wake and the webcam
+
+**Keep awake:** while recording, hold `kIOPMAssertPreventUserIdleSystemSleep`. This keeps the Mac and its USB bus, including the webcam, powered. The display is allowed to sleep. The assertion is released on pause, stop and quit. Closing a laptop lid on battery still sleeps the Mac; that can’t be prevented, and is handled like any other sleep below.
+
+**Display sleep and wake:** captures taken while the display is off or the screen is locked would only show black or the lock screen. `DisplayStateMonitor` listens for `NSWorkspace.screensDidSleepNotification` / `screensDidWakeNotification`, system sleep and wake, and screen lock and unlock.
+- While the display is asleep or the screen is locked, screen ticks are skipped. Camera-only timelapses keep recording.
+- On wake or unlock, before the next screen capture:
+  1. Re-fetch `SCShareableContent`, since `SCDisplay` objects can go stale after sleep.
+  2. Find the chosen display again by its stored UUID, since its display ID can change.
+  3. Take a test capture and check it isn’t blank. If it fails, retry with backoff for up to 30 s, then pause and notify the user.
+  4. Restart the camera session if it was interrupted by system sleep.
+- Manual test matrix for M5: display sleep, system sleep, lid close, screen lock, external monitor unplugged and replugged, and USB webcam replugged. Each must resume recording without user action.
+
+## 5. Export layouts
+
+The user picks a layout in the export sheet. A preview shows the result before exporting.
+
+### Vertical (1080 × 1920)
+
+Screen and camera are stacked. The user chooses which goes on top.
+
+```
+┌──────────┐   ┌──────────┐
+│  screen  │   │          │
+├──────────┤   │  camera  │
+│          │   │          │
+│  camera  │   ├──────────┤
+│          │   │  screen  │
+└──────────┘   └──────────┘
+```
+
+- The screen is scaled to the full 1080 px width and keeps its aspect ratio. A 16:10 screen takes 675 px of height, so no screen content is cropped.
+- The camera fills the remaining height, centre-cropped. It has no letterboxing.
+- Screen only or camera only: the source is fitted and centred on the background colour.
+
+### Horizontal: proposal
+
+**Picture-in-picture (recommended default).** The screen fills the frame, and the camera sits on top in a rounded rectangle. This is the layout Loom and most screen-recording tools use. Screen content is the point of most screen time-lapses, and this keeps all of it at full size.
+
+```
+┌───────────────────────────────┐
+│                               │
+│            screen             │
+│                     ┌───────┐ │
+│                     │camera │ │
+│                     └───────┘ │
+└───────────────────────────────┘
+```
+
+The user can adjust the overlay. This is what “camera corner and size” meant in the earlier question:
+- Corner: one of the four corners, default bottom-right.
+- Size: Small, Medium or Large (20%, 25% or 33% of the frame width), default Medium.
+- Shape: rounded rectangle or circle.
+
+**Side by side (secondary option).** Screen on the left, camera on the right in a vertical strip, centre-cropped. It never covers screen content but shrinks the screen to about 70% of the width.
+
+- The canvas follows the screen’s aspect ratio: 1920 × 1200 for a 16:10 MacBook display, 1920 × 1080 for 16:9. This avoids black bars.
+- Screen only or camera only: the source fills the canvas.
+
+## 6. What CI is
+
+CI (continuous integration) is a service that builds the app and runs its tests automatically on every push and pull request. Here it means GitHub Actions running on a Mac machine GitHub provides.
+
+It matters for DuoLapse because this cloud development environment runs Linux. It can’t compile a macOS app, so without CI, nothing is built or tested until someone opens the project in Xcode on a Mac. CI turns every PR into a checked build with a green or red result. Building locally in Xcode still works as normal.
+
+macOS CI is free for public repositories. For private repositories it uses the account’s Actions minutes, and macOS minutes count 10× against the quota.
+
+## 7. Requirements and open items
+
+1. **Apple Developer Program membership ($99/year)** is needed to sign and notarise the app. Without it, Gatekeeper blocks the app on other Macs, and Homebrew no longer accepts casks that fail Gatekeeper. Needed by M7, not before.
+2. **License:** GPL-3.0 is recommended. Anyone can use, study and modify DuoLapse, but a fork has to stay open source, which stops someone repackaging it as a closed paid app. Both dependencies (KeyboardShortcuts, Sparkle) are MIT, which is GPL-compatible. As the sole copyright holder you can still sell or relicense your own copy later. It’s added in M0 once confirmed.
