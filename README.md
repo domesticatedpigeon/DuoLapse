@@ -25,6 +25,10 @@ Build goes here.
 
 Stack goes here.
 
+## Development
+
+`CLAUDE.md`
+
 ## License
 
 License goes here.
