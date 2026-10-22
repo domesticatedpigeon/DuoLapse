@@ -7,20 +7,24 @@ Simple native macOS app for recording lightweight time-lapses of the chosen scre
 - **Multi-source support:** Capture chosen screen with ScreenCaptureKit, and webcam with AVFoundation.
 - **Custom capture rate:** Select the interval in seconds between screenshots.
 - **Smart pause:** Automatically stop and resume recording when no user input is detected for a minute.
+- **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
 - **Built-in exporter:** Stitch screenshots together into a final timelapse.
 - **Video export options:** Choose your preferred video frame rate or total duration.
-- **Storage:** Choose where to save exported videos. The default folder is `Movies`.
-- **Timestamp export:** Include or hide timestamps in your final video.
 - **Crash recovery:** Automatically restore your recording session after a crash or power outage.
-- **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.
+- **Storage:** Choose where to save exported videos. The default folder is `Movies`.
 - **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
 - **Menu bar:** Show DuoLapse icon in the menu bar. Clicking on it reveals a Quick Access menu.
 - **Run on startup:** Automatically start DuoLapse when you log in.
-- **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
+- **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.
+- **Timestamp export:** Include or hide timestamps in your final video.
 
 ## How to Install
 
 Install instructions go here.
+
+### Release
+
+### Homebrew
 
 ## Build
 
