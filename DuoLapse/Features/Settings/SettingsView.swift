@@ -86,7 +86,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     var keywords: [String] {
         switch self {
         case .general: ["login", "startup", "menu bar", "dock", "version"]
-        case .recording: ["smart pause", "idle", "keep awake", "sleep", "webcam"]
+        case .recording: ["interval", "quality", "resolution", "smart pause", "idle", "keep awake", "sleep", "webcam"]
         case .export: ["format", "hevc", "h.264", "folder", "file name", "save"]
         case .shortcuts: ["keyboard", "hotkey", "start", "pause"]
         case .permissions:
@@ -158,18 +158,22 @@ private struct GeneralSettings: View {
 private struct RecordingSettings: View {
     @AppStorage(RecordingPreferences.smartPauseKey) private var isSmartPauseEnabled = true
     @AppStorage(RecordingPreferences.keepAwakeKey) private var isKeepAwakeEnabled = true
+    @State private var captureModel = NewTimelapseModel()
 
     var body: some View {
         Form {
-            Toggle(isOn: $isSmartPauseEnabled) {
-                Text("Smart pause")
-                Text("Pause after a minute without keyboard, mouse or trackpad input, and resume when you’re back.")
-            }
-            Toggle(isOn: $isKeepAwakeEnabled) {
-                Text("Keep awake")
-                Text(
-                    "Stop your Mac and webcam from sleeping while a timelapse is recording. The display can still sleep."
-                )
+            CaptureTimingSection(model: captureModel)
+            Section {
+                Toggle(isOn: $isSmartPauseEnabled) {
+                    Text("Smart pause")
+                    Text("Pause after a minute without keyboard, mouse or trackpad input, and resume when you’re back.")
+                }
+                Toggle(isOn: $isKeepAwakeEnabled) {
+                    Text("Keep awake")
+                    Text(
+                        "Stop your Mac and webcam from sleeping while a timelapse is recording. The display can still sleep."
+                    )
+                }
             }
         }
         .formStyle(.grouped)

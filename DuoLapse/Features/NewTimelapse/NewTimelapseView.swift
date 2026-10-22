@@ -31,7 +31,6 @@ struct NewTimelapseView: View {
                     CameraSourceRows(model: model)
                 }
             }
-            TimingSection(model: model)
             if library.activeRecorder != nil {
                 Section {
                     Label("Starting pauses the timelapse that’s recording now.", systemImage: "info.circle")
@@ -59,7 +58,7 @@ struct NewTimelapseView: View {
             )
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
-            Task { await model.reloadSourceChoices() }
+            Task { await model.reloadStoredChoices() }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task { await model.refreshDevicesAndPermissions() }
@@ -200,43 +199,6 @@ private struct CameraSourceRows: View {
     }
 }
 
-private struct TimingSection: View {
-    @Bindable var model: NewTimelapseModel
-
-    var body: some View {
-        Section("Timing and Quality") {
-            LabeledContent("Interval") {
-                HStack(spacing: 8) {
-                    Text(intervalDescription)
-                        .monospacedDigit()
-                    Stepper("Interval", value: $model.captureIntervalSeconds, in: 1...300)
-                        .labelsHidden()
-                    Button(
-                        "Reset to Default",
-                        systemImage: "arrow.counterclockwise",
-                        action: model.resetCaptureInterval
-                    )
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(.borderless)
-                    .help("Reset to every \(NewTimelapseModel.defaultCaptureIntervalSeconds) seconds")
-                    .disabled(model.isCaptureIntervalDefault)
-                }
-            }
-
-            Picker("Screen quality", selection: $model.storageResolution) {
-                ForEach(StorageResolution.allCases, id: \.self) { resolution in
-                    Text(resolution.displayName).tag(resolution)
-                }
-            }
-        }
-    }
-
-    private var intervalDescription: String {
-        let interval = Duration.seconds(model.captureIntervalSeconds)
-        return "Every \(interval.formatted(.units(allowed: [.minutes, .seconds], width: .wide)))"
-    }
-}
-
 private struct PermissionNotice: View {
     let message: String
     let actionTitle: String
@@ -247,15 +209,6 @@ private struct PermissionNotice: View {
             Label(message, systemImage: "lock")
                 .foregroundStyle(.secondary)
             Button(actionTitle, action: action)
-        }
-    }
-}
-
-extension StorageResolution {
-    fileprivate var displayName: String {
-        switch self {
-        case .standard: "Standard (1080p)"
-        case .high: "High (1440p)"
         }
     }
 }

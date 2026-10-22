@@ -43,11 +43,8 @@ final class NewTimelapseModel {
         self.capturesCamera = defaults.bool(forKey: Self.capturesCameraKey)
         self.selectedDisplayUUID = defaults.string(forKey: PreferenceKey.displayUUID)
         self.selectedCameraID = defaults.string(forKey: PreferenceKey.cameraID)
-        let storedInterval = defaults.integer(forKey: PreferenceKey.captureIntervalSeconds)
-        self.captureIntervalSeconds = storedInterval > 0 ? storedInterval : Self.defaultCaptureIntervalSeconds
-        self.storageResolution =
-            defaults.string(forKey: PreferenceKey.storageResolution).flatMap { StorageResolution(rawValue: $0) }
-            ?? .standard
+        self.captureIntervalSeconds = Self.captureIntervalSeconds(in: defaults)
+        self.storageResolution = Self.storageResolution(in: defaults)
     }
 
     var captureSettings: CaptureSettings? {
@@ -63,13 +60,27 @@ final class NewTimelapseModel {
         )
     }
 
-    func reloadSourceChoices() async {
+    func reloadStoredChoices() async {
+        let storedInterval = Self.captureIntervalSeconds(in: defaults)
+        if captureIntervalSeconds != storedInterval { captureIntervalSeconds = storedInterval }
+        let storedResolution = Self.storageResolution(in: defaults)
+        if storageResolution != storedResolution { storageResolution = storedResolution }
         let storedCapturesScreen = Self.capturesScreen(in: defaults)
         let storedCapturesCamera = defaults.bool(forKey: Self.capturesCameraKey)
         guard capturesScreen != storedCapturesScreen || capturesCamera != storedCapturesCamera else { return }
         capturesScreen = storedCapturesScreen
         capturesCamera = storedCapturesCamera
         await refreshDevicesAndPermissions()
+    }
+
+    private static func captureIntervalSeconds(in defaults: UserDefaults) -> Int {
+        let stored = defaults.integer(forKey: PreferenceKey.captureIntervalSeconds)
+        return stored > 0 ? stored : defaultCaptureIntervalSeconds
+    }
+
+    private static func storageResolution(in defaults: UserDefaults) -> StorageResolution {
+        defaults.string(forKey: PreferenceKey.storageResolution).flatMap { StorageResolution(rawValue: $0) }
+            ?? .standard
     }
 
     private static func capturesScreen(in defaults: UserDefaults) -> Bool {
