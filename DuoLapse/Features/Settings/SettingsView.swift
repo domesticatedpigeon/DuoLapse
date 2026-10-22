@@ -43,25 +43,23 @@ struct SettingsView: View {
     }
 
     private var detail: some View {
-        Group {
-            switch selection ?? .general {
-            case .general: GeneralSettings(preferences: preferences)
-            case .recording: RecordingSettings()
-            case .export: ExportFileSettings()
-            case .shortcuts: ShortcutSettings()
-            case .permissions: PermissionSettings()
-            }
-        }
-        .defaultScrollAnchor(.top)
-        .scrollBounceBehavior(.basedOnSize)
-        .scrollEdgeEffectStyle(.soft, for: .top)
-        .safeAreaBar(edge: .top, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             Text((selection ?? .general).title)
                 .font(.title2.weight(.semibold))
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .accessibilityAddTraits(.isHeader)
+            Group {
+                switch selection ?? .general {
+                case .general: GeneralSettings(preferences: preferences)
+                case .recording: RecordingSettings()
+                case .export: ExportFileSettings()
+                case .shortcuts: ShortcutSettings()
+                case .permissions: PermissionSettings()
+                }
+            }
+            .defaultScrollAnchor(.top)
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
