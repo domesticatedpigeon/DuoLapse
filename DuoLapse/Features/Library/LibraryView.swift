@@ -51,24 +51,20 @@ struct LibraryView: View {
                     break
                 }
             }
-            .toolbar {
-                ToolbarItem {
-                    SettingsLink {
-                        Label("Settings", systemImage: "gearshape")
-                    }
-                    .help("Settings")
-                }
-            }
         } detail: {
             detail
                 .navigationSplitViewColumnWidth(min: 460, ideal: 640)
                 .toolbar {
-                    if navigation.selection != .newTimelapse {
-                        ToolbarItem(placement: .primaryAction) {
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        if navigation.selection != .newTimelapse {
                             Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
                                 .fontWeight(.semibold)
                                 .help("New Timelapse")
                         }
+                        SettingsLink {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+                        .help("Settings")
                     }
                 }
         }
