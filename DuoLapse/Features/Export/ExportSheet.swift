@@ -5,6 +5,7 @@ import SwiftUI
 struct ExportSheet: View {
     @State private var model: ExportModel
     @State private var settingsScrollPosition = ScrollPosition(edge: .top)
+    @State private var settingsContentHeight: CGFloat = 0
     @Environment(\.dismiss) private var dismiss
 
     init(session: TimelapseSession, store: SessionStore) {
@@ -21,8 +22,8 @@ struct ExportSheet: View {
             .frame(
                 minWidth: isVertical ? 760 : 500,
                 idealWidth: isVertical ? 800 : 540,
-                minHeight: 760,
-                idealHeight: 860
+                minHeight: sheetHeight,
+                maxHeight: sheetHeight
             )
             .task {
                 await model.prepare()
@@ -30,6 +31,19 @@ struct ExportSheet: View {
     }
 
     private static let verticalPreviewWidth: CGFloat = 260
+    private static let verticalPreviewHeight: CGFloat = verticalPreviewWidth * 16 / 9
+    private static let verticalPreviewColumnChrome: CGFloat = 160
+    private static let placeholderSheetHeight: CGFloat = 600
+    private static let maximumSheetHeight: CGFloat = 900
+
+    private var sheetHeight: CGFloat {
+        guard settingsContentHeight > 0 else { return Self.placeholderSheetHeight }
+        let contentHeight =
+            isVertical
+            ? max(settingsContentHeight, Self.verticalPreviewHeight + Self.verticalPreviewColumnChrome)
+            : settingsContentHeight
+        return min(contentHeight.rounded(.up), Self.maximumSheetHeight)
+    }
 
     @ViewBuilder
     private var content: some View {
@@ -37,7 +51,7 @@ struct ExportSheet: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 16) {
                     ExportHeader(title: model.session.title)
-                    ExportPreview(image: model.previewImage, maximumHeight: .infinity)
+                    ExportPreview(image: model.previewImage, maximumHeight: Self.verticalPreviewHeight)
                 }
                 .frame(width: Self.verticalPreviewWidth, alignment: .top)
                 .padding([.leading, .top], 20)
@@ -65,6 +79,11 @@ struct ExportSheet: View {
         .scrollContentBackground(.hidden)
         .defaultScrollAnchor(.top)
         .scrollPosition($settingsScrollPosition)
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.contentSize.height + geometry.contentInsets.top + geometry.contentInsets.bottom
+        } action: { _, height in
+            settingsContentHeight = height
+        }
         .onChange(of: isEditable) { _, isReady in
             guard isReady, case .ready = model.phase else { return }
             Task {
