@@ -26,9 +26,7 @@ final class ExportModel {
         }
     }
 
-    var outputFolder: URL {
-        didSet { defaults.set(outputFolder.path(percentEncoded: false), forKey: PreferenceKey.outputFolderPath) }
-    }
+    let outputFolder: URL
 
     var customDurationSeconds: Int {
         didSet {
@@ -48,14 +46,9 @@ final class ExportModel {
         self.session = session
         self.store = store
         self.defaults = defaults
-        let storedSettings = defaults.data(forKey: PreferenceKey.settings)
-            .flatMap { try? JSONDecoder().decode(ExportSettings.self, from: $0) }
+        let storedSettings = ExportPreferences.storedSettings(in: defaults)
         self.settings = storedSettings ?? ExportSettings()
-        self.outputFolder =
-            defaults.string(forKey: PreferenceKey.outputFolderPath).map {
-                URL(filePath: $0, directoryHint: .isDirectory)
-            }
-            ?? URL.moviesDirectory.appending(path: "DuoLapse Recordings", directoryHint: .isDirectory)
+        self.outputFolder = ExportPreferences.outputFolder(in: defaults)
         if case .seconds(let seconds)? = storedSettings?.duration {
             self.customDurationSeconds = seconds
         } else {
@@ -173,8 +166,11 @@ final class ExportModel {
     }
 
     private func persistSettings() {
-        guard let data = try? JSONEncoder().encode(settings) else { return }
-        defaults.set(data, forKey: PreferenceKey.settings)
+        var stored = settings
+        let current = ExportPreferences.settings(in: defaults)
+        stored.codec = current.codec
+        stored.filenameTemplate = current.filenameTemplate
+        ExportPreferences.save(stored, in: defaults)
     }
 }
 
@@ -204,9 +200,4 @@ enum ExportDurationOption: Hashable, CaseIterable {
         case .custom: .seconds(customSeconds)
         }
     }
-}
-
-private enum PreferenceKey {
-    static let settings = "export.settings"
-    static let outputFolderPath = "export.outputFolderPath"
 }

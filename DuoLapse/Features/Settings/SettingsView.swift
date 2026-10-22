@@ -15,6 +15,9 @@ struct SettingsView: View {
             Tab("Recording", systemImage: "record.circle") {
                 RecordingSettings()
             }
+            Tab("Export", systemImage: "square.and.arrow.up") {
+                ExportFileSettings()
+            }
             Tab("Shortcuts", systemImage: "keyboard") {
                 ShortcutSettings()
             }

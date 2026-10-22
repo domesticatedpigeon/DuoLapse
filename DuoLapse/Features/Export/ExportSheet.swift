@@ -1,11 +1,9 @@
 import AppKit
 import DuoLapseCore
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct ExportSheet: View {
     @State private var model: ExportModel
-    @State private var isChoosingFolder = false
     @Environment(\.dismiss) private var dismiss
 
     init(session: TimelapseSession, store: SessionStore) {
@@ -44,11 +42,6 @@ struct ExportSheet: View {
         .task {
             await model.prepare()
         }
-        .fileImporter(isPresented: $isChoosingFolder, allowedContentTypes: [.folder]) { result in
-            if case .success(let folder) = result {
-                model.outputFolder = folder
-            }
-        }
     }
 
     private static let verticalPreviewWidth: CGFloat = 260
@@ -57,7 +50,7 @@ struct ExportSheet: View {
         Form {
             ExportLengthSection(model: model)
             ExportLayoutSection(model: model)
-            ExportFileSection(model: model, isChoosingFolder: $isChoosingFolder)
+            ExportFileSection(model: model)
         }
         .formStyle(.grouped)
         .disabled(!isEditable)
@@ -228,29 +221,16 @@ private struct HorizontalLayoutControls: View {
 }
 
 private struct ExportFileSection: View {
-    @Bindable var model: ExportModel
-    @Binding var isChoosingFolder: Bool
+    let model: ExportModel
 
     var body: some View {
         Section("File") {
-            Picker("Format", selection: $model.settings.codec) {
-                Text("HEVC (smaller file)").tag(ExportCodec.hevc)
-                Text("H.264 (plays everywhere)").tag(ExportCodec.h264)
+            LabeledContent("Saves as", value: model.filenamePreview)
+            LabeledContent("In", value: model.outputFolder.lastPathComponent)
+            SettingsLink {
+                Text("Change File Settings…")
             }
-            LabeledContent("Save to") {
-                HStack {
-                    Text(model.outputFolder.lastPathComponent)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    Button("Choose…") { isChoosingFolder = true }
-                        .buttonStyle(.glass)
-                }
-            }
-            TextField("File name", text: $model.settings.filenameTemplate.pattern)
-            LabeledContent("Preview", value: model.filenamePreview)
-            Text("Use {YYYY}, {YY}, {MM}, {DD}, {hh}, {mm} and {ss} for the recording’s start date and time.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            .buttonStyle(.glass)
         }
     }
 }
