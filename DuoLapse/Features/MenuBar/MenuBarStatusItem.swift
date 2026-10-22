@@ -1,12 +1,16 @@
 import AppKit
 import DuoLapseCapture
+import DuoLapseCore
 import SwiftUI
 
 final class MenuBarStatusItem: NSObject, NSMenuDelegate {
+    private static let previewWidth: CGFloat = 300
+
     private let library: TimelapseLibrary
     private let navigation: AppNavigation
     private let updater: AppUpdater
     private var statusItem: NSStatusItem?
+    private var displays: [CapturableDisplay] = []
 
     init(library: TimelapseLibrary, navigation: AppNavigation, updater: AppUpdater) {
         self.library = library
@@ -17,6 +21,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
     func setVisible(_ isVisible: Bool) {
         if isVisible, statusItem == nil {
             statusItem = makeStatusItem()
+            refreshDisplays()
         } else if !isVisible, let statusItem {
             NSStatusBar.system.removeStatusItem(statusItem)
             self.statusItem = nil
@@ -27,6 +32,13 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         menu.removeAllItems()
         let library = library
         let navigation = navigation
+        refreshDisplays()
+
+        if let focused = library.activeRecorder ?? library.latestPausedRecorder {
+            menu.addItem(previewItem(for: focused))
+            addSourceSwitchers(for: focused, to: menu)
+            menu.addItem(.separator())
+        }
 
         if let active = library.activeRecorder {
             menu.addItem(informationItem("Recording \(active.session.title)"))
@@ -61,6 +73,75 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         }
         menu.addItem(.separator())
         menu.addItem(actionItem("Quit DuoLapse", keyEquivalent: "q") { NSApplication.shared.terminate(nil) })
+    }
+
+    private func previewItem(for recorder: TimelapseRecorder) -> NSMenuItem {
+        let preview = NSHostingView(
+            rootView: RecorderSourcesPreview(recorder: recorder, store: library.store, thumbnailSide: 600)
+                .frame(width: Self.previewWidth)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+        )
+        preview.frame = NSRect(origin: .zero, size: preview.fittingSize)
+        let item = NSMenuItem()
+        item.view = preview
+        return item
+    }
+
+    private func addSourceSwitchers(for recorder: TimelapseRecorder, to menu: NSMenu) {
+        let library = library
+        if let currentDisplayUUID = recorder.session.settings.displayUUID, !displays.isEmpty {
+            menu.addItem(
+                submenuItem(
+                    "Display",
+                    choices: displays.map { display in
+                        (
+                            display.name, display.uuid == currentDisplayUUID,
+                            {
+                                Task { try? await library.switchDisplay(of: recorder, to: display.uuid) }
+                            }
+                        )
+                    }
+                )
+            )
+        }
+        let cameras = CameraPermission.status == .granted ? CameraCatalog.availableCameras() : []
+        if let currentCameraID = recorder.session.settings.cameraID, !cameras.isEmpty {
+            menu.addItem(
+                submenuItem(
+                    "Camera",
+                    choices: cameras.map { camera in
+                        (
+                            camera.name, camera.uniqueID == currentCameraID,
+                            {
+                                Task { try? await library.switchCamera(of: recorder, to: camera.uniqueID) }
+                            }
+                        )
+                    }
+                )
+            )
+        }
+    }
+
+    private func submenuItem(_ title: String, choices: [(String, Bool, () -> Void)]) -> NSMenuItem {
+        let submenu = NSMenu(title: title)
+        for (choiceTitle, isCurrent, choose) in choices {
+            let item = actionItem(choiceTitle, perform: choose)
+            item.state = isCurrent ? .on : .off
+            submenu.addItem(item)
+        }
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.submenu = submenu
+        return item
+    }
+
+    private func refreshDisplays() {
+        guard ScreenCapturePermission.isGranted else { return }
+        Task {
+            if let displays = try? await DisplayCatalog.capturableDisplays() {
+                self.displays = displays
+            }
+        }
     }
 
     private func actionItem(_ title: String, keyEquivalent: String = "", perform: @escaping () -> Void) -> NSMenuItem {
