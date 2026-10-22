@@ -15,7 +15,7 @@ struct SettingsView: View {
                 Label(pane.title, systemImage: pane.symbolName)
                     .tag(pane)
             }
-            .navigationSplitViewColumnWidth(200)
+            .navigationSplitViewColumnWidth(220)
             .searchable(text: $searchText, placement: .sidebar)
             .toolbar(removing: .sidebarToggle)
         } detail: {
@@ -30,6 +30,7 @@ struct SettingsView: View {
             }
             .defaultScrollAnchor(.top)
             .scrollBounceBehavior(.basedOnSize)
+            .scrollEdgeEffectStyle(.soft, for: .top)
             .safeAreaBar(edge: .top, spacing: 0) {
                 Text((selection ?? .general).title)
                     .font(.title2.weight(.semibold))
@@ -42,7 +43,8 @@ struct SettingsView: View {
         .navigationTitle((selection ?? .general).title)
         .toolbar(removing: .title)
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .frame(minWidth: 680, idealWidth: 720, minHeight: 440, idealHeight: 500)
+        .toolbar(.hidden, for: .windowToolbar)
+        .frame(minWidth: 620, idealWidth: 640, minHeight: 440, idealHeight: 500)
     }
 
     private var matchingPanes: [SettingsPane] {
