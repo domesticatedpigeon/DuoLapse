@@ -55,6 +55,7 @@ struct ExportSheet: View {
             ExportFileSection(model: model)
         }
         .formStyle(.grouped)
+        .defaultScrollAnchor(.top)
         .disabled(!isEditable)
     }
 
