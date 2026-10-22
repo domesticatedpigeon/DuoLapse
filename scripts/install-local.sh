@@ -24,6 +24,14 @@ app=build/Build/Products/Release/DuoLapse.app
 scripts/sign-app.sh "$app" "$identity"
 
 osascript -e 'quit app "DuoLapse"' > /dev/null 2>&1 || true
+for _ in {1..100}; do
+  pgrep -x DuoLapse > /dev/null || break
+  sleep 0.1
+done
+if pgrep -x DuoLapse > /dev/null; then
+  echo "DuoLapse is still running. Quit it, then run this script again." >&2
+  exit 1
+fi
 rm -rf /Applications/DuoLapse.app
 ditto "$app" /Applications/DuoLapse.app
 open /Applications/DuoLapse.app
