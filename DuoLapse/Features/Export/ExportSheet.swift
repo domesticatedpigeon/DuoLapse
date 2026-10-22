@@ -12,42 +12,46 @@ struct ExportSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ExportHeader(title: model.session.title)
-            Divider()
-            if isVertical {
-                HStack(alignment: .top, spacing: 0) {
-                    ExportPreview(image: model.previewImage, maximumHeight: .infinity)
-                        .frame(width: Self.verticalPreviewWidth)
-                        .padding([.leading, .vertical], 20)
-                    settingsForm
-                }
-            } else {
-                settingsForm
-                    .safeAreaBar(edge: .top, spacing: 0) {
-                        ExportPreview(image: model.previewImage, maximumHeight: 240)
-                            .padding([.horizontal, .top], 20)
-                            .padding(.bottom, 8)
-                    }
-                    .scrollEdgeEffectStyle(.soft, for: .top)
+        content
+            .safeAreaBar(edge: .top, spacing: 0) {
+                ExportHeader(title: model.session.title)
             }
-
-            Divider()
-            ExportActionBar(model: model, close: close)
-                .padding()
-        }
-        .frame(
-            minWidth: isVertical ? 760 : 500,
-            idealWidth: isVertical ? 800 : 540,
-            minHeight: 760,
-            idealHeight: 860
-        )
-        .task {
-            await model.prepare()
-        }
+            .safeAreaBar(edge: .bottom, spacing: 0) {
+                ExportActionBar(model: model, close: close)
+                    .padding()
+            }
+            .scrollEdgeEffectStyle(.soft, for: .all)
+            .frame(
+                minWidth: isVertical ? 760 : 500,
+                idealWidth: isVertical ? 800 : 540,
+                minHeight: 760,
+                idealHeight: 860
+            )
+            .task {
+                await model.prepare()
+            }
     }
 
     private static let verticalPreviewWidth: CGFloat = 260
+
+    @ViewBuilder
+    private var content: some View {
+        if isVertical {
+            HStack(alignment: .top, spacing: 0) {
+                ExportPreview(image: model.previewImage, maximumHeight: .infinity)
+                    .frame(width: Self.verticalPreviewWidth)
+                    .padding([.leading, .vertical], 20)
+                settingsForm
+            }
+        } else {
+            settingsForm
+                .safeAreaBar(edge: .top, spacing: 0) {
+                    ExportPreview(image: model.previewImage, maximumHeight: 240)
+                        .padding([.horizontal, .top], 20)
+                        .padding(.bottom, 8)
+                }
+        }
+    }
 
     private var settingsForm: some View {
         Form {
