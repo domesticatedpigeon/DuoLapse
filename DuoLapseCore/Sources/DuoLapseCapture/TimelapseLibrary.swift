@@ -128,6 +128,10 @@ public final class TimelapseLibrary {
         try await recorder.stop()
     }
 
+    public func reopen(_ recorder: TimelapseRecorder) throws {
+        try recorder.reopen()
+    }
+
     public func moveToTrash(_ recorder: TimelapseRecorder) async throws {
         if recorder.isCapturing {
             try await recorder.pause()

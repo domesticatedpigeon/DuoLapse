@@ -27,4 +27,8 @@ struct TimelapseStateTests {
     @Test func onlyPausedStatesCanResume() {
         #expect(TimelapseState.allCases.filter(\.canResume) == [.paused, .idlePaused])
     }
+
+    @Test func onlyClosedTimelapsesCanReopen() {
+        #expect(TimelapseState.allCases.filter(\.canReopen) == [.finished])
+    }
 }

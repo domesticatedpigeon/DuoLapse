@@ -113,7 +113,10 @@ struct TimelapseDetailView: View {
                     .buttonStyle(.glassProminent)
                     .help("Resume recording")
                 case .finished:
-                    EmptyView()
+                    Button("Reopen", systemImage: "arrow.uturn.backward.circle") {
+                        perform { try library.reopen(recorder) }
+                    }
+                    .help("Reopen timelapse to keep recording")
                 }
             }
             .disabled(isChangingState)

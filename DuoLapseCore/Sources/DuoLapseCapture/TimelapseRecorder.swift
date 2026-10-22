@@ -83,6 +83,11 @@ public final class TimelapseRecorder {
         try updateState(.finished)
     }
 
+    public func reopen() throws {
+        guard session.state.canReopen else { return }
+        try updateState(.paused)
+    }
+
     private func captureFrames() async {
         let capturedAt = Date.now
         var errorDescriptions: [String] = []

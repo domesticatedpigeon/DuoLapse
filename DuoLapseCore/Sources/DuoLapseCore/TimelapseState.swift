@@ -11,4 +11,8 @@ public enum TimelapseState: String, Codable, Sendable, CaseIterable {
     public var canResume: Bool {
         self == .paused || self == .idlePaused
     }
+
+    public var canReopen: Bool {
+        self == .finished
+    }
 }
