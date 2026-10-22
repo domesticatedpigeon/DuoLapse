@@ -8,6 +8,8 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
     private let library: TimelapseLibrary
     private let navigation: AppNavigation
     private let updater: AppUpdater
+    private static let resumableItemLimit = 5
+
     private var statusItem: NSStatusItem?
     private var displays: [CapturableDisplay] = []
     private var previewRefreshTimer: Timer?
@@ -47,7 +49,9 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
             menu.addItem(informationItem("Recording \(active.session.title)"))
             menu.addItem(actionItem("Pause Recording") { Task { try? await library.pause(active) } })
             menu.addItem(actionItem("Close Timelapse") { Task { try? await library.stop(active) } })
-        } else if let paused = library.latestPausedRecorder {
+            menu.addItem(.separator())
+        }
+        for paused in library.recentlyPausedRecorders(limit: Self.resumableItemLimit) {
             menu.addItem(
                 actionItem("Resume \(paused.session.title)") { Task { try? await library.record(paused) } }
             )

@@ -50,7 +50,16 @@ public final class TimelapseLibrary {
     }
 
     public var latestPausedRecorder: TimelapseRecorder? {
-        openRecorders.first { $0.session.state == .paused || $0.session.state == .idlePaused }
+        recentlyPausedRecorders(limit: 1).first
+    }
+
+    public func recentlyPausedRecorders(limit: Int) -> [TimelapseRecorder] {
+        Array(
+            openRecorders
+                .filter { $0.session.state.canResume }
+                .sorted { $0.session.updatedAt > $1.session.updatedAt }
+                .prefix(limit)
+        )
     }
 
     public func dismissInterruptedRecording() {
