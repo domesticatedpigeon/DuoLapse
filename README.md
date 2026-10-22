@@ -1,22 +1,30 @@
 # DuoLapse
 
-Simple native macOS app for recording lightweight time-lapses of the chosen screen and webcam.
+A simple, native macOS app for recording lightweight time-lapses of your screen and webcam. It captures screenshots at a set interval and automatically stitches them together into a final video. Multiple open time-lapses are supported, with one active recording at a time.
 
 ## Features
-
+### Recording & Performance
+- **Lightweight:** Low memory and CPU footprint.
 - **Multi-source support:** Capture chosen screen with ScreenCaptureKit, and webcam with AVFoundation.
+- **Multi-session support:** Keep multiple timelapses open at once, allowing you to easily pause and resume sessions from the library. Note that only one timelapse can be recorded at a time.
 - **Custom capture rate:** Select the interval in seconds between screenshots.
 - **Smart pause:** Automatically stop and resume recording when no user input is detected for a minute.
 - **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
-- **Built-in exporter:** Stitch screenshots together into a final timelapse.
-- **Video export options:** Choose your preferred video frame rate or total duration.
 - **Crash recovery:** Automatically restore your recording session after a crash or power outage.
-- **Storage:** Choose where to save exported videos. The default folder is `Movies`.
+
+### Export & Output
+- **Built-in exporter:** Stitch screenshots together into a final `30 fps` timelapse.
+- **Video export options:** Choose your preferred video duration. Presets are `30 seconds`, `60 seconds`, `7 minutes`, `Full length`.
+- **Vertical video:** Choose to export videos in a vertical aspect ratio for mobile devices.
+- **Storage:** Choose where to save exported videos. The default folder is `~/Movies/DuoLapse Recordings`.
+- **Custom filename format:** Define how exported videos are named, with support for dynamic date and time variables. The default is `DuoLapse Recording YYYY-MM-DDThh:mm:ss`
+- **Timestamp export:** Include or hide timestamps in your final video.
+
+### Customization & Controls
 - **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
-- **Menu bar:** Show DuoLapse icon in the menu bar. Clicking on it reveals a Quick Access menu.
+- **Menu bar:** Show DuoLapse icon and timer in the menu bar. Clicking on it reveals a Quick Access menu.
 - **Run on startup:** Automatically start DuoLapse when you log in.
 - **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.
-- **Timestamp export:** Include or hide timestamps in your final video.
 
 ## How to Install
 
