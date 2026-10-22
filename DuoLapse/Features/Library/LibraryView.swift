@@ -47,10 +47,11 @@ struct LibraryView: View {
             detail
                 .navigationSplitViewColumnWidth(min: 420, ideal: 640)
                 .toolbar {
-                    ToolbarItem(placement: .navigation) {
-                        Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
-                            .help("New Timelapse")
-                            .disabled(navigation.selection == .newTimelapse)
+                    if navigation.selection != .newTimelapse {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
+                                .help("New Timelapse")
+                        }
                     }
                 }
         }
