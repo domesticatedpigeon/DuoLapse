@@ -15,6 +15,9 @@ packages:
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
     from: 2.0.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
 targets:
   DuoLapse:
     type: application
@@ -29,11 +32,14 @@ targets:
       - package: DuoLapseCore
         product: DuoLapseExport
       - package: KeyboardShortcuts
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domesticatedpigeon.DuoLapse
         PRODUCT_NAME: DuoLapse
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: DuoLapse/Info.plist
+        SPARKLE_PUBLIC_ED_KEY: ""
         INFOPLIST_KEY_CFBundleDisplayName: DuoLapse
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         INFOPLIST_KEY_NSCameraUsageDescription: DuoLapse uses your camera to capture webcam frames for your time-lapse.

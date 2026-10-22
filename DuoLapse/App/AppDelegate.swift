@@ -4,6 +4,7 @@ import DuoLapseCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let navigation = AppNavigation()
+    let updater = AppUpdater()
     let library: TimelapseLibrary? = {
         guard let store = try? SessionStore.inApplicationSupport() else { return nil }
         return TimelapseLibrary(store: store)

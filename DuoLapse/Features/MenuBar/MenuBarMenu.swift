@@ -5,6 +5,7 @@ import SwiftUI
 struct MenuBarMenu: View {
     let library: TimelapseLibrary
     let navigation: AppNavigation
+    let updater: AppUpdater
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
@@ -43,6 +44,7 @@ struct MenuBarMenu: View {
             Text("Settings…")
         }
         .keyboardShortcut(",")
+        CheckForUpdatesButton(updater: updater)
 
         Divider()
 

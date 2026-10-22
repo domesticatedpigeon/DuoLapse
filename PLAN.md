@@ -122,9 +122,9 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - Accessibility pass: VoiceOver labels, keyboard navigation, Reduce Motion.
 
 ### M7: Release
-- CI on tag: build, sign with the DuoLapse self-signed certificate (§7), zip, publish to GitHub Releases.
-- Sparkle appcast signed with an EdDSA key stored as a CI secret.
-- `Casks/duolapse.rb` in this repo, bumped by CI on each release.
+- CI on tag: build, sign with the DuoLapse self-signed certificate (§7), zip, publish to GitHub Releases. One-time setup and the release steps are in `RELEASING.md`.
+- Sparkle appcast signed with an EdDSA key stored as a CI secret, served from `releases/latest/download/appcast.xml`. Updates are turned off in builds without a public key.
+- `Casks/duolapse.rb` in this repo points at the latest release (`version :latest`, `auto_updates true`), so it never needs bumping; Sparkle handles updates. The cost is that `brew upgrade` doesn’t report new versions, which is acceptable because the app updates itself.
 - Test the README’s first-launch steps on a clean macOS 26 install.
 
 ## 4. Technical notes

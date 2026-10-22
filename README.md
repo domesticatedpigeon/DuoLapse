@@ -45,6 +45,8 @@ brew install --cask duolapse
 
 Update with `brew upgrade --cask duolapse`. On first launch, macOS blocks the app the same way as a manual download.
 
+DuoLapse checks for updates automatically. You can also choose **DuoLapse › Check for Updates…** or use the menu bar menu.
+
 ### Opening DuoLapse for the first time
 
 DuoLapse isn’t notarised by Apple, so macOS blocks it the first time you open it. You only need to do this once.

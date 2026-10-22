@@ -18,9 +18,15 @@ struct DuoLapseApp: App {
             }
         }
 
+        .commands {
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesButton(updater: appDelegate.updater)
+            }
+        }
+
         MenuBarExtra(isInserted: $showsMenuBarItem) {
             if let library = appDelegate.library {
-                MenuBarMenu(library: library, navigation: appDelegate.navigation)
+                MenuBarMenu(library: library, navigation: appDelegate.navigation, updater: appDelegate.updater)
             }
         } label: {
             if let library = appDelegate.library {
