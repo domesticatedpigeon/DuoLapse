@@ -84,7 +84,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         Task { await StoredThumbnails.shared.load(for: recorder.session, store: store) }
         let preview = NSHostingView(rootView: MenuSourcesPreview(images: Self.previewImages(of: recorder)))
         preview.frame = NSRect(origin: .zero, size: preview.fittingSize)
-        refreshLiveScreen(of: recorder)
+        showLivePreviews(of: recorder)
         startRefreshing(preview, from: recorder)
         let item = NSMenuItem()
         item.view = preview
@@ -113,14 +113,18 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         preview.rootView = MenuSourcesPreview(images: images)
     }
 
-    private func refreshLiveScreen(of recorder: TimelapseRecorder) {
+    private func showLivePreviews(of recorder: TimelapseRecorder) {
         liveScreenTask?.cancel()
-        guard !recorder.isCapturing, let displayUUID = recorder.session.settings.displayUUID else { return }
+        let settings = recorder.session.settings
         liveScreenTask = Task {
-            while !Task.isCancelled {
-                await SourcePreviewer.shared.refreshScreenImage(displayUUID: displayUUID)
-                try? await Task.sleep(for: .seconds(1))
+            guard !recorder.isCapturing else {
+                while !Task.isCancelled {
+                    await recorder.refreshLivePreviews()
+                    try? await Task.sleep(for: .seconds(1))
+                }
+                return
             }
+            await SourcePreviewer.shared.showPreviews(displayUUID: settings.displayUUID, cameraID: settings.cameraID)
         }
     }
 

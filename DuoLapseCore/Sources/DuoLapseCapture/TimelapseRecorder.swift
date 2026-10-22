@@ -98,6 +98,18 @@ public final class TimelapseRecorder {
         }
     }
 
+    public func refreshLivePreviews() async {
+        guard isCapturing else { return }
+        if let displayUUID = session.settings.displayUUID,
+            let image = try? await ScreenFrameSource.capturePreviewImage(displayUUID: displayUUID)
+        {
+            latestPreviews[.screen] = image
+        }
+        if let cameraSource, let pixelBuffer = try? cameraSource.currentFrame() {
+            latestPreviews[.camera] = await previewRenderer.image(from: PreviewFrame(pixelBuffer: pixelBuffer))
+        }
+    }
+
     public func rename(to name: String) throws {
         session.rename(to: name)
         session.updatedAt = .now
