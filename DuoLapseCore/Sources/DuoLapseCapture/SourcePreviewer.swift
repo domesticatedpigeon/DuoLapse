@@ -45,7 +45,7 @@ public final class SourcePreviewer {
         await previewCamera?.stop()
     }
 
-    private func refreshScreenImage(displayUUID: String) async {
+    public func refreshScreenImage(displayUUID: String) async {
         if let image = try? await ScreenFrameSource.capturePreviewImage(displayUUID: displayUUID) {
             screenImages[displayUUID] = image
         }

@@ -11,6 +11,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var displays: [CapturableDisplay] = []
     private var previewRefreshTimer: Timer?
+    private var liveScreenTask: Task<Void, Never>?
     private weak var refreshingPreview: NSHostingView<MenuSourcesPreview>?
     private weak var refreshingRecorder: TimelapseRecorder?
 
@@ -70,6 +71,8 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
     }
 
     func menuDidClose(_ menu: NSMenu) {
+        liveScreenTask?.cancel()
+        liveScreenTask = nil
         previewRefreshTimer?.invalidate()
         previewRefreshTimer = nil
         refreshingPreview = nil
@@ -81,6 +84,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         Task { await StoredThumbnails.shared.load(for: recorder.session, store: store) }
         let preview = NSHostingView(rootView: MenuSourcesPreview(images: Self.previewImages(of: recorder)))
         preview.frame = NSRect(origin: .zero, size: preview.fittingSize)
+        refreshLiveScreen(of: recorder)
         startRefreshing(preview, from: recorder)
         let item = NSMenuItem()
         item.view = preview
@@ -109,12 +113,27 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         preview.rootView = MenuSourcesPreview(images: images)
     }
 
+    private func refreshLiveScreen(of recorder: TimelapseRecorder) {
+        liveScreenTask?.cancel()
+        guard !recorder.isCapturing, let displayUUID = recorder.session.settings.displayUUID else { return }
+        liveScreenTask = Task {
+            while !Task.isCancelled {
+                await SourcePreviewer.shared.refreshScreenImage(displayUUID: displayUUID)
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
+    }
+
     private static func previewImages(of recorder: TimelapseRecorder) -> MenuPreviewImages {
         let thumbnails = StoredThumbnails.shared
+        let previewer = SourcePreviewer.shared
+        let settings = recorder.session.settings
         return MenuPreviewImages(
             screen: recorder.latestPreviews[.screen]
+                ?? settings.displayUUID.flatMap(previewer.screenImage(forDisplay:))
                 ?? thumbnails.image(for: recorder.session.id, source: .screen),
             camera: recorder.latestPreviews[.camera]
+                ?? settings.cameraID.flatMap(previewer.cameraImage(forCamera:))
                 ?? thumbnails.image(for: recorder.session.id, source: .camera)
         )
     }
