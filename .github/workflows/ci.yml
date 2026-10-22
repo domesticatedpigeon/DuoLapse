@@ -56,6 +56,7 @@ jobs:
           echo "--- Main thread 10 s after launch ---"
           awk '/Call graph:/{found=1} found' "$RUNNER_TEMP/launch-sample.txt" | head -n 120
           kill "$pid"
+          python3 scripts/check-main-thread-idle.py "$RUNNER_TEMP/launch-sample.txt"
 
       - name: Check app icon
         run: |
