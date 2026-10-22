@@ -75,6 +75,8 @@ final class SegmentWriter {
         }
     }
 
+    static let storageQuality = 0.8
+
     private static func outputSettings(
         size: PixelSize,
         captureIntervalSeconds: Int,
@@ -90,12 +92,12 @@ final class SegmentWriter {
             AVVideoAllowFrameReorderingKey: false,
         ]
         let constantQuality = dimensions.merging([
-            AVVideoCompressionPropertiesKey: sharedCompression.merging([AVVideoQualityKey: 0.5]) { $1 }
+            AVVideoCompressionPropertiesKey: sharedCompression.merging([AVVideoQualityKey: storageQuality]) { $1 }
         ]) { $1 }
         if writer.canApply(outputSettings: constantQuality, forMediaType: .video) {
             return constantQuality
         }
-        let targetBitsPerFrame = 40_000 * 8
+        let targetBitsPerFrame = 120_000 * 8
         return dimensions.merging([
             AVVideoCompressionPropertiesKey: sharedCompression.merging([
                 AVVideoAverageBitRateKey: targetBitsPerFrame / max(1, captureIntervalSeconds)
