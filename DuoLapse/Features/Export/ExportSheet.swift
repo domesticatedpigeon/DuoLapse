@@ -107,12 +107,15 @@ private struct ExportLayoutSection: View {
 
     var body: some View {
         Section("Layout") {
-            Picker("Orientation", selection: $model.settings.layout.orientation) {
-                Text("Horizontal").tag(ExportOrientation.horizontal)
-                Text("Vertical").tag(ExportOrientation.vertical)
+            LabeledContent("Orientation") {
+                Picker("Orientation", selection: $model.settings.layout.orientation) {
+                    Text("Horizontal").tag(ExportOrientation.horizontal)
+                    Text("Vertical").tag(ExportOrientation.vertical)
+                }
+                .pickerStyle(.radioGroup)
+                .horizontalRadioGroupLayout()
+                .labelsHidden()
             }
-            .pickerStyle(.radioGroup)
-            .horizontalRadioGroupLayout()
 
             if model.hasScreenAndCamera {
                 switch model.settings.layout.orientation {
