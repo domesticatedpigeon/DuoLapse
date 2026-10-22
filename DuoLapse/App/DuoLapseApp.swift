@@ -3,7 +3,6 @@ import SwiftUI
 @main
 struct DuoLapseApp: App {
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
-    @AppStorage(AppPreferences.showsMenuBarItemKey) private var showsMenuBarItem = true
 
     var body: some Scene {
         Window("DuoLapse", id: WindowID.library) {
@@ -24,7 +23,7 @@ struct DuoLapseApp: App {
             }
         }
 
-        MenuBarExtra(isInserted: $showsMenuBarItem) {
+        MenuBarExtra(isInserted: appDelegate.preferences.menuBarItemInsertion) {
             if let library = appDelegate.library {
                 MenuBarMenu(library: library, navigation: appDelegate.navigation, updater: appDelegate.updater)
             }
@@ -37,7 +36,7 @@ struct DuoLapseApp: App {
         }
 
         Settings {
-            SettingsView()
+            SettingsView(preferences: appDelegate.preferences)
         }
     }
 }

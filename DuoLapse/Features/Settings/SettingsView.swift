@@ -4,10 +4,12 @@ import ServiceManagement
 import SwiftUI
 
 struct SettingsView: View {
+    let preferences: AppPreferences
+
     var body: some View {
         TabView {
             Tab("General", systemImage: "gearshape") {
-                GeneralSettings()
+                GeneralSettings(preferences: preferences)
             }
             Tab("Recording", systemImage: "record.circle") {
                 RecordingSettings()
@@ -22,8 +24,7 @@ struct SettingsView: View {
 }
 
 private struct GeneralSettings: View {
-    @AppStorage(AppPreferences.showsMenuBarItemKey) private var showsMenuBarItem = true
-    @AppStorage(AppPreferences.showsDockIconKey) private var showsDockIcon = true
+    @Bindable var preferences: AppPreferences
     @State private var opensAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginItemError: String?
 
@@ -42,19 +43,16 @@ private struct GeneralSettings: View {
             }
 
             Section {
-                Toggle(isOn: $showsMenuBarItem) {
+                Toggle(isOn: $preferences.showsMenuBarItem) {
                     Text("Show in menu bar")
                     Text("Shows the recording timer and a quick access menu.")
                 }
-                .disabled(!showsDockIcon)
-                Toggle(isOn: $showsDockIcon) {
+                .disabled(!preferences.showsDockIcon)
+                Toggle(isOn: $preferences.showsDockIcon) {
                     Text("Show in Dock")
                     Text("When hidden, open DuoLapse from the menu bar.")
                 }
-                .disabled(!showsMenuBarItem)
-                .onChange(of: showsDockIcon) { _, isShown in
-                    AppPreferences.applyDockIconVisibility(isShown)
-                }
+                .disabled(!preferences.showsMenuBarItem)
             } footer: {
                 Text("DuoLapse needs to appear in the menu bar or the Dock, so one of these stays on.")
                     .font(.footnote)
@@ -130,5 +128,5 @@ extension Bundle {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(preferences: AppPreferences())
 }

@@ -5,6 +5,7 @@ import DuoLapseCore
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let navigation = AppNavigation()
     let updater = AppUpdater()
+    let preferences = AppPreferences()
     let library: TimelapseLibrary? = {
         guard let store = try? SessionStore.inApplicationSupport() else { return nil }
         return TimelapseLibrary(store: store)
@@ -13,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var supervisionTask: Task<Void, Never>?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        AppPreferences.applyDockIconVisibility(AppPreferences.showsDockIcon)
+        preferences.applyDockIconVisibility()
         guard let library else { return }
         library.reload()
         if let interrupted = library.interruptedRecorder {

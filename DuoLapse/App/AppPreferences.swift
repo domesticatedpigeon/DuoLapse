@@ -1,14 +1,43 @@
 import AppKit
+import Observation
+import SwiftUI
 
-enum AppPreferences {
-    static let showsMenuBarItemKey = "appearance.showsMenuBarItem"
-    static let showsDockIconKey = "appearance.showsDockIcon"
+@Observable
+final class AppPreferences {
+    private static let showsMenuBarItemKey = "appearance.showsMenuBarItem"
+    private static let showsDockIconKey = "appearance.showsDockIcon"
 
-    static var showsDockIcon: Bool {
-        UserDefaults.standard.object(forKey: showsDockIconKey) as? Bool ?? true
+    var showsMenuBarItem: Bool {
+        didSet { defaults.set(showsMenuBarItem, forKey: Self.showsMenuBarItemKey) }
     }
 
-    static func applyDockIconVisibility(_ showsDockIcon: Bool) {
+    var showsDockIcon: Bool {
+        didSet {
+            defaults.set(showsDockIcon, forKey: Self.showsDockIconKey)
+            applyDockIconVisibility()
+        }
+    }
+
+    @ObservationIgnored private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        showsMenuBarItem = defaults.object(forKey: Self.showsMenuBarItemKey) as? Bool ?? true
+        showsDockIcon = defaults.object(forKey: Self.showsDockIconKey) as? Bool ?? true
+    }
+
+    var menuBarItemInsertion: Binding<Bool> {
+        Binding(
+            get: { self.showsMenuBarItem },
+            set: { isInserted in
+                if isInserted != self.showsMenuBarItem {
+                    self.showsMenuBarItem = isInserted
+                }
+            }
+        )
+    }
+
+    func applyDockIconVisibility() {
         NSApplication.shared.setActivationPolicy(showsDockIcon ? .regular : .accessory)
     }
 }
