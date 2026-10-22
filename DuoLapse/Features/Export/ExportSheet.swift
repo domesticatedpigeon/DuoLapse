@@ -197,7 +197,10 @@ private struct ExportLayoutSection: View {
             if model.hasScreenAndCamera {
                 switch model.settings.layout.orientation {
                 case .horizontal:
-                    HorizontalLayoutControls(layout: $model.settings.layout)
+                    Picker("Arrangement", selection: $model.settings.layout.horizontalArrangement) {
+                        Text("Picture in picture").tag(HorizontalArrangement.pictureInPicture)
+                        Text("Side by side").tag(HorizontalArrangement.sideBySide)
+                    }
                 case .vertical:
                     Picker("On top", selection: $model.settings.layout.verticalOrder) {
                         Text("Screen").tag(VerticalOrder.screenOnTop)
@@ -223,6 +226,12 @@ private struct ExportLayoutSection: View {
 
         }
 
+        if showsCameraOverlay {
+            Section("Camera overlay") {
+                CameraOverlayControls(overlay: $model.settings.layout.cameraOverlay)
+            }
+        }
+
         if model.framingMatters(for: .screen) || model.framingMatters(for: .camera) {
             Section("Framing") {
                 if model.framingMatters(for: .screen) {
@@ -245,6 +254,12 @@ private struct ExportLayoutSection: View {
                 }
             }
         }
+    }
+
+    private var showsCameraOverlay: Bool {
+        let layout = model.settings.layout
+        return model.hasScreenAndCamera && layout.orientation == .horizontal
+            && layout.horizontalArrangement == .pictureInPicture
     }
 
     private var screenSharePercent: Int {
@@ -272,49 +287,42 @@ private struct FramingPicker: View {
     }
 }
 
-private struct HorizontalLayoutControls: View {
-    @Binding var layout: ExportLayout
+private struct CameraOverlayControls: View {
+    @Binding var overlay: CameraOverlay
 
     var body: some View {
-        Picker("Arrangement", selection: $layout.horizontalArrangement) {
-            Text("Picture in picture").tag(HorizontalArrangement.pictureInPicture)
-            Text("Side by side").tag(HorizontalArrangement.sideBySide)
+        Picker("Position", selection: $overlay.corner) {
+            Text("Top left").tag(OverlayCorner.topLeading)
+            Text("Top right").tag(OverlayCorner.topTrailing)
+            Text("Bottom left").tag(OverlayCorner.bottomLeading)
+            Text("Bottom right").tag(OverlayCorner.bottomTrailing)
         }
-
-        if layout.horizontalArrangement == .pictureInPicture {
-            Picker("Camera position", selection: $layout.cameraOverlay.corner) {
-                Text("Top left").tag(OverlayCorner.topLeading)
-                Text("Top right").tag(OverlayCorner.topTrailing)
-                Text("Bottom left").tag(OverlayCorner.bottomLeading)
-                Text("Bottom right").tag(OverlayCorner.bottomTrailing)
-            }
-            Picker("Camera size", selection: $layout.cameraOverlay.size) {
-                Text("Small").tag(OverlaySize.small)
-                Text("Medium").tag(OverlaySize.medium)
-                Text("Large").tag(OverlaySize.large)
-            }
-            Toggle("Circle", isOn: $layout.cameraOverlay.isCircular)
-            LabeledContent("Corner radius") {
-                HStack {
-                    Slider(
-                        value: $layout.cameraOverlay.cornerRadiusFraction,
-                        in: 0...CameraOverlay.maximumCornerRadiusFraction,
-                        step: CameraOverlay.maximumCornerRadiusFraction / 10
-                    )
-                    .accessibilityValue(Text(cornerRadiusPercentage))
-                    Text(cornerRadiusPercentage)
-                        .monospacedDigit()
-                        .foregroundStyle(.secondary)
-                        .frame(minWidth: 40, alignment: .trailing)
-                        .accessibilityHidden(true)
-                }
-            }
-            .disabled(layout.cameraOverlay.isCircular)
+        Picker("Size", selection: $overlay.size) {
+            Text("Small").tag(OverlaySize.small)
+            Text("Medium").tag(OverlaySize.medium)
+            Text("Large").tag(OverlaySize.large)
         }
+        Toggle("Circle", isOn: $overlay.isCircular)
+        LabeledContent("Corner radius") {
+            HStack {
+                Slider(
+                    value: $overlay.cornerRadiusFraction,
+                    in: 0...CameraOverlay.maximumCornerRadiusFraction,
+                    step: CameraOverlay.maximumCornerRadiusFraction / 10
+                )
+                .accessibilityValue(Text(cornerRadiusPercentage))
+                Text(cornerRadiusPercentage)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 40, alignment: .trailing)
+                    .accessibilityHidden(true)
+            }
+        }
+        .disabled(overlay.isCircular)
     }
 
     private var cornerRadiusPercentage: String {
-        (layout.cameraOverlay.cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction)
+        (overlay.cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction)
             .formatted(.percent.precision(.fractionLength(0)))
     }
 }
