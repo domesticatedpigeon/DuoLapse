@@ -7,14 +7,13 @@ struct LibraryView: View {
     @Bindable var navigation: AppNavigation
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
-    @State private var columnVisibility = NavigationSplitViewVisibility.automatic
     @State private var renamingRecorder: TimelapseRecorder?
     @State private var proposedName = ""
     @State private var trashCandidate: TimelapseRecorder?
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
+        NavigationSplitView {
             List(selection: $navigation.selection) {
                 Label("New Timelapse", systemImage: "plus.circle")
                     .tag(LibrarySelection.newTimelapse)
@@ -35,7 +34,7 @@ struct LibraryView: View {
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
+            .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 320)
             .toolbar {
                 ToolbarItem {
                     SettingsLink {
@@ -46,17 +45,16 @@ struct LibraryView: View {
             }
         } detail: {
             detail
-                .navigationSplitViewColumnWidth(min: 480, ideal: 640)
+                .navigationSplitViewColumnWidth(min: 420, ideal: 640)
                 .toolbar {
-                    if columnVisibility == .detailOnly, navigation.selection != .newTimelapse {
-                        ToolbarItem(placement: .navigation) {
-                            Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
-                                .help("New Timelapse")
-                        }
+                    ToolbarItem(placement: .navigation) {
+                        Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
+                            .help("New Timelapse")
+                            .disabled(navigation.selection == .newTimelapse)
                     }
                 }
         }
-        .frame(minWidth: 720, minHeight: 520)
+        .frame(minWidth: 760, minHeight: 520)
         .task {
             library.reload()
         }
