@@ -16,3 +16,7 @@ Icon Composer adds the Liquid Glass material, lighting and shadows, so the SVGs 
 ## Updating the icon
 
 Open `DuoLapse/Resources/AppIcon.icon` in Icon Composer, edit, and save it in place. Keep the name `AppIcon.icon`: it must match the build setting `ASSETCATALOG_COMPILER_APPICON_NAME`. CI checks that the built app contains the compiled icon.
+
+## Menu bar icon
+
+`DuoLapse/Resources/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg` brings the earlier icons together at 18 × 18 points: the rounded screen of the first icon, the smiling face of the current one, and the recording dot on the screen's corner, with the outline stopping short of the dot so it reads as a separate shape. It's a template image, so macOS tints it to match the menu bar.

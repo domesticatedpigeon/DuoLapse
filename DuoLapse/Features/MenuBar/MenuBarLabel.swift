@@ -17,9 +17,11 @@ struct MenuBarLabel: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            Image(systemName: symbolName)
-                .font(.system(size: NSFont.systemFontSize))
-                .frame(width: Self.symbolWidth, height: Self.contentHeight)
+            Image(.menuBarIcon)
+                .renderingMode(.template)
+                .resizable()
+                .frame(width: Self.symbolWidth, height: Self.symbolWidth)
+                .frame(height: Self.contentHeight)
             if let timerStartDate {
                 TimelineView(.periodic(from: timerStartDate, by: 1)) { context in
                     let elapsed = Duration.seconds(Int(context.date.timeIntervalSince(timerStartDate)))
@@ -54,15 +56,5 @@ struct MenuBarLabel: View {
 
     private var timerStartDate: Date? {
         library.activeRecorder?.timerStartDate
-    }
-
-    private var symbolName: String {
-        if library.activeRecorder != nil {
-            "record.circle.fill"
-        } else if library.hasRecordingInProgress {
-            "pause.circle"
-        } else {
-            "record.circle"
-        }
     }
 }
