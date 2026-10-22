@@ -14,22 +14,30 @@ struct ExportSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ExportPreview(image: model.previewImage)
-                .padding([.horizontal, .top], 20)
-                .padding(.bottom, 8)
-            Form {
-                ExportLengthSection(model: model)
-                ExportLayoutSection(model: model)
-                ExportFileSection(model: model, isChoosingFolder: $isChoosingFolder)
+            if isVertical {
+                HStack(alignment: .top, spacing: 0) {
+                    ExportPreview(image: model.previewImage, maximumHeight: .infinity)
+                        .frame(width: Self.verticalPreviewWidth)
+                        .padding([.leading, .vertical], 20)
+                    settingsForm
+                }
+            } else {
+                ExportPreview(image: model.previewImage, maximumHeight: 240)
+                    .padding([.horizontal, .top], 20)
+                    .padding(.bottom, 8)
+                settingsForm
             }
-            .formStyle(.grouped)
-            .disabled(!isEditable)
 
             Divider()
             ExportActionBar(model: model, close: close)
                 .padding()
         }
-        .frame(minWidth: 500, idealWidth: 540, minHeight: 600, idealHeight: 720)
+        .frame(
+            minWidth: isVertical ? 760 : 500,
+            idealWidth: isVertical ? 800 : 540,
+            minHeight: 600,
+            idealHeight: 720
+        )
         .task {
             await model.prepare()
         }
@@ -38,6 +46,22 @@ struct ExportSheet: View {
                 model.outputFolder = folder
             }
         }
+    }
+
+    private static let verticalPreviewWidth: CGFloat = 260
+
+    private var settingsForm: some View {
+        Form {
+            ExportLengthSection(model: model)
+            ExportLayoutSection(model: model)
+            ExportFileSection(model: model, isChoosingFolder: $isChoosingFolder)
+        }
+        .formStyle(.grouped)
+        .disabled(!isEditable)
+    }
+
+    private var isVertical: Bool {
+        model.settings.layout.orientation == .vertical
     }
 
     private var isEditable: Bool {
@@ -52,6 +76,7 @@ struct ExportSheet: View {
 
 private struct ExportPreview: View {
     let image: CGImage?
+    let maximumHeight: CGFloat
 
     var body: some View {
         Group {
@@ -65,7 +90,7 @@ private struct ExportPreview: View {
                 ProgressView()
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 160, maxHeight: 240)
+        .frame(maxWidth: .infinity, minHeight: 160, maxHeight: maximumHeight)
     }
 }
 
