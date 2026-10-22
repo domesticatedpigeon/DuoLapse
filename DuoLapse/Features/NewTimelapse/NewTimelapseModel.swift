@@ -5,7 +5,7 @@ import Observation
 
 @Observable
 final class NewTimelapseModel {
-    static let defaultCaptureIntervalSeconds = 5
+    static let defaultCaptureIntervalSeconds = 2
 
     private(set) var isScreenCaptureAllowed = ScreenCapturePermission.isGranted
     private(set) var cameraPermission = CameraPermission.status
