@@ -221,15 +221,23 @@ private struct ExportLayoutSection: View {
                 }
             }
 
-            if model.framingMatters(for: .screen) {
-                FramingPicker(title: "Screen", framing: $model.settings.layout.screenFraming)
+        }
+
+        if model.framingMatters(for: .screen) || model.framingMatters(for: .camera) {
+            Section("Framing") {
+                if model.framingMatters(for: .screen) {
+                    FramingPicker(title: "Screen", framing: $model.settings.layout.screenFraming)
+                }
+                if model.framingMatters(for: .camera) {
+                    FramingPicker(title: "Camera", framing: $model.settings.layout.cameraFraming)
+                }
             }
-            if model.framingMatters(for: .camera) {
-                FramingPicker(title: "Camera", framing: $model.settings.layout.cameraFraming)
-            }
+        }
+
+        Section("Timestamp") {
             Toggle("Show timestamp", isOn: $model.settings.includesTimestamp)
             if model.settings.includesTimestamp, model.settings.layout.orientation == .vertical {
-                Picker("Timestamp position", selection: $model.settings.layout.verticalTimestampCorner) {
+                Picker("Position", selection: $model.settings.layout.verticalTimestampCorner) {
                     Text("Top left").tag(OverlayCorner.topLeading)
                     Text("Top right").tag(OverlayCorner.topTrailing)
                     Text("Bottom left").tag(OverlayCorner.bottomLeading)
