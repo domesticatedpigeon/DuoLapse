@@ -13,9 +13,6 @@ struct ExportSheet: View {
 
     var body: some View {
         content
-            .safeAreaBar(edge: .top, spacing: 0) {
-                ExportHeader(title: model.session.title)
-            }
             .safeAreaBar(edge: .bottom, spacing: 0) {
                 ExportActionBar(model: model, close: close)
                     .padding()
@@ -38,17 +35,23 @@ struct ExportSheet: View {
     private var content: some View {
         if isVertical {
             HStack(alignment: .top, spacing: 0) {
-                ExportPreview(image: model.previewImage, maximumHeight: .infinity)
-                    .frame(width: Self.verticalPreviewWidth)
-                    .padding([.leading, .vertical], 20)
+                VStack(alignment: .leading, spacing: 16) {
+                    ExportHeader(title: model.session.title)
+                    ExportPreview(image: model.previewImage, maximumHeight: .infinity)
+                }
+                .frame(width: Self.verticalPreviewWidth, alignment: .top)
+                .padding([.leading, .top], 20)
                 settingsForm
             }
         } else {
             settingsForm
                 .safeAreaBar(edge: .top, spacing: 0) {
-                    ExportPreview(image: model.previewImage, maximumHeight: 240)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ExportHeader(title: model.session.title)
+                        ExportPreview(image: model.previewImage, maximumHeight: 240)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
                 }
         }
     }
@@ -60,6 +63,7 @@ struct ExportSheet: View {
             ExportFileSection(model: model)
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .defaultScrollAnchor(.top)
         .scrollPosition($settingsScrollPosition)
         .onChange(of: isEditable) { _, isReady in
@@ -99,8 +103,6 @@ private struct ExportHeader: View {
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
