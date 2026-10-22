@@ -44,13 +44,14 @@ struct LibraryView: View {
                     trashCandidate = library.recorder(for: id)
                 }
             }
-            .toolbar {
-                ToolbarItem {
-                    SettingsLink {
-                        Label("Settings", systemImage: "gearshape")
-                    }
-                    .help("Settings")
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                SettingsLink {
+                    Label("Settings", systemImage: "gearshape")
                 }
+                .buttonStyle(.glass)
+                .help("Settings")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
             }
         } detail: {
             detail
