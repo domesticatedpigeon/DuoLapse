@@ -15,7 +15,7 @@ struct SettingsView: View {
                 Label(pane.title, systemImage: pane.symbolName)
                     .tag(pane)
             }
-            .navigationSplitViewColumnWidth(220)
+            .navigationSplitViewColumnWidth(min: 220, ideal: 220, max: 220)
             .searchable(text: $searchText, placement: .sidebar)
             .toolbar(removing: .sidebarToggle)
         } detail: {

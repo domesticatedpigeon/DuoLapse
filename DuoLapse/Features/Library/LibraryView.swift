@@ -49,7 +49,7 @@ struct LibraryView: View {
                     beginRenaming(recorder)
                 }
             }
-            .navigationSplitViewColumnWidth(280)
+            .navigationSplitViewColumnWidth(min: 280, ideal: 280, max: 280)
             .onDeleteCommand {
                 switch navigation.selection {
                 case .timelapse(let id):
