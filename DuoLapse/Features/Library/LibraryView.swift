@@ -14,10 +14,6 @@ struct LibraryView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $navigation.selection) {
-                Button("New Timelapse", systemImage: "plus.circle", action: navigation.showNewTimelapse)
-                    .buttonStyle(.borderless)
-                    .selectionDisabled()
-
                 if isDrafting || !library.openRecorders.isEmpty {
                     Section("Open") {
                         if isDrafting {
