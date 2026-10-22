@@ -16,7 +16,7 @@ Simple native macOS app for recording lightweight time-lapses of the chosen scre
 - **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
 - **Menu bar:** Show DuoLapse icon in the menu bar. Clicking on it reveals a Quick Access menu.
 - **Run on startup:** Automatically start DuoLapse when you log in.
-- **Keep computer and devices awake:** Your Mac and connected devices won't go to sleep during recording.
+- **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
 
 ## How to Install
 
