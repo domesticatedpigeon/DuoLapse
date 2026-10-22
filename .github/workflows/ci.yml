@@ -41,6 +41,19 @@ jobs:
             -destination 'platform=macOS' \
             -derivedDataPath build/DerivedData
 
+      - name: Launch app
+        run: |
+          app=build/DerivedData/Build/Products/Debug/DuoLapse.app
+          "$app/Contents/MacOS/DuoLapse" > "$RUNNER_TEMP/launch.log" 2>&1 &
+          pid=$!
+          sleep 10
+          if ! kill -0 "$pid" 2>/dev/null; then
+            cat "$RUNNER_TEMP/launch.log"
+            echo "::error::DuoLapse exited within 10 seconds of launch"
+            exit 1
+          fi
+          kill "$pid"
+
       - name: Check app icon
         run: |
           app=build/DerivedData/Build/Products/Debug/DuoLapse.app
