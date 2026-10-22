@@ -8,7 +8,6 @@ struct RecorderPreview: View {
     let recorder: TimelapseRecorder
     let store: SessionStore
     var contentMode: SwiftUI.ContentMode = .fill
-    var showsCameraInset = false
 
     var body: some View {
         if contentMode == .fit {
@@ -35,11 +34,6 @@ struct RecorderPreview: View {
         guard let primaryImage = recorder.latestPreviews[.screen] ?? recorder.latestPreviews[.camera] else {
             return nil
         }
-        return CapturePreview(primaryImage: primaryImage, cameraInset: cameraInset, contentMode: contentMode)
-    }
-
-    private var cameraInset: CGImage? {
-        guard showsCameraInset, recorder.latestPreviews[.screen] != nil else { return nil }
-        return recorder.latestPreviews[.camera]
+        return CapturePreview(primaryImage: primaryImage, contentMode: contentMode)
     }
 }

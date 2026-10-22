@@ -13,8 +13,15 @@ struct TimelapseDetailView: View {
     var body: some View {
         Form {
             Section {
-                RecorderPreview(recorder: recorder, store: library.store, contentMode: .fit, showsCameraInset: true)
-                    .clipShape(.rect(cornerRadius: 8))
+                if recorder.latestPreviews.isEmpty {
+                    RecorderPreview(recorder: recorder, store: library.store, contentMode: .fit)
+                        .clipShape(.rect(cornerRadius: SourcesPreview.cornerRadius))
+                } else {
+                    SourcesPreview(
+                        screenImage: recorder.latestPreviews[.screen],
+                        cameraImage: recorder.latestPreviews[.camera]
+                    )
+                }
             }
 
             Section("Status") {

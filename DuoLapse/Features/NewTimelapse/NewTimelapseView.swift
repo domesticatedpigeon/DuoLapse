@@ -126,16 +126,9 @@ private struct SourcePreviewSection: View {
     let cameraImage: CGImage?
 
     var body: some View {
-        if let primaryImage = screenImage ?? cameraImage {
-            let preview = CapturePreview(
-                primaryImage: primaryImage,
-                cameraInset: screenImage == nil ? nil : cameraImage
-            )
+        if screenImage != nil || cameraImage != nil {
             Section {
-                preview
-                    .aspectRatio(preview.aspectRatio, contentMode: .fit)
-                    .clipShape(.rect(cornerRadius: 8))
-                    .accessibilityLabel("Preview of the selected sources")
+                SourcesPreview(screenImage: screenImage, cameraImage: cameraImage)
             }
         }
     }
