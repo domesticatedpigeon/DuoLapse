@@ -4,6 +4,8 @@ import DuoLapseCore
 import SwiftUI
 
 struct MenuBarLabel: View {
+    static let contentHeight: CGFloat = 16
+
     let library: TimelapseLibrary
     let onWidthChange: (CGFloat) -> Void
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
@@ -24,9 +26,11 @@ struct MenuBarLabel: View {
                 }
             }
         }
+        .frame(height: Self.contentHeight)
         .padding(.horizontal, 4)
+        .padding(.top, topInset)
         .fixedSize()
-        .frame(height: NSStatusBar.system.thickness)
+        .frame(height: NSStatusBar.system.thickness, alignment: .top)
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.width
         } action: { width in
@@ -34,6 +38,10 @@ struct MenuBarLabel: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(timerStartDate == nil ? "DuoLapse" : "DuoLapse recording")
+    }
+
+    private var topInset: CGFloat {
+        ((NSStatusBar.system.thickness - Self.contentHeight) / 2).rounded(.down)
     }
 
     private var timerStartDate: Date? {
