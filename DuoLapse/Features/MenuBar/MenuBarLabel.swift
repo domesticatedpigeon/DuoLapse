@@ -56,6 +56,12 @@ struct MenuBarLabel: View {
     }
 
     private var symbolName: String {
-        library.activeRecorder == nil && library.hasRecordingInProgress ? "pause.circle" : "timer"
+        if library.activeRecorder != nil {
+            "record.circle.fill"
+        } else if library.hasRecordingInProgress {
+            "pause.circle"
+        } else {
+            "record.circle"
+        }
     }
 }
