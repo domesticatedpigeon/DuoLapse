@@ -5,6 +5,10 @@ import SwiftUI
 
 struct MenuBarLabel: View {
     static let contentHeight: CGFloat = 16
+    static let symbolWidth: CGFloat = 16
+    static let timeFont = NSFont.monospacedDigitSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .regular)
+    static let timeLineHeight = (timeFont.ascender - timeFont.descender + timeFont.leading).rounded(.up)
+    static let timeBaselineCorrection = timeFont.ascender.rounded() - timeFont.ascender
 
     let library: TimelapseLibrary
     let onWidthChange: (CGFloat) -> Void
@@ -14,15 +18,18 @@ struct MenuBarLabel: View {
         HStack(spacing: 2) {
             Image(systemName: symbolName)
                 .font(.system(size: NSFont.systemFontSize))
+                .frame(width: Self.symbolWidth, height: Self.contentHeight)
             if let timerStartDate {
                 TimelineView(.periodic(from: timerStartDate, by: 1)) { context in
                     let elapsed = Duration.seconds(Int(context.date.timeIntervalSince(timerStartDate)))
                     Text(
                         elapsed.formatted(.time(pattern: elapsed < .seconds(3600) ? .minuteSecond : .hourMinuteSecond))
                     )
-                    .font(.system(size: NSFont.smallSystemFontSize, weight: .medium).monospacedDigit())
+                    .font(Font(Self.timeFont))
                     .contentTransition(.numericText(countsDown: true))
                     .animation(reducesMotion ? nil : .smooth, value: elapsed)
+                    .frame(height: Self.timeLineHeight, alignment: .top)
+                    .offset(y: Self.timeBaselineCorrection)
                 }
             }
         }
@@ -34,7 +41,7 @@ struct MenuBarLabel: View {
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.width
         } action: { width in
-            onWidthChange(width)
+            onWidthChange(width.rounded(.up))
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(timerStartDate == nil ? "DuoLapse" : "DuoLapse recording")
