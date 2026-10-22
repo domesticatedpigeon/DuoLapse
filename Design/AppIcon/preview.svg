@@ -7,5 +7,9 @@
   </defs>
   <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#background)"/>
   <rect x="188" y="298" width="600" height="380" rx="64" fill="#2C2C2E"/>
+  <rect x="248" y="586" width="72" height="36" rx="12" fill="#F5F5F3" opacity="0.2"/>
+  <rect x="340" y="586" width="72" height="36" rx="12" fill="#F5F5F3" opacity="0.4"/>
+  <rect x="432" y="586" width="72" height="36" rx="12" fill="#F5F5F3" opacity="0.65"/>
+  <rect x="524" y="586" width="72" height="36" rx="12" fill="#F5F5F3" opacity="0.9"/>
   <circle cx="752" cy="642" r="84" fill="#FF4F8B"/>
 </svg>
