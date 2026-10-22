@@ -52,6 +52,7 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
         SWIFT_APPROACHABLE_CONCURRENCY: YES
+        OTHER_SWIFT_FLAGS: "$(inherited) -Xfrontend -disable-dynamic-actor-isolation"
 schemes:
   DuoLapse:
     build:

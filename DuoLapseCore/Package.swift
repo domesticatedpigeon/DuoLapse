@@ -12,6 +12,9 @@ var targets: [Target] = [
 ]
 
 #if os(macOS)
+    let withoutDynamicActorIsolationChecks = SwiftSetting.unsafeFlags([
+        "-Xfrontend", "-disable-dynamic-actor-isolation",
+    ])
     products.append(.library(name: "DuoLapseCapture", targets: ["DuoLapseCapture"]))
     targets.append(
         .target(
@@ -21,11 +24,18 @@ var targets: [Target] = [
                 .defaultIsolation(MainActor.self),
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
                 .enableUpcomingFeature("InferIsolatedConformances"),
+                withoutDynamicActorIsolationChecks,
             ]
         )
     )
     products.append(.library(name: "DuoLapseExport", targets: ["DuoLapseExport"]))
-    targets.append(.target(name: "DuoLapseExport", dependencies: ["DuoLapseCore"]))
+    targets.append(
+        .target(
+            name: "DuoLapseExport",
+            dependencies: ["DuoLapseCore"],
+            swiftSettings: [withoutDynamicActorIsolationChecks]
+        )
+    )
 #endif
 
 let package = Package(
