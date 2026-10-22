@@ -30,3 +30,4 @@ On Linux (cloud sessions) there is no Xcode. Use a Swift 6.2 toolchain to run `s
 - No new third-party dependencies beyond those in `PLAN.md` without asking.
 - UI: system controls and materials, SF Symbols, Dynamic Type-friendly text styles, VoiceOver labels on every control, respect Reduce Motion.
 - Branches: one PR per milestone into `alpha`. CI must be green before merge.
+- Never put links to Claude Code sessions in commit messages, PR descriptions or comments.
