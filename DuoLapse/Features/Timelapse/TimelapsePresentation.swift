@@ -1,5 +1,6 @@
 import DuoLapseCore
 import Foundation
+import SwiftUI
 
 extension TimelapseSession {
     var title: String {
@@ -14,6 +15,23 @@ extension TimelapseState {
         case .paused: "Paused"
         case .idlePaused: "Paused while you’re away"
         case .finished: "Closed"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .recording: "record.circle.fill"
+        case .paused: "pause.circle.fill"
+        case .idlePaused: "moon.zzz.fill"
+        case .finished: "checkmark.circle.fill"
+        }
+    }
+
+    var symbolColor: Color {
+        switch self {
+        case .recording: .red
+        case .paused, .idlePaused: .orange
+        case .finished: .secondary
         }
     }
 }

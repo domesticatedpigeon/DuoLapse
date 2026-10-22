@@ -5,6 +5,7 @@ import SwiftUI
 struct TimelapseRow: View {
     let recorder: TimelapseRecorder
     let store: SessionStore
+    @Environment(\.accessibilityReduceMotion) private var reducesMotion
 
     var body: some View {
         HStack(spacing: 12) {
@@ -15,13 +16,19 @@ struct TimelapseRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(recorder.session.title)
                     .lineLimit(1)
-                TimelineView(.periodic(from: .now, by: 1)) { _ in
-                    Text(summary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                        .lineLimit(1)
+                HStack(spacing: 4) {
+                    Image(systemName: recorder.session.state.symbolName)
+                        .foregroundStyle(recorder.session.state.symbolColor)
+                        .symbolEffect(.pulse, isActive: recorder.isCapturing && !reducesMotion)
+                        .accessibilityHidden(true)
+                    TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        Text(summary)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                            .lineLimit(1)
+                    }
                 }
+                .font(.caption)
             }
         }
         .padding(.vertical, 2)
