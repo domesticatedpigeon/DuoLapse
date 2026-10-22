@@ -126,10 +126,8 @@ private struct SourcePreviewSection: View {
     let cameraImage: CGImage?
 
     var body: some View {
-        if screenImage != nil || cameraImage != nil {
-            Section {
-                SourcesPreview(screenImage: screenImage, cameraImage: cameraImage)
-            }
+        Section {
+            SourcesPreview(screenImage: screenImage, cameraImage: cameraImage)
         }
     }
 }

@@ -3,13 +3,8 @@ import SwiftUI
 struct DraftTimelapseRow: View {
     var body: some View {
         HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(.quaternary)
-                .frame(width: 64, height: 40)
-                .overlay {
-                    Image(systemName: "plus")
-                        .foregroundStyle(.secondary)
-                }
+            SourcesPreview(screenImage: nil, cameraImage: nil, style: .compact)
+                .frame(width: 96)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("New Timelapse")

@@ -1,35 +1,61 @@
 import SwiftUI
 
+struct SourcesPreviewStyle {
+    static let regular = SourcesPreviewStyle(spacing: 8, cornerRadius: 8, placeholderSymbolFont: .title2)
+    static let compact = SourcesPreviewStyle(spacing: 2, cornerRadius: 4, placeholderSymbolFont: .caption2)
+
+    let spacing: CGFloat
+    let cornerRadius: CGFloat
+    let placeholderSymbolFont: Font
+}
+
 struct SourcesPreview: View {
-    static let spacing: CGFloat = 8
-    static let cornerRadius: CGFloat = 8
+    static let screenPlaceholderAspectRatio: CGFloat = 16 / 10
+    static let cameraPlaceholderAspectRatio: CGFloat = 16 / 9
 
     let screenImage: CGImage?
     let cameraImage: CGImage?
+    var style = SourcesPreviewStyle.regular
 
     var body: some View {
-        EqualHeightRow(spacing: Self.spacing) {
-            if let screenImage {
-                framedImage(screenImage)
-                    .layoutValue(key: AspectRatioKey.self, value: aspectRatio(of: screenImage))
-                    .accessibilityLabel("Screen")
-            }
-            if let cameraImage {
-                framedImage(cameraImage)
-                    .layoutValue(key: AspectRatioKey.self, value: aspectRatio(of: cameraImage))
-                    .accessibilityLabel("Camera")
-            }
+        EqualHeightRow(spacing: style.spacing) {
+            slot(image: screenImage, placeholderSymbol: "display", label: "Screen")
+                .layoutValue(
+                    key: AspectRatioKey.self,
+                    value: aspectRatio(of: screenImage) ?? Self.screenPlaceholderAspectRatio
+                )
+            slot(image: cameraImage, placeholderSymbol: "web.camera", label: "Camera")
+                .layoutValue(
+                    key: AspectRatioKey.self,
+                    value: aspectRatio(of: cameraImage) ?? Self.cameraPlaceholderAspectRatio
+                )
         }
     }
 
-    private func framedImage(_ image: CGImage) -> some View {
-        Image(decorative: image, scale: 1)
-            .resizable()
-            .clipShape(.rect(cornerRadius: Self.cornerRadius))
+    @ViewBuilder
+    private func slot(image: CGImage?, placeholderSymbol: String, label: String) -> some View {
+        Group {
+            if let image {
+                Image(decorative: image, scale: 1)
+                    .resizable()
+            } else {
+                Rectangle()
+                    .fill(.quaternary)
+                    .overlay {
+                        Image(systemName: placeholderSymbol)
+                            .font(style.placeholderSymbolFont)
+                            .foregroundStyle(.secondary)
+                    }
+            }
+        }
+        .clipShape(.rect(cornerRadius: style.cornerRadius))
+        .accessibilityElement()
+        .accessibilityLabel(image == nil ? "\(label), no preview" : label)
     }
 
-    private func aspectRatio(of image: CGImage) -> CGFloat {
-        image.height > 0 ? CGFloat(image.width) / CGFloat(image.height) : 16 / 10
+    private func aspectRatio(of image: CGImage?) -> CGFloat? {
+        guard let image, image.height > 0 else { return nil }
+        return CGFloat(image.width) / CGFloat(image.height)
     }
 }
 
