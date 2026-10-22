@@ -28,6 +28,7 @@ final class SegmentWriter {
             )
         )
         input.expectsMediaDataInRealTime = true
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: nil)
         guard writer.canAdd(input) else { throw SegmentWriterError.cannotAddVideoInput }
         writer.add(input)
         guard writer.startWriting() else { throw writer.error ?? SegmentWriterError.cannotStartWriting }
@@ -38,7 +39,7 @@ final class SegmentWriter {
         self.size = size
         self.writer = writer
         self.input = input
-        self.adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: nil)
+        self.adaptor = adaptor
     }
 
     func accepts(frameOfSize frameSize: PixelSize, capturedAt date: Date) -> Bool {
@@ -47,7 +48,9 @@ final class SegmentWriter {
 
     func append(_ pixelBuffer: CVPixelBuffer, capturedAt date: Date) -> Bool {
         let presentationTime = CMTime(seconds: max(0, date.timeIntervalSince(startDate)), preferredTimescale: 1000)
-        guard input.isReadyForMoreMediaData, presentationTime > lastPresentationTime else { return false }
+        guard writer.status == .writing, input.isReadyForMoreMediaData, presentationTime > lastPresentationTime else {
+            return false
+        }
         guard adaptor.append(pixelBuffer, withPresentationTime: presentationTime) else { return false }
         lastPresentationTime = presentationTime
         appendedFrameCount += 1

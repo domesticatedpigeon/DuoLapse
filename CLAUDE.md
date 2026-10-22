@@ -27,7 +27,7 @@ On Linux (cloud sessions) there is no Xcode. A Swift 6.2 toolchain runs `swift-f
 ## Conventions
 
 - Swift 6 language mode. The app target defaults to `MainActor` isolation; move work off the main actor explicitly.
-- Dynamic actor isolation checks are turned off (`-disable-dynamic-actor-isolation`) in the app and the macOS package targets. On macOS 27 the checks themselves crashed on the main thread when SwiftUI and AppKit called back into isolated closures, so they caused crashes rather than catching any. Compile-time isolation checking is unaffected. Don't remove the flag without testing on the newest macOS.
+- Objective-C exceptions from Apple frameworks must never be thrown. Swift can't catch them, and when AppKit swallows one on the main thread it leaves Swift's executor tracking corrupted, so the app later crashes somewhere unrelated inside `swift_task_isCurrentExecutor`. Follow each API's documented call order (for example, create an `AVAssetWriterInputPixelBufferAdaptor` before `startWriting()`), and cover framework setup code with a test that runs it on macOS.
 - No code comments. Names carry the meaning: types, functions and test names read as sentences.
 - Put logic in `DuoLapseCore` and keep views thin. New core code comes with Swift Testing tests.
 - Values persisted to disk (`session.json` fields, enum raw values) are a file format. Changing one needs a migration and a test.
