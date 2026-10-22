@@ -1,21 +1,19 @@
 # App icon source
 
-The DuoLapse icon shows a screen with earlier frames trailing behind it (the time-lapse) and a camera badge. `preview.svg` and `preview.png` show the finished look. Every file is a 1024 × 1024 canvas so the layers line up when imported.
+A graphite screen with a pink recording dot on its corner, on a light neutral background. `preview.svg` and `preview.png` show the finished look. Every file is a 1024 × 1024 canvas so the layers line up when imported.
 
 ## Layers for Icon Composer
 
 Import these into one group, back to front:
 
-| Order | File | Content | Suggested fill |
+| Order | File | Content | Fill |
 | --- | --- | --- | --- |
-| 1 | `frames.svg` | Two earlier frames, faded | White at 22% and 48% |
-| 2 | `screen.svg` | Current screen | White |
-| 3 | `camera.svg` | Camera badge | Coral `#FF5A4E` |
-| 4 | `lens.svg` | Lens and highlight | Deep indigo `#24145F` |
+| 1 | `screen.svg` | Screen | Graphite `#2C2C2E` |
+| 2 | `dot.svg` | Recording dot | Pink `#FF4F8B` |
 
-Background: a vertical gradient from `#6E5BFF` (top) to `#3423C4` (bottom).
+Background: a vertical gradient from `#F5F5F3` (top) to `#DEDEDA` (bottom).
 
-Icon Composer adds the Liquid Glass material, lighting and shadows, so the SVGs contain flat shapes only. Turn on translucency for the frames layer so the background shows through. Leave the other layers opaque.
+Icon Composer adds the Liquid Glass material, lighting and shadows, so the SVGs contain flat shapes only. Keep both layers opaque. The dot sits on its own layer, so Icon Composer gives it a little depth over the screen.
 
 ## Adding it to the app
 
