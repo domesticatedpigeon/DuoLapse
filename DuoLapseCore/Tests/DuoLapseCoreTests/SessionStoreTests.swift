@@ -62,3 +62,53 @@ struct SessionStoreTests {
         #expect(store.diskUsage(of: UUID()) == 0)
     }
 }
+
+struct SessionStoreLibraryTests {
+    let store = SessionStore(
+        rootDirectory: FileManager.default.temporaryDirectory.appending(
+            path: "DuoLapseLibraryTests-\(UUID().uuidString)",
+            directoryHint: .isDirectory
+        )
+    )
+
+    func session(createdAt seconds: Double) -> TimelapseSession {
+        TimelapseSession(
+            createdAt: Date(timeIntervalSince1970: seconds),
+            state: .paused,
+            settings: CaptureSettings(
+                captureIntervalSeconds: 5,
+                storageResolution: .standard,
+                displayUUID: "DISPLAY",
+                cameraID: nil
+            )
+        )
+    }
+
+    @Test func loadsAllSessionsNewestFirst() throws {
+        defer { try? FileManager.default.removeItem(at: store.rootDirectory) }
+        let older = session(createdAt: 1_761_000_000)
+        let newer = session(createdAt: 1_761_100_000)
+        try store.save(older)
+        try store.save(newer)
+        #expect(store.loadAll().map(\.id) == [newer.id, older.id])
+    }
+
+    @Test func skipsFoldersWithoutReadableManifest() throws {
+        defer { try? FileManager.default.removeItem(at: store.rootDirectory) }
+        let valid = session(createdAt: 1_761_000_000)
+        try store.save(valid)
+        try FileManager.default.createDirectory(
+            at: store.directory(for: UUID()),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: store.rootDirectory.appending(path: "not-a-session"),
+            withIntermediateDirectories: true
+        )
+        #expect(store.loadAll().map(\.id) == [valid.id])
+    }
+
+    @Test func missingRootDirectoryLoadsNothing() {
+        #expect(store.loadAll().isEmpty)
+    }
+}

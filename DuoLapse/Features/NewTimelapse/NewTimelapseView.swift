@@ -1,32 +1,76 @@
+import AppKit
+import DuoLapseCapture
 import DuoLapseCore
 import SwiftUI
 
-struct RecorderForm: View {
-    @Bindable var model: RecorderModel
+struct NewTimelapseView: View {
+    let library: TimelapseLibrary
+    let onStart: (UUID) -> Void
+    @State private var model = NewTimelapseModel()
+    @State private var isStarting = false
 
     var body: some View {
         Form {
-            Group {
-                ScreenSourceSection(model: model)
-                CameraSourceSection(model: model)
-                TimingSection(model: model)
-            }
-            .disabled(!model.canEditSettings)
-
-            if let recorder = model.recorder {
-                RecordingStatusSection(recorder: recorder)
-            }
+            ScreenSourceSection(model: model)
+            CameraSourceSection(model: model)
+            TimingSection(model: model)
         }
         .formStyle(.grouped)
+        .navigationTitle("New Timelapse")
         .safeAreaInset(edge: .bottom) {
-            RecorderControls(model: model)
-                .padding()
+            HStack {
+                if library.activeRecorder != nil {
+                    Text("Starting pauses the timelapse that’s recording now.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Start Recording", systemImage: "record.circle", action: start)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(model.captureSettings == nil || isStarting)
+            }
+            .padding()
+        }
+        .task {
+            await model.refreshDevicesAndPermissions()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            Task { await model.refreshDevicesAndPermissions() }
+        }
+        .alert("Something Went Wrong", isPresented: isShowingError, presenting: model.errorMessage) { _ in
+            Button("OK") {}
+        } message: { message in
+            Text(message)
+        }
+    }
+
+    private var isShowingError: Binding<Bool> {
+        Binding(
+            get: { model.errorMessage != nil },
+            set: { isPresented in
+                if !isPresented { model.errorMessage = nil }
+            }
+        )
+    }
+
+    private func start() {
+        guard let settings = model.captureSettings else { return }
+        isStarting = true
+        Task {
+            defer { isStarting = false }
+            do {
+                onStart(try await library.startNewTimelapse(settings: settings))
+            } catch {
+                model.errorMessage = error.localizedDescription
+            }
         }
     }
 }
 
 private struct ScreenSourceSection: View {
-    @Bindable var model: RecorderModel
+    @Bindable var model: NewTimelapseModel
 
     var body: some View {
         Section("Screen") {
@@ -52,7 +96,7 @@ private struct ScreenSourceSection: View {
 }
 
 private struct CameraSourceSection: View {
-    @Bindable var model: RecorderModel
+    @Bindable var model: NewTimelapseModel
 
     var body: some View {
         Section("Camera") {
@@ -92,7 +136,7 @@ private struct CameraSourceSection: View {
 }
 
 private struct TimingSection: View {
-    @Bindable var model: RecorderModel
+    @Bindable var model: NewTimelapseModel
 
     var body: some View {
         Section("Timing and Quality") {

@@ -97,6 +97,8 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - Library window listing timelapses with thumbnail, duration, frame count, size on disk and state.
 - Open several timelapses. Starting one pauses whichever is recording (`RecordingController` enforces this).
 - Close and delete a timelapse (moved to the Trash), re-export.
+- `session.json` also tracks recorded time and frame count (checkpointed every 30 frames), so the library can show them without reading video files.
+- On launch, a timelapse left in `recording` by a crash is loaded as `paused`. M5 adds the resume prompt and closes out its open segment.
 
 ### M5: Reliability
 - **Smart pause:** `IdleMonitor` polls `CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .null)` (any input, no Accessibility permission). It pauses after 60 s idle and resumes on the next input.

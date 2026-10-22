@@ -40,6 +40,16 @@ public struct SessionStore: Sendable {
         try Self.decoder.decode(TimelapseSession.self, from: Data(contentsOf: manifestURL(for: id)))
     }
 
+    public func loadAll() -> [TimelapseSession] {
+        let directories =
+            (try? FileManager.default.contentsOfDirectory(at: rootDirectory, includingPropertiesForKeys: nil)) ?? []
+        return
+            directories
+            .compactMap { UUID(uuidString: $0.lastPathComponent) }
+            .compactMap { try? load(id: $0) }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+
     public func segments(of id: UUID, source: CaptureSource) -> [URL] {
         let contents =
             (try? FileManager.default.contentsOfDirectory(
