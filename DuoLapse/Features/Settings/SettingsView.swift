@@ -57,9 +57,8 @@ private struct GeneralSettings: View {
                     Text("When hidden, open DuoLapse from the menu bar.")
                 }
                 .disabled(!preferences.showsMenuBarItem)
-            } footer: {
                 Text("DuoLapse needs to appear in the menu bar or the Dock, so one of these stays on.")
-                    .font(.footnote)
+                    .font(.callout)
                     .foregroundStyle(.secondary)
             }
 
@@ -118,7 +117,9 @@ private struct PermissionSettings: View {
             Section {
                 PermissionRow(
                     title: "Screen Recording",
-                    detail: "Needed to record your screen.",
+                    detail: isScreenCaptureAllowed
+                        ? "Needed to record your screen."
+                        : "Needed to record your screen. After allowing it in System Settings, quit and reopen DuoLapse.",
                     isGranted: isScreenCaptureAllowed,
                     actionTitle: "Allow…",
                     action: { ScreenCapturePermission.requestOrOpenSystemSettings() }
@@ -130,10 +131,6 @@ private struct PermissionSettings: View {
                     actionTitle: cameraPermission == .notDetermined ? "Allow…" : "Open System Settings…",
                     action: requestCameraAccess
                 )
-            } footer: {
-                Text("After allowing Screen Recording in System Settings, quit and reopen DuoLapse.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
