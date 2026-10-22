@@ -17,8 +17,8 @@ struct SourceChoice: Identifiable {
 }
 
 struct SourcesPreview: View {
-    static let screenPlaceholderAspectRatio: CGFloat = 16 / 10
-    static let cameraPlaceholderAspectRatio: CGFloat = 16 / 9
+    static let screenSlotAspectRatio: CGFloat = 16 / 10
+    static let cameraSlotAspectRatio: CGFloat = 16 / 9
 
     let screenImage: CGImage?
     let cameraImage: CGImage?
@@ -31,12 +31,12 @@ struct SourcesPreview: View {
             selectableSlot(image: screenImage, placeholderSymbol: "display", label: "Screen", choices: screenChoices)
                 .layoutValue(
                     key: AspectRatioKey.self,
-                    value: aspectRatio(of: screenImage) ?? Self.screenPlaceholderAspectRatio
+                    value: Self.screenSlotAspectRatio
                 )
             selectableSlot(image: cameraImage, placeholderSymbol: "web.camera", label: "Camera", choices: cameraChoices)
                 .layoutValue(
                     key: AspectRatioKey.self,
-                    value: aspectRatio(of: cameraImage) ?? Self.cameraPlaceholderAspectRatio
+                    value: Self.cameraSlotAspectRatio
                 )
         }
     }
@@ -80,8 +80,13 @@ struct SourcesPreview: View {
     private func slot(image: CGImage?, placeholderSymbol: String, label: String) -> some View {
         Group {
             if let image {
-                Image(decorative: image, scale: 1)
-                    .resizable()
+                Color.clear
+                    .overlay {
+                        Image(decorative: image, scale: 1)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    }
+                    .clipped()
             } else {
                 Rectangle()
                     .fill(.quaternary)
@@ -95,11 +100,6 @@ struct SourcesPreview: View {
         .clipShape(.rect(cornerRadius: style.cornerRadius))
         .accessibilityElement()
         .accessibilityLabel(image == nil ? "\(label), no preview" : label)
-    }
-
-    private func aspectRatio(of image: CGImage?) -> CGFloat? {
-        guard let image, image.height > 0 else { return nil }
-        return CGFloat(image.width) / CGFloat(image.height)
     }
 }
 
