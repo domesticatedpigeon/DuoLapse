@@ -247,8 +247,8 @@ private struct ExportLayoutSection: View {
 
         Section("Timestamp") {
             Toggle("Show timestamp", isOn: $model.settings.includesTimestamp)
-            if model.settings.includesTimestamp, model.settings.layout.orientation == .vertical {
-                Picker("Position", selection: $model.settings.layout.verticalTimestampCorner) {
+            if model.settings.includesTimestamp, !(model.settings.layout.overlaysCamera && model.hasScreenAndCamera) {
+                Picker("Position", selection: $model.settings.layout.timestampCorner) {
                     Text("Top left").tag(OverlayCorner.topLeading)
                     Text("Top right").tag(OverlayCorner.topTrailing)
                     Text("Bottom left").tag(OverlayCorner.bottomLeading)

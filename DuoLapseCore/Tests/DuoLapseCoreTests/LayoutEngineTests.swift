@@ -184,7 +184,7 @@ struct LayoutEngineTests {
 
     @Test(arguments: OverlayCorner.allCases)
     func verticalTimestampGoesInChosenCorner(corner: OverlayCorner) {
-        let layout = ExportLayout(orientation: .vertical, verticalTimestampCorner: corner)
+        let layout = ExportLayout(orientation: .vertical, timestampCorner: corner)
         let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
         #expect(plan.timestampCorner == corner)
     }
@@ -199,7 +199,7 @@ struct LayoutEngineTests {
             }
             """
         let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
-        #expect(layout.verticalTimestampCorner == .topTrailing)
+        #expect(layout.timestampCorner == .topTrailing)
     }
 
     @Test(arguments: VerticalOrder.allCases)
@@ -221,5 +221,18 @@ struct LayoutEngineTests {
         let layout = ExportLayout(cameraFraming: .fit, cameraOverlay: CameraOverlay(isCircular: true))
         let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
         #expect(plan.camera?.contentMode == .fill)
+    }
+
+    @Test(arguments: OverlayCorner.allCases)
+    func sideBySideTimestampGoesInChosenCorner(corner: OverlayCorner) {
+        let layout = ExportLayout(horizontalArrangement: .sideBySide, timestampCorner: corner)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.timestampCorner == corner)
+    }
+
+    @Test func timestampCornerKeepsItsSavedKey() throws {
+        let data = try JSONEncoder().encode(ExportLayout(timestampCorner: .bottomLeading))
+        let json = try #require(String(data: data, encoding: .utf8))
+        #expect(json.contains("\"verticalTimestampCorner\":\"bottomLeading\""))
     }
 }
