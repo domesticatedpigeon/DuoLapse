@@ -14,24 +14,22 @@ struct NewTimelapseView: View {
             ScreenSourceSection(model: model)
             CameraSourceSection(model: model)
             TimingSection(model: model)
+            if library.activeRecorder != nil {
+                Section {
+                    Label("Starting pauses the timelapse that’s recording now.", systemImage: "info.circle")
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("New Timelapse")
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                if library.activeRecorder != nil {
-                    Text("Starting pauses the timelapse that’s recording now.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
                 Button("Start Recording", systemImage: "record.circle", action: start)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(.glassProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(model.captureSettings == nil || isStarting)
             }
-            .padding()
         }
         .task {
             await model.refreshDevicesAndPermissions()

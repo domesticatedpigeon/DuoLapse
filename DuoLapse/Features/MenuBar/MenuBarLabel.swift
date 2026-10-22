@@ -8,15 +8,15 @@ struct MenuBarLabel: View {
         if let active = library.activeRecorder {
             let _ = library.heartbeat
             Label {
-                Text(active.recordedDuration.formatted(.time(pattern: .hourMinuteSecond)))
+                Text(active.recordedDuration.compactRecordingTime)
                     .monospacedDigit()
             } icon: {
-                Image(systemName: "record.circle.fill")
+                Image(systemName: "timer")
             }
             .labelStyle(.titleAndIcon)
-            .accessibilityLabel("DuoLapse, recording")
+            .accessibilityLabel("DuoLapse recording, \(active.recordedDuration.compactRecordingTime)")
         } else {
-            Image(systemName: library.hasRecordingInProgress ? "pause.circle" : "camera.aperture")
+            Image(systemName: library.hasRecordingInProgress ? "pause.circle" : "timer")
                 .accessibilityLabel("DuoLapse")
         }
     }

@@ -1,3 +1,4 @@
+import CoreGraphics
 import CoreMedia
 import CoreVideo
 import DuoLapseCore
@@ -10,11 +11,13 @@ public final class TimelapseRecorder {
     public private(set) var capturedFrameCounts: [CaptureSource: Int] = [:]
     public private(set) var bytesOnDisk: Int
     public private(set) var lastCaptureError: String?
+    public private(set) var latestPreviews: [CaptureSource: CGImage] = [:]
 
     @ObservationIgnored private let store: SessionStore
     @ObservationIgnored private var captureTask: Task<Void, Never>?
     @ObservationIgnored private var cameraSource: CameraFrameSource?
     @ObservationIgnored private var segmentWriters: [CaptureSource: SegmentWriter] = [:]
+    @ObservationIgnored private let previewRenderer = PreviewRenderer()
     @ObservationIgnored private var capturingSince: SuspendingClock.Instant?
     @ObservationIgnored private var screenFailingSince: Date?
     @ObservationIgnored private var observedSystemWakeCount = 0
@@ -128,6 +131,7 @@ public final class TimelapseRecorder {
             width: CVPixelBufferGetWidth(pixelBuffer),
             height: CVPixelBufferGetHeight(pixelBuffer)
         )
+        latestPreviews[source] = previewRenderer.image(from: pixelBuffer)
         let writer = try await segmentWriter(for: source, frameSize: frameSize, capturedAt: date)
         guard writer.append(pixelBuffer, capturedAt: date) else { return false }
         capturedFrameCounts[source, default: 0] += 1

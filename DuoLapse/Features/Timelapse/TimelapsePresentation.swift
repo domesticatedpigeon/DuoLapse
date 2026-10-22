@@ -18,9 +18,9 @@ extension TimelapseState {
     }
 }
 
-extension Double {
-    var formattedRecordingTime: String {
-        Duration.seconds(self).formatted(.time(pattern: .hourMinuteSecond))
+extension Duration {
+    var compactRecordingTime: String {
+        RecordingTimeFormat.compact(seconds: Double(components.seconds))
     }
 }
 

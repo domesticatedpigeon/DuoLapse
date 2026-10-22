@@ -15,7 +15,7 @@ struct TimelapseDetailView: View {
     var body: some View {
         Form {
             Section {
-                TimelapseThumbnail(session: recorder.session, store: library.store, maximumSide: 960)
+                RecorderPreview(recorder: recorder, store: library.store, contentMode: .fit, showsCameraInset: true)
                     .aspectRatio(16 / 10, contentMode: .fit)
                     .clipShape(.rect(cornerRadius: 8))
             }
@@ -25,7 +25,7 @@ struct TimelapseDetailView: View {
                 TimelineView(.periodic(from: .now, by: 1)) { _ in
                     LabeledContent(
                         "Recorded time",
-                        value: recorder.recordedDuration.formatted(.time(pattern: .hourMinuteSecond))
+                        value: recorder.recordedDuration.compactRecordingTime
                     )
                 }
                 LabeledContent("Size on disk", value: Int64(recorder.bytesOnDisk).formatted(.byteCount(style: .file)))
@@ -43,9 +43,8 @@ struct TimelapseDetailView: View {
         }
         .formStyle(.grouped)
         .navigationTitle(recorder.session.title)
-        .safeAreaInset(edge: .bottom) {
-            controls
-                .padding()
+        .toolbar {
+            toolbarContent
         }
         .onChange(of: navigation.exportRequestID, initial: true) { _, requestedID in
             guard requestedID == recorder.session.id else { return }
@@ -76,40 +75,50 @@ struct TimelapseDetailView: View {
         }
     }
 
-    private var controls: some View {
-        HStack {
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItemGroup {
             Button("Move to Trash…", systemImage: "trash", role: .destructive) {
                 isConfirmingDelete = true
             }
+            .help("Move to Trash")
             Button("Export…", systemImage: "square.and.arrow.up") {
                 isExporting = true
             }
+            .help("Export")
             .disabled(recorder.isCapturing || recorder.session.capturedFrameCount == 0)
-
-            Spacer()
-
-            switch recorder.session.state {
-            case .recording:
-                Button("Pause", systemImage: "pause.fill") {
-                    perform { try await library.pause(recorder) }
-                }
-                Button("Close", systemImage: "stop.fill") {
-                    perform { try await library.stop(recorder) }
-                }
-            case .paused, .idlePaused:
-                Button("Close", systemImage: "stop.fill") {
-                    perform { try await library.stop(recorder) }
-                }
-                Button("Resume", systemImage: "record.circle") {
-                    perform { try await library.record(recorder) }
-                }
-                .buttonStyle(.borderedProminent)
-            case .finished:
-                EmptyView()
-            }
         }
-        .controlSize(.large)
-        .disabled(isChangingState)
+
+        ToolbarSpacer(.fixed)
+
+        ToolbarItemGroup {
+            Group {
+                switch recorder.session.state {
+                case .recording:
+                    Button("Close", systemImage: "stop.fill") {
+                        perform { try await library.stop(recorder) }
+                    }
+                    .help("Close timelapse")
+                    Button("Pause", systemImage: "pause.fill") {
+                        perform { try await library.pause(recorder) }
+                    }
+                    .help("Pause recording")
+                case .paused, .idlePaused:
+                    Button("Close", systemImage: "stop.fill") {
+                        perform { try await library.stop(recorder) }
+                    }
+                    .help("Close timelapse")
+                    Button("Resume", systemImage: "record.circle") {
+                        perform { try await library.record(recorder) }
+                    }
+                    .buttonStyle(.glassProminent)
+                    .help("Resume recording")
+                case .finished:
+                    EmptyView()
+                }
+            }
+            .disabled(isChangingState)
+        }
     }
 
     private var sourcesDescription: String {
