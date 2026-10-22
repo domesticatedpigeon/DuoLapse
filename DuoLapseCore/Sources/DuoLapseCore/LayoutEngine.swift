@@ -17,6 +17,15 @@ public enum ContentMode: Sendable {
     case fill
 }
 
+extension SourceFraming {
+    public var contentMode: ContentMode {
+        switch self {
+        case .fill: .fill
+        case .fit: .fit
+        }
+    }
+}
+
 public struct Placement: Hashable, Sendable {
     public let frame: LayoutRect
     public let contentMode: ContentMode
@@ -61,8 +70,12 @@ public enum LayoutEngine {
         guard screenSize != nil, let cameraSize else {
             return LayoutPlan(
                 canvasSize: canvas,
-                screen: screenSize.map { _ in Placement(frame: fullCanvas, contentMode: .fit, cornerRadius: 0) },
-                camera: cameraSize.map { _ in Placement(frame: fullCanvas, contentMode: .fill, cornerRadius: 0) },
+                screen: screenSize.map { _ in
+                    Placement(frame: fullCanvas, contentMode: layout.screenFraming.contentMode, cornerRadius: 0)
+                },
+                camera: cameraSize.map { _ in
+                    Placement(frame: fullCanvas, contentMode: layout.cameraFraming.contentMode, cornerRadius: 0)
+                },
                 timestampCorner: .topTrailing
             )
         }
@@ -72,16 +85,19 @@ public enum LayoutEngine {
             let overlay = layout.cameraOverlay
             return LayoutPlan(
                 canvasSize: canvas,
-                screen: Placement(frame: fullCanvas, contentMode: .fit, cornerRadius: 0),
+                screen: Placement(frame: fullCanvas, contentMode: layout.screenFraming.contentMode, cornerRadius: 0),
                 camera: overlayPlacement(overlay, cameraSize: cameraSize, canvas: canvas),
                 timestampCorner: overlay.corner == .topTrailing ? .topLeading : .topTrailing
             )
         case .sideBySide:
-            return sideBySidePlan(screenSize: screenSize ?? reference, cameraSize: cameraSize, longEdge: longEdge)
+            return sideBySidePlan(
+                layout: layout, screenSize: screenSize ?? reference, cameraSize: cameraSize, longEdge: longEdge)
         }
     }
 
-    private static func sideBySidePlan(screenSize: PixelSize, cameraSize: PixelSize, longEdge: Int) -> LayoutPlan {
+    private static func sideBySidePlan(
+        layout: ExportLayout, screenSize: PixelSize, cameraSize: PixelSize, longEdge: Int
+    ) -> LayoutPlan {
         let widthPerHeight = 1 / aspectRatio(of: screenSize) + 1 / aspectRatio(of: cameraSize)
         let canvas = PixelSize(width: longEdge, height: evenDimension(Double(longEdge) / widthPerHeight))
         let height = Double(canvas.height)
@@ -90,12 +106,12 @@ public enum LayoutEngine {
             canvasSize: canvas,
             screen: Placement(
                 frame: LayoutRect(x: 0, y: 0, width: screenWidth, height: height),
-                contentMode: .fit,
+                contentMode: layout.screenFraming.contentMode,
                 cornerRadius: 0
             ),
             camera: Placement(
                 frame: LayoutRect(x: screenWidth, y: 0, width: Double(canvas.width) - screenWidth, height: height),
-                contentMode: .fill,
+                contentMode: layout.cameraFraming.contentMode,
                 cornerRadius: 0
             ),
             timestampCorner: .topLeading
@@ -116,8 +132,12 @@ public enum LayoutEngine {
         guard let screenSize, cameraSize != nil else {
             return LayoutPlan(
                 canvasSize: canvas,
-                screen: screenSize.map { _ in Placement(frame: fullCanvas, contentMode: .fit, cornerRadius: 0) },
-                camera: cameraSize.map { _ in Placement(frame: fullCanvas, contentMode: .fill, cornerRadius: 0) },
+                screen: screenSize.map { _ in
+                    Placement(frame: fullCanvas, contentMode: layout.screenFraming.contentMode, cornerRadius: 0)
+                },
+                camera: cameraSize.map { _ in
+                    Placement(frame: fullCanvas, contentMode: layout.cameraFraming.contentMode, cornerRadius: 0)
+                },
                 timestampCorner: .topTrailing
             )
         }
@@ -129,12 +149,12 @@ public enum LayoutEngine {
             canvasSize: canvas,
             screen: Placement(
                 frame: LayoutRect(x: 0, y: screenOnTop ? 0 : cameraHeight, width: width, height: screenHeight),
-                contentMode: .fit,
+                contentMode: layout.screenFraming.contentMode,
                 cornerRadius: 0
             ),
             camera: Placement(
                 frame: LayoutRect(x: 0, y: screenOnTop ? screenHeight : 0, width: width, height: cameraHeight),
-                contentMode: .fill,
+                contentMode: layout.cameraFraming.contentMode,
                 cornerRadius: 0
             ),
             timestampCorner: .topTrailing

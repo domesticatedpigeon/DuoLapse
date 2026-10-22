@@ -64,21 +64,42 @@ public struct CameraOverlay: Hashable, Codable, Sendable {
     }
 }
 
+public enum SourceFraming: String, Codable, Sendable, CaseIterable {
+    case fill
+    case fit
+}
+
 public struct ExportLayout: Hashable, Codable, Sendable {
     public var orientation: ExportOrientation
     public var horizontalArrangement: HorizontalArrangement
     public var verticalOrder: VerticalOrder
+    public var screenFraming: SourceFraming
+    public var cameraFraming: SourceFraming
     public var cameraOverlay: CameraOverlay
 
     public init(
         orientation: ExportOrientation = .horizontal,
         horizontalArrangement: HorizontalArrangement = .pictureInPicture,
         verticalOrder: VerticalOrder = .screenOnTop,
+        screenFraming: SourceFraming = .fit,
+        cameraFraming: SourceFraming = .fill,
         cameraOverlay: CameraOverlay = CameraOverlay()
     ) {
         self.orientation = orientation
         self.horizontalArrangement = horizontalArrangement
         self.verticalOrder = verticalOrder
+        self.screenFraming = screenFraming
+        self.cameraFraming = cameraFraming
         self.cameraOverlay = cameraOverlay
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        orientation = try container.decode(ExportOrientation.self, forKey: .orientation)
+        horizontalArrangement = try container.decode(HorizontalArrangement.self, forKey: .horizontalArrangement)
+        verticalOrder = try container.decode(VerticalOrder.self, forKey: .verticalOrder)
+        screenFraming = try container.decodeIfPresent(SourceFraming.self, forKey: .screenFraming) ?? .fit
+        cameraFraming = try container.decodeIfPresent(SourceFraming.self, forKey: .cameraFraming) ?? .fill
+        cameraOverlay = try container.decode(CameraOverlay.self, forKey: .cameraOverlay)
     }
 }

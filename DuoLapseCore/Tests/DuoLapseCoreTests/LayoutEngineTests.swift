@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import DuoLapseCore
@@ -114,5 +115,44 @@ struct LayoutEngineTests {
     @Test func defaultCornerRadiusIsTwentyPercentOfMaximum() {
         let ratio = CameraOverlay().cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction
         #expect(abs(ratio - 0.2) < 1e-9)
+    }
+
+    @Test func screenFitsAndCameraFillsByDefault() {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(orientation: .vertical), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.screen?.contentMode == .fit)
+        #expect(plan.camera?.contentMode == .fill)
+    }
+
+    @Test(arguments: ExportOrientation.allCases)
+    func framingChoicesApplyToBothSources(orientation: ExportOrientation) {
+        let layout = ExportLayout(
+            orientation: orientation,
+            horizontalArrangement: .sideBySide,
+            screenFraming: .fill,
+            cameraFraming: .fit
+        )
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.screen?.contentMode == .fill)
+        #expect(plan.camera?.contentMode == .fit)
+    }
+
+    @Test func layoutSavedBeforeFramingChoicesKeepsPreviousBehaviour() throws {
+        let json = """
+            {
+              "orientation": "vertical",
+              "horizontalArrangement": "pictureInPicture",
+              "verticalOrder": "screenOnTop",
+              "cameraOverlay": {"corner": "bottomTrailing", "size": "medium", "cornerRadiusFraction": 0.1, "isCircular": false}
+            }
+            """
+        let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
+        #expect(layout.screenFraming == .fit)
+        #expect(layout.cameraFraming == .fill)
+    }
+
+    @Test(arguments: [(SourceFraming.fill, "fill"), (.fit, "fit")])
+    func framingRawValueIsStable(framing: SourceFraming, rawValue: String) {
+        #expect(framing.rawValue == rawValue)
     }
 }

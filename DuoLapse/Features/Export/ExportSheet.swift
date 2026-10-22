@@ -154,7 +154,25 @@ private struct ExportLayoutSection: View {
                 }
             }
 
+            if model.source?.screenSize != nil {
+                FramingPicker(title: "Screen", framing: $model.settings.layout.screenFraming)
+            }
+            if model.source?.cameraSize != nil {
+                FramingPicker(title: "Camera", framing: $model.settings.layout.cameraFraming)
+            }
             Toggle("Show timestamp", isOn: $model.settings.includesTimestamp)
+        }
+    }
+}
+
+private struct FramingPicker: View {
+    let title: String
+    @Binding var framing: SourceFraming
+
+    var body: some View {
+        Picker(title, selection: $framing) {
+            Text("Fill (crop edges)").tag(SourceFraming.fill)
+            Text("Fit (show everything)").tag(SourceFraming.fit)
         }
     }
 }
