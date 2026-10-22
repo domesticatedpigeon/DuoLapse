@@ -168,7 +168,11 @@ public final class TimelapseRecorder {
 
     private func finishSegment(of source: CaptureSource) async {
         guard let writer = segmentWriters.removeValue(forKey: source) else { return }
-        await writer.finish()
+        do {
+            try await writer.finish()
+        } catch {
+            lastCaptureError = error.localizedDescription
+        }
     }
 
     private func recoverCameraAfterSystemWake() {

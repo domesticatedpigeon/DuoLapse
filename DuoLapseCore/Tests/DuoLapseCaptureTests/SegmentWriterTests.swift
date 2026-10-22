@@ -21,15 +21,16 @@ struct SegmentWriterTests {
             #expect(appended)
             try await Task.sleep(for: .milliseconds(50))
         }
-        await writer.finish()
+        try await writer.finish()
 
-        #expect(try await sampleCount(in: url) == 3)
+        let sampleCount = try await sampleCount(in: url)
+        #expect(sampleCount == 3)
     }
 
     @Test func discardsSegmentWithoutFrames() async throws {
         let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).mp4")
         let writer = try SegmentWriter(url: url, startDate: .now, size: size, captureIntervalSeconds: 1)
-        await writer.finish()
+        try await writer.finish()
         #expect(!FileManager.default.fileExists(atPath: url.path(percentEncoded: false)))
     }
 
@@ -48,9 +49,11 @@ struct SegmentWriterTests {
         reader.add(output)
         reader.startReading()
         var count = 0
-        while output.copyNextSampleBuffer() != nil {
-            count += 1
+        while let sampleBuffer = output.copyNextSampleBuffer() {
+            count += sampleBuffer.numSamples
         }
+        #expect(
+            reader.status == .completed, "Reader status \(reader.status.rawValue): \(String(describing: reader.error))")
         return count
     }
 }

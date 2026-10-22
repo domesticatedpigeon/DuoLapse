@@ -110,6 +110,12 @@ public struct VideoExporter: Sendable {
                 }
             }
             input.markAsFinished()
+            writer.endSession(
+                atSourceTime: CMTime(
+                    value: CMTimeValue(selection.count),
+                    timescale: CMTimeScale(ExportDuration.framesPerSecond)
+                )
+            )
             await withCheckedContinuation { continuation in
                 writer.finishWriting { continuation.resume() }
             }

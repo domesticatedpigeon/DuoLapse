@@ -13,6 +13,7 @@ final class SegmentWriter {
     private let writer: AVAssetWriter
     private let input: AVAssetWriterInput
     private let adaptor: AVAssetWriterInputPixelBufferAdaptor
+    private let frameDuration: CMTime
     private var lastPresentationTime = CMTime.negativeInfinity
     private var appendedFrameCount = 0
 
@@ -40,6 +41,7 @@ final class SegmentWriter {
         self.writer = writer
         self.input = input
         self.adaptor = adaptor
+        self.frameDuration = CMTime(seconds: Double(max(1, captureIntervalSeconds)), preferredTimescale: 1000)
     }
 
     func accepts(frameOfSize frameSize: PixelSize, capturedAt date: Date) -> Bool {
@@ -57,15 +59,19 @@ final class SegmentWriter {
         return true
     }
 
-    func finish() async {
+    func finish() async throws {
         guard appendedFrameCount > 0 else {
             writer.cancelWriting()
             try? FileManager.default.removeItem(at: url)
             return
         }
         input.markAsFinished()
+        writer.endSession(atSourceTime: lastPresentationTime + frameDuration)
         await withCheckedContinuation { continuation in
             writer.finishWriting { continuation.resume() }
+        }
+        guard writer.status == .completed else {
+            throw writer.error ?? SegmentWriterError.cannotFinishWriting
         }
     }
 
@@ -101,11 +107,13 @@ final class SegmentWriter {
 nonisolated enum SegmentWriterError: LocalizedError {
     case cannotAddVideoInput
     case cannotStartWriting
+    case cannotFinishWriting
 
     var errorDescription: String? {
         switch self {
         case .cannotAddVideoInput: "DuoLapse couldn’t set up the video encoder."
         case .cannotStartWriting: "DuoLapse couldn’t start writing the recording to disk."
+        case .cannotFinishWriting: "DuoLapse couldn’t finish writing part of the recording to disk."
         }
     }
 }
