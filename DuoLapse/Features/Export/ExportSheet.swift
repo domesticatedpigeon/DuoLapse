@@ -153,19 +153,27 @@ private struct HorizontalLayoutControls: View {
             }
             Toggle("Circle", isOn: $layout.cameraOverlay.isCircular)
             LabeledContent("Corner radius") {
-                Slider(
-                    value: $layout.cameraOverlay.cornerRadiusFraction,
-                    in: 0...CameraOverlay.maximumCornerRadiusFraction
-                )
-                .accessibilityValue(
-                    Text(
-                        (layout.cameraOverlay.cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction)
-                            .formatted(.percent.precision(.fractionLength(0)))
+                HStack {
+                    Slider(
+                        value: $layout.cameraOverlay.cornerRadiusFraction,
+                        in: 0...CameraOverlay.maximumCornerRadiusFraction,
+                        step: CameraOverlay.maximumCornerRadiusFraction / 10
                     )
-                )
+                    .accessibilityValue(Text(cornerRadiusPercentage))
+                    Text(cornerRadiusPercentage)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(minWidth: 40, alignment: .trailing)
+                        .accessibilityHidden(true)
+                }
             }
             .disabled(layout.cameraOverlay.isCircular)
         }
+    }
+
+    private var cornerRadiusPercentage: String {
+        (layout.cameraOverlay.cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction)
+            .formatted(.percent.precision(.fractionLength(0)))
     }
 }
 
@@ -185,6 +193,7 @@ private struct ExportFileSection: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Button("Choose…") { isChoosingFolder = true }
+                        .buttonStyle(.glass)
                 }
             }
             TextField("File name", text: $model.settings.filenameTemplate.pattern)
@@ -214,7 +223,7 @@ private struct ExportActionBar: View {
                 Spacer()
                 Button("Cancel", role: .cancel, action: close)
                 Button("Export", action: model.startExport)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .keyboardShortcut(.defaultAction)
             case .exporting(let progress):
                 ProgressView(value: progress)
@@ -228,7 +237,7 @@ private struct ExportActionBar: View {
                     NSWorkspace.shared.activateFileViewerSelecting([url])
                 }
                 Button("Done", action: close)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .keyboardShortcut(.defaultAction)
             case .failed(let message):
                 Label(message, systemImage: "exclamationmark.triangle.fill")
@@ -237,6 +246,7 @@ private struct ExportActionBar: View {
                 Button("Close", action: close)
             }
         }
+        .buttonStyle(.glass)
         .controlSize(.large)
     }
 }
