@@ -47,8 +47,8 @@ struct ExportSheet: View {
             settingsForm
                 .safeAreaBar(edge: .top, spacing: 0) {
                     ExportPreview(image: model.previewImage, maximumHeight: 240)
-                        .padding([.horizontal, .top], 20)
-                        .padding(.bottom, 8)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
                 }
         }
     }
