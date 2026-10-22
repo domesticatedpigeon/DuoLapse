@@ -9,10 +9,14 @@ struct DraftTimelapseRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("New Timelapse")
                     .lineLimit(1)
-                Label("Not started", systemImage: "circle.dashed")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    Image(systemName: "circle.dashed")
+                        .accessibilityHidden(true)
+                    Text("Not started")
+                        .lineLimit(1)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 2)
