@@ -1,6 +1,10 @@
-# DuoLapse
+<p align="center">
+  <img src="Design/AppIcon/preview.png" width="128" height="128" alt="DuoLapse app icon">
+</p>
 
-Lightweight time-lapses of your screen and webcam, for macOS.
+<h1 align="center">DuoLapse</h1>
+
+<p align="center">Lightweight time-lapses of your screen and webcam, for macOS.</p>
 
 DuoLapse captures a frame at a set interval and stitches the frames into a video. Keep several time-lapses open and record one at a time.
 
