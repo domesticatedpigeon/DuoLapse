@@ -28,11 +28,41 @@ A simple, native macOS app for recording lightweight time-lapses of your screen 
 
 ## How to Install
 
-Install instructions go here.
+Requires macOS 26 Tahoe or later.
 
 ### Release
 
+1. Download `DuoLapse.zip` from the [latest release](https://github.com/domesticatedpigeon/DuoLapse/releases/latest).
+2. Unzip it and drag `DuoLapse.app` into your `Applications` folder.
+3. Open DuoLapse. Follow [Opening DuoLapse for the first time](#opening-duolapse-for-the-first-time) if macOS blocks it.
+
 ### Homebrew
+
+```sh
+brew tap domesticatedpigeon/duolapse https://github.com/domesticatedpigeon/DuoLapse
+brew install --cask duolapse
+```
+
+Update with `brew upgrade --cask duolapse`. On first launch, macOS blocks the app the same way as a manual download.
+
+### Opening DuoLapse for the first time
+
+DuoLapse isn’t notarised by Apple, so macOS blocks it the first time you open it. You only need to do this once.
+
+1. Open DuoLapse. When macOS says it can’t verify the app, click **Done**.
+2. Open **System Settings → Privacy & Security** and scroll down to **Security**.
+3. Next to the message about DuoLapse, click **Open Anyway**. The button appears for about an hour after step 1.
+4. Enter your Mac password, then click **Open Anyway** again.
+
+If macOS says DuoLapse “is damaged and can’t be opened”, run this in Terminal, then open the app again:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/DuoLapse.app
+```
+
+### Permissions
+
+On first recording, DuoLapse asks for **Screen & System Audio Recording** and **Camera** access. You can change these later in **System Settings → Privacy & Security**.
 
 ## Build
 
@@ -48,4 +78,4 @@ Stack goes here.
 
 ## License
 
-License goes here.
+DuoLapse is licensed under the [GNU General Public License v3.0](LICENSE).

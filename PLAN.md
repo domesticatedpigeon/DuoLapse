@@ -16,8 +16,8 @@ Native macOS time-lapse recorder for screen and webcam, built from the feature l
 | Export | `AVAssetReader` → Core Image compositing → `AVAssetWriter`, HEVC (H.264 fallback), 30 fps | Hardware-encoded, no third-party dependencies. |
 | Hotkeys | `KeyboardShortcuts` (sindresorhus) | Proven recorder UI plus global registration. The only third-party runtime dependency. |
 | Login item | `SMAppService.mainApp` | Current API; no helper app needed. |
-| Updates | Sparkle 2 | Required for out-of-store distribution. |
-| Distribution | Developer ID + notarization → GitHub Releases + Homebrew cask. No Mac App Store. | Matches the README’s install sections. Avoids App Sandbox friction. |
+| Updates | Sparkle 2 with EdDSA-signed updates | Works without an Apple Developer membership. |
+| Distribution | Self-signed, not notarised → GitHub Releases + Homebrew cask in this repo. No Mac App Store. | No Apple Developer membership. See §7. |
 | Project | Xcode project with a local Swift package `DuoLapseCore` | Core logic is unit-testable via `swift test` without the app target. |
 | Tests | Swift Testing | Covers core logic; capture is verified manually. |
 | CI | GitHub Actions on a `macos-26` runner: build, test, `swift-format` lint | The cloud dev container is Linux, so CI is the only build check outside a Mac. See §6. |
@@ -64,8 +64,8 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 ### M0: Scaffolding
 - Xcode project, `DuoLapseCore` package, app icon placeholder.
 - `CLAUDE.md` with build and test commands, conventions and architecture summary (the README already points to it).
-- CI workflow, `swift-format` config, `.gitignore`, `LICENSE`.
-- Fill the README sections for Build, Stack and License.
+- CI workflow, `swift-format` config, `.gitignore`.
+- Fill the README sections for Build and Stack.
 
 ### M1: Screen capture MVP
 - Screen Recording permission flow, with an explainer when it’s denied.
@@ -112,9 +112,10 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - Accessibility pass: VoiceOver labels, keyboard navigation, Reduce Motion.
 
 ### M7: Release
-- Signing, hardened runtime, notarization in CI on tag.
-- Sparkle appcast, GitHub Release, Homebrew cask.
-- README install instructions.
+- CI on tag: build, sign with the DuoLapse self-signed certificate (§7), zip, publish to GitHub Releases.
+- Sparkle appcast signed with an EdDSA key stored as a CI secret.
+- `Casks/duolapse.rb` in this repo, bumped by CI on each release.
+- Test the README’s first-launch steps on a clean macOS 26 install.
 
 ## 4. Technical notes
 
@@ -197,10 +198,11 @@ Screen and camera are stacked. The user chooses which goes on top.
 └───────────────────────────────┘
 ```
 
-The user can adjust the overlay. This is what “camera corner and size” meant in the earlier question:
-- Corner: one of the four corners, default bottom-right.
+The user can adjust the overlay:
+- Position: one of the four corners of the video, default bottom-right.
 - Size: Small, Medium or Large (20%, 25% or 33% of the frame width), default Medium.
-- Shape: rounded rectangle or circle.
+- Corner radius: a slider from square corners to fully rounded, default 12% of the overlay’s height.
+- Circle: crops the camera to a square and makes it round.
 
 **Side by side (secondary option).** Screen on the left, camera on the right in a vertical strip, centre-cropped. It never covers screen content but shrinks the screen to about 70% of the width.
 
@@ -215,7 +217,13 @@ It matters for DuoLapse because this cloud development environment runs Linux. I
 
 macOS CI is free for public repositories. For private repositories it uses the account’s Actions minutes, and macOS minutes count 10× against the quota.
 
-## 7. Requirements and open items
+## 7. Distribution without an Apple Developer membership
 
-1. **Apple Developer Program membership ($99/year)** is needed to sign and notarise the app. Without it, Gatekeeper blocks the app on other Macs, and Homebrew no longer accepts casks that fail Gatekeeper. Needed by M7, not before.
-2. **License:** GPL-3.0 is recommended. Anyone can use, study and modify DuoLapse, but a fork has to stay open source, which stops someone repackaging it as a closed paid app. Both dependencies (KeyboardShortcuts, Sparkle) are MIT, which is GPL-compatible. As the sole copyright holder you can still sell or relicense your own copy later. It’s added in M0 once confirmed.
+- **Gatekeeper:** the app isn’t notarised, so macOS blocks it on first launch. The README explains the one-time **Open Anyway** step and a Terminal fallback.
+- **Permissions across updates:** macOS ties Screen Recording and Camera permission to the app’s code signature. An ad-hoc signature changes on every build, which would make users re-grant both permissions after each update. Signing every release with one long-lived self-signed certificate, stored as a CI secret, keeps the signature identity stable so permissions survive updates. M7 verifies this on a real update.
+- **Homebrew:** the official Homebrew cask repository no longer accepts apps that fail Gatekeeper, so the cask lives in `Casks/` in this repo. Users tap the repo by its GitHub URL, as in the README. The cask doesn’t strip the quarantine flag, so first launch needs the same **Open Anyway** step as a manual download.
+- **Updates:** Sparkle verifies each update with its own EdDSA signature, independent of Apple, so in-app updates work without notarisation.
+
+## 8. License
+
+GPL-3.0. `LICENSE` holds the full text. Both dependencies (KeyboardShortcuts, Sparkle) are MIT, which is GPL-compatible.
