@@ -77,6 +77,7 @@ public struct ExportLayout: Hashable, Codable, Sendable {
     public var horizontalArrangement: HorizontalArrangement
     public var verticalOrder: VerticalOrder
     public var verticalScreenShare: Double
+    public var verticalTimestampCorner: OverlayCorner
     public var screenFraming: SourceFraming
     public var cameraFraming: SourceFraming
     public var cameraOverlay: CameraOverlay
@@ -86,6 +87,7 @@ public struct ExportLayout: Hashable, Codable, Sendable {
         horizontalArrangement: HorizontalArrangement = .pictureInPicture,
         verticalOrder: VerticalOrder = .screenOnTop,
         verticalScreenShare: Double = ExportLayout.defaultVerticalScreenShare,
+        verticalTimestampCorner: OverlayCorner = .topTrailing,
         screenFraming: SourceFraming = .fit,
         cameraFraming: SourceFraming = .fill,
         cameraOverlay: CameraOverlay = CameraOverlay()
@@ -94,6 +96,7 @@ public struct ExportLayout: Hashable, Codable, Sendable {
         self.horizontalArrangement = horizontalArrangement
         self.verticalOrder = verticalOrder
         self.verticalScreenShare = verticalScreenShare
+        self.verticalTimestampCorner = verticalTimestampCorner
         self.screenFraming = screenFraming
         self.cameraFraming = cameraFraming
         self.cameraOverlay = cameraOverlay
@@ -107,6 +110,8 @@ public struct ExportLayout: Hashable, Codable, Sendable {
         verticalScreenShare =
             try container.decodeIfPresent(Double.self, forKey: .verticalScreenShare)
             ?? Self.defaultVerticalScreenShare
+        verticalTimestampCorner =
+            try container.decodeIfPresent(OverlayCorner.self, forKey: .verticalTimestampCorner) ?? .topTrailing
         screenFraming = try container.decodeIfPresent(SourceFraming.self, forKey: .screenFraming) ?? .fit
         cameraFraming = try container.decodeIfPresent(SourceFraming.self, forKey: .cameraFraming) ?? .fill
         cameraOverlay = try container.decode(CameraOverlay.self, forKey: .cameraOverlay)

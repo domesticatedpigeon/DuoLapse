@@ -148,7 +148,7 @@ public enum LayoutEngine {
                 camera: cameraSize.map { _ in
                     Placement(frame: fullCanvas, contentMode: layout.cameraFraming.contentMode, cornerRadius: 0)
                 },
-                timestampCorner: .topTrailing
+                timestampCorner: layout.verticalTimestampCorner
             )
         }
 
@@ -169,7 +169,7 @@ public enum LayoutEngine {
                 contentMode: layout.cameraFraming.contentMode,
                 cornerRadius: 0
             ),
-            timestampCorner: .topTrailing
+            timestampCorner: layout.verticalTimestampCorner
         )
     }
 

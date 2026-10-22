@@ -181,4 +181,24 @@ struct LayoutEngineTests {
         let cameraPlacement = try #require(plan.camera)
         #expect(cameraPlacement.framingMatters(forSourceOfSize: camera))
     }
+
+    @Test(arguments: OverlayCorner.allCases)
+    func verticalTimestampGoesInChosenCorner(corner: OverlayCorner) {
+        let layout = ExportLayout(orientation: .vertical, verticalTimestampCorner: corner)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.timestampCorner == corner)
+    }
+
+    @Test func layoutSavedBeforeTimestampCornerKeepsTopRight() throws {
+        let json = """
+            {
+              "orientation": "vertical",
+              "horizontalArrangement": "pictureInPicture",
+              "verticalOrder": "screenOnTop",
+              "cameraOverlay": {"corner": "bottomTrailing", "size": "medium", "cornerRadiusFraction": 0.1, "isCircular": false}
+            }
+            """
+        let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
+        #expect(layout.verticalTimestampCorner == .topTrailing)
+    }
 }

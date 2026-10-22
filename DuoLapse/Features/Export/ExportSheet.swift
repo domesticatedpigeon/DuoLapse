@@ -208,6 +208,14 @@ private struct ExportLayoutSection: View {
                 FramingPicker(title: "Camera", framing: $model.settings.layout.cameraFraming)
             }
             Toggle("Show timestamp", isOn: $model.settings.includesTimestamp)
+            if model.settings.includesTimestamp, model.settings.layout.orientation == .vertical {
+                Picker("Timestamp position", selection: $model.settings.layout.verticalTimestampCorner) {
+                    Text("Top left").tag(OverlayCorner.topLeading)
+                    Text("Top right").tag(OverlayCorner.topTrailing)
+                    Text("Bottom left").tag(OverlayCorner.bottomLeading)
+                    Text("Bottom right").tag(OverlayCorner.bottomTrailing)
+                }
+            }
         }
     }
 
