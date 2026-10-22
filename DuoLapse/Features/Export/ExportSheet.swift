@@ -12,6 +12,8 @@ struct ExportSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            ExportHeader(title: model.session.title)
+            Divider()
             if isVertical {
                 HStack(alignment: .top, spacing: 0) {
                     ExportPreview(image: model.previewImage, maximumHeight: .infinity)
@@ -67,6 +69,26 @@ struct ExportSheet: View {
     private func close() {
         model.cancelBackgroundWork()
         dismiss()
+    }
+}
+
+private struct ExportHeader: View {
+    let title: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Export Timelapse")
+                .font(.headline)
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
 }
 
