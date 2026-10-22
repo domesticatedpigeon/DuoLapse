@@ -33,7 +33,7 @@ struct SourcesPreview: View {
     }
 }
 
-private struct AspectRatioKey: LayoutValueKey {
+nonisolated private struct AspectRatioKey: LayoutValueKey {
     static let defaultValue: CGFloat = 16 / 10
 }
 
