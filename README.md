@@ -14,7 +14,7 @@ Simple native macOS app for recording lightweight time-lapses of the chosen scre
 - **Crash recovery:** Automatically restore your recording session after a crash or power outage.
 - **Storage:** Choose where to save exported videos. The default folder is `Movies`.
 - **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
-- **Menu bar:** Show DuoLapse icon in the menu bar. Clicking on it reveals a Quick Access menu.
+- **Menu bar:** Show DuoLapse icon and timer in the menu bar. Clicking on it reveals a Quick Access menu.
 - **Run on startup:** Automatically start DuoLapse when you log in.
 - **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.
 - **Timestamp export:** Include or hide timestamps in your final video.
