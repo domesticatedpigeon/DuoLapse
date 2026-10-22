@@ -11,6 +11,7 @@ public final class TimelapseRecorder {
     public private(set) var capturedFrameCounts: [CaptureSource: Int] = [:]
     public private(set) var bytesOnDisk: Int
     public private(set) var lastCaptureError: String?
+    public private(set) var timerStartDate: Date?
     public private(set) var latestPreviews: [CaptureSource: CGImage] = [:]
 
     @ObservationIgnored private let store: SessionStore
@@ -47,6 +48,7 @@ public final class TimelapseRecorder {
         }
         try updateState(.recording)
         capturingSince = .now
+        timerStartDate = Date.now.addingTimeInterval(-session.recordedSeconds)
         screenFailingSince = nil
         observedSystemWakeCount = DisplayStateMonitor.shared.systemWakeCount
         lastCaptureError = nil
@@ -235,6 +237,7 @@ public final class TimelapseRecorder {
     private func saveCheckpoint() throws {
         foldCapturingTimeIntoSession()
         capturingSince = .now
+        timerStartDate = Date.now.addingTimeInterval(-session.recordedSeconds)
         session.updatedAt = .now
         try store.save(session)
     }
@@ -245,6 +248,7 @@ public final class TimelapseRecorder {
         session.recordedSeconds +=
             Double(elapsed.components.seconds) + Double(elapsed.components.attoseconds) / 1e18
         self.capturingSince = nil
+        timerStartDate = nil
     }
 
     private func updateState(_ state: TimelapseState) throws {
