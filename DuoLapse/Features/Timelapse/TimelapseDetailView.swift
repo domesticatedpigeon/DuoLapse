@@ -50,6 +50,7 @@ struct TimelapseDetailView: View {
         }
         .sheet(isPresented: $isExporting) {
             ExportSheet(session: recorder.session, store: library.store)
+                .tint(.brandPink)
         }
         .alert("Something Went Wrong", isPresented: isShowingError, presenting: errorMessage) { _ in
             Button("OK") {}

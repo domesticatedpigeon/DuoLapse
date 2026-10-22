@@ -8,6 +8,7 @@ struct DuoLapseApp: App {
         Window("DuoLapse", id: WindowID.library) {
             if let library = appDelegate.library {
                 LibraryView(library: library, navigation: appDelegate.navigation)
+                    .tint(.brandPink)
             } else {
                 ContentUnavailableView(
                     "DuoLapse Can’t Open Its Library",
@@ -29,6 +30,7 @@ struct DuoLapseApp: App {
 
         Settings {
             SettingsView(preferences: appDelegate.preferences)
+                .tint(.brandPink)
         }
     }
 }
