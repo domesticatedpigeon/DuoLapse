@@ -12,7 +12,13 @@ struct RecordingCommands {
 
     func registerShortcuts() {
         KeyboardShortcuts.onKeyUp(for: .toggleRecording) {
-            Task { @MainActor in try? await toggle() }
+            Task { @MainActor in
+                do {
+                    try await toggle()
+                } catch {
+                    navigation.showLibrary()
+                }
+            }
         }
     }
 
@@ -23,6 +29,8 @@ struct RecordingCommands {
             navigation.show(paused.session.id)
         } else if let settings = NewTimelapseModel().captureSettings {
             navigation.show(try await library.startNewTimelapse(settings: settings))
+        } else {
+            navigation.showNewTimelapse()
         }
     }
 
