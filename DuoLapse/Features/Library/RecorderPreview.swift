@@ -5,7 +5,7 @@ import SwiftUI
 struct RecorderPreview: View {
     let recorder: TimelapseRecorder
     let store: SessionStore
-    var contentMode: ContentMode = .fill
+    var contentMode: SwiftUI.ContentMode = .fill
     var showsCameraInset = false
 
     var body: some View {

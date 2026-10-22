@@ -6,7 +6,7 @@ struct TimelapseThumbnail: View {
     let session: TimelapseSession
     let store: SessionStore
     let maximumSide: Double
-    var contentMode: ContentMode = .fill
+    var contentMode: SwiftUI.ContentMode = .fill
     @State private var image: CGImage?
 
     var body: some View {
