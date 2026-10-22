@@ -44,9 +44,7 @@ struct LibraryView: View {
                 switch navigation.selection {
                 case .timelapse(let id):
                     trashCandidate = library.recorder(for: id)
-                case .newTimelapse:
-                    navigation.selection = nil
-                case nil:
+                case .newTimelapse, nil:
                     break
                 }
             }
@@ -77,6 +75,14 @@ struct LibraryView: View {
         .onAppear {
             navigation.openWindowAction = openWindow
             navigation.openSettingsAction = openSettings
+            if let active = library.activeRecorder {
+                navigation.show(active.session.id)
+            }
+        }
+        .onChange(of: navigation.selection, initial: true) { _, selection in
+            if selection == nil {
+                navigation.selection = .newTimelapse
+            }
         }
         .confirmationDialog(
             "Move this timelapse to the Trash?",
@@ -221,18 +227,9 @@ struct LibraryView: View {
             } else {
                 ContentUnavailableView("Timelapse Not Found", systemImage: "questionmark.folder")
             }
-        case .newTimelapse:
+        case .newTimelapse, nil:
             NewTimelapseView(library: library) { id in
                 navigation.show(id)
-            }
-        case nil:
-            ContentUnavailableView {
-                Label("No Timelapse Selected", systemImage: "timer")
-            } description: {
-                Text("Choose a timelapse in the sidebar, or start a new one.")
-            } actions: {
-                Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
-                    .buttonStyle(.glassProminent)
             }
         }
     }
