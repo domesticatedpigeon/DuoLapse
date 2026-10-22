@@ -83,43 +83,29 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
     private func addSourceSwitchers(for recorder: TimelapseRecorder, to menu: NSMenu) {
         let library = library
         if let currentDisplayUUID = recorder.session.settings.displayUUID, !displays.isEmpty {
-            menu.addItem(
-                submenuItem(
-                    "Display",
-                    choices: displays.map { display in
-                        (
-                            display.name, display.uuid == currentDisplayUUID,
-                            {
-                                Task { try? await library.switchDisplay(of: recorder, to: display.uuid) }
-                            }
-                        )
-                    }
-                )
-            )
+            let choices = displays.map { display in
+                MenuChoice(title: display.name, isCurrent: display.uuid == currentDisplayUUID) {
+                    Task { try? await library.switchDisplay(of: recorder, to: display.uuid) }
+                }
+            }
+            menu.addItem(submenuItem("Display", choices: choices))
         }
         let cameras = CameraPermission.status == .granted ? CameraCatalog.availableCameras() : []
         if let currentCameraID = recorder.session.settings.cameraID, !cameras.isEmpty {
-            menu.addItem(
-                submenuItem(
-                    "Camera",
-                    choices: cameras.map { camera in
-                        (
-                            camera.name, camera.uniqueID == currentCameraID,
-                            {
-                                Task { try? await library.switchCamera(of: recorder, to: camera.uniqueID) }
-                            }
-                        )
-                    }
-                )
-            )
+            let choices = cameras.map { camera in
+                MenuChoice(title: camera.name, isCurrent: camera.uniqueID == currentCameraID) {
+                    Task { try? await library.switchCamera(of: recorder, to: camera.uniqueID) }
+                }
+            }
+            menu.addItem(submenuItem("Camera", choices: choices))
         }
     }
 
-    private func submenuItem(_ title: String, choices: [(String, Bool, () -> Void)]) -> NSMenuItem {
+    private func submenuItem(_ title: String, choices: [MenuChoice]) -> NSMenuItem {
         let submenu = NSMenu(title: title)
-        for (choiceTitle, isCurrent, choose) in choices {
-            let item = actionItem(choiceTitle, perform: choose)
-            item.state = isCurrent ? .on : .off
+        for choice in choices {
+            let item = actionItem(choice.title, perform: choice.choose)
+            item.state = choice.isCurrent ? .on : .off
             submenu.addItem(item)
         }
         let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
@@ -186,4 +172,10 @@ private final class MenuAction {
     init(perform: @escaping () -> Void) {
         self.perform = perform
     }
+}
+
+private struct MenuChoice {
+    let title: String
+    let isCurrent: Bool
+    let choose: () -> Void
 }
