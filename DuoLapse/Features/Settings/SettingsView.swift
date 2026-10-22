@@ -17,6 +17,7 @@ struct SettingsView: View {
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
             .searchable(text: $searchText, placement: .sidebar)
+            .toolbar(removing: .sidebarToggle)
         } detail: {
             Group {
                 switch selection ?? .general {
@@ -27,10 +28,20 @@ struct SettingsView: View {
                 case .permissions: PermissionSettings()
                 }
             }
-            .navigationTitle((selection ?? .general).title)
             .defaultScrollAnchor(.top)
             .scrollBounceBehavior(.basedOnSize)
+            .safeAreaBar(edge: .top, spacing: 0) {
+                Text((selection ?? .general).title)
+                    .font(.title2.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .accessibilityAddTraits(.isHeader)
+            }
         }
+        .navigationTitle((selection ?? .general).title)
+        .toolbar(removing: .title)
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .frame(minWidth: 680, idealWidth: 720, minHeight: 440, idealHeight: 500)
     }
 
