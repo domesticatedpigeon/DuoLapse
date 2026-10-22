@@ -9,6 +9,7 @@ struct LibraryView: View {
     @Environment(\.openSettings) private var openSettings
     @Environment(\.accessibilityReduceMotion) private var reducesMotion
     @State private var renamingID: UUID?
+    @FocusState private var isSidebarFocused: Bool
     @State private var trashCandidate: TimelapseRecorder?
     @State private var errorMessage: String?
 
@@ -33,6 +34,12 @@ struct LibraryView: View {
                             row(for: recorder)
                         }
                     }
+                }
+            }
+            .focused($isSidebarFocused)
+            .onChange(of: navigation.selection, initial: true) {
+                if renamingID == nil {
+                    isSidebarFocused = true
                 }
             }
             .animation(listAnimation, value: isDrafting)
