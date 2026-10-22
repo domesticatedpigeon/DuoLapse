@@ -58,12 +58,17 @@ struct TimelapseDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItemGroup {
+        ToolbarItem {
             Button("Export…", systemImage: "square.and.arrow.up") {
                 isExporting = true
             }
             .help("Export")
             .disabled(recorder.isCapturing || recorder.session.capturedFrameCount == 0)
+        }
+
+        ToolbarSpacer(.fixed)
+
+        ToolbarItemGroup {
             Group {
                 switch recorder.session.state {
                 case .recording:
