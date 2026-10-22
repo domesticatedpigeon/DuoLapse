@@ -66,15 +66,28 @@ On first recording, DuoLapse asks for **Screen & System Audio Recording** and **
 
 ## Build
 
-Build goes here.
+Requires macOS 26 and Xcode 26.
+
+```sh
+brew install xcodegen
+git clone https://github.com/domesticatedpigeon/DuoLapse.git
+cd DuoLapse
+xcodegen generate
+open DuoLapse.xcodeproj
+```
+
+Run the core tests with `swift test --package-path DuoLapseCore`.
 
 ## Stack
 
-Stack goes here.
+- Swift 6 and SwiftUI, targeting macOS 26
+- ScreenCaptureKit for screen capture, AVFoundation for the webcam and video export
+- XcodeGen for the project file, Swift Testing for tests, swift-format for linting
+- GitHub Actions for CI
 
 ## Development
 
-`CLAUDE.md`
+See [`CLAUDE.md`](CLAUDE.md) for project layout and conventions, and [`PLAN.md`](PLAN.md) for the roadmap.
 
 ## License
 

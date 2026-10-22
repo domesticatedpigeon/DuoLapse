@@ -18,7 +18,7 @@ Native macOS time-lapse recorder for screen and webcam, built from the feature l
 | Login item | `SMAppService.mainApp` | Current API; no helper app needed. |
 | Updates | Sparkle 2 with EdDSA-signed updates | Works without an Apple Developer membership. |
 | Distribution | Self-signed, not notarised → GitHub Releases + Homebrew cask in this repo. No Mac App Store. | No Apple Developer membership. See §7. |
-| Project | Xcode project with a local Swift package `DuoLapseCore` | Core logic is unit-testable via `swift test` without the app target. |
+| Project | XcodeGen `project.yml` plus a local Swift package `DuoLapseCore` | A text project spec avoids `.pbxproj` merge conflicts, and core logic is unit-testable via `swift test` without the app target. |
 | Tests | Swift Testing | Covers core logic; capture is verified manually. |
 | CI | GitHub Actions on a `macos-26` runner: build, test, `swift-format` lint | The cloud dev container is Linux, so CI is the only build check outside a Mac. See §6. |
 

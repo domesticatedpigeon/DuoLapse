@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, alpha]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Lint
+        run: xcrun swift-format lint --strict --recursive --parallel DuoLapse DuoLapseCore
+
+      - name: Test DuoLapseCore
+        run: swift test --package-path DuoLapseCore
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build app
+        run: |
+          xcodebuild build \
+            -project DuoLapse.xcodeproj \
+            -scheme DuoLapse \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData
