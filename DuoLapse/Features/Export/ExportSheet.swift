@@ -14,8 +14,10 @@ struct ExportSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            ExportPreview(image: model.previewImage)
+                .padding([.horizontal, .top], 20)
+                .padding(.bottom, 8)
             Form {
-                ExportPreviewSection(image: model.previewImage)
                 ExportLengthSection(model: model)
                 ExportLayoutSection(model: model)
                 ExportFileSection(model: model, isChoosingFolder: $isChoosingFolder)
@@ -48,24 +50,22 @@ struct ExportSheet: View {
     }
 }
 
-private struct ExportPreviewSection: View {
+private struct ExportPreview: View {
     let image: CGImage?
 
     var body: some View {
-        Section {
-            Group {
-                if let image {
-                    Image(decorative: image, scale: 1)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .accessibilityLabel("Preview of the exported video")
-                } else {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, minHeight: 160)
-                }
+        Group {
+            if let image {
+                Image(decorative: image, scale: 1)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .clipShape(.rect(cornerRadius: 8))
+                    .accessibilityLabel("Preview of the exported video")
+            } else {
+                ProgressView()
             }
-            .frame(maxWidth: .infinity, maxHeight: 240)
         }
+        .frame(maxWidth: .infinity, minHeight: 160, maxHeight: 240)
     }
 }
 
