@@ -28,6 +28,7 @@ var targets: [Target] = [
             ]
         )
     )
+    targets.append(.testTarget(name: "DuoLapseCaptureTests", dependencies: ["DuoLapseCapture"]))
     products.append(.library(name: "DuoLapseExport", targets: ["DuoLapseExport"]))
     targets.append(
         .target(
