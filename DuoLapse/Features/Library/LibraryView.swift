@@ -68,10 +68,6 @@ struct LibraryView: View {
                                 .fontWeight(.semibold)
                                 .help("New Timelapse")
                         }
-                        SettingsLink {
-                            Label("Settings", systemImage: "gearshape")
-                        }
-                        .help("Settings")
                     }
                 }
         }
