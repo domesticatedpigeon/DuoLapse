@@ -39,8 +39,8 @@ struct ExportSheet: View {
         .frame(
             minWidth: isVertical ? 760 : 500,
             idealWidth: isVertical ? 800 : 540,
-            minHeight: 600,
-            idealHeight: 720
+            minHeight: 760,
+            idealHeight: 860
         )
         .task {
             await model.prepare()
