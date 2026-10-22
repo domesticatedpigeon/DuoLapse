@@ -16,7 +16,6 @@ struct TimelapseDetailView: View {
         Form {
             Section {
                 RecorderPreview(recorder: recorder, store: library.store, contentMode: .fit, showsCameraInset: true)
-                    .aspectRatio(16 / 10, contentMode: .fit)
                     .clipShape(.rect(cornerRadius: 8))
             }
 
