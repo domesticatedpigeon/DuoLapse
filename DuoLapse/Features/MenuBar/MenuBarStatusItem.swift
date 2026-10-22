@@ -78,9 +78,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
 
     private func previewItem(for recorder: TimelapseRecorder) -> NSMenuItem {
         let store = library.store
-        Task {
-            await StoredThumbnails.shared.load(for: recorder.session, store: store, key: "\(recorder.session.state)")
-        }
+        Task { await StoredThumbnails.shared.load(for: recorder.session, store: store) }
         let preview = NSHostingView(rootView: MenuSourcesPreview(images: Self.previewImages(of: recorder)))
         preview.frame = NSRect(origin: .zero, size: preview.fittingSize)
         startRefreshing(preview, from: recorder)
