@@ -1,6 +1,5 @@
 import AppKit
 import Observation
-import SwiftUI
 
 @Observable
 final class AppPreferences {
@@ -26,15 +25,13 @@ final class AppPreferences {
         showsDockIcon = defaults.object(forKey: Self.showsDockIconKey) as? Bool ?? true
     }
 
-    var menuBarItemInsertion: Binding<Bool> {
-        Binding(
-            get: { self.showsMenuBarItem },
-            set: { isInserted in
-                if isInserted != self.showsMenuBarItem {
-                    self.showsMenuBarItem = isInserted
-                }
+    var isMenuBarItemInserted: Bool {
+        get { showsMenuBarItem }
+        set {
+            if newValue != showsMenuBarItem {
+                showsMenuBarItem = newValue
             }
-        )
+        }
     }
 
     func applyDockIconVisibility() {

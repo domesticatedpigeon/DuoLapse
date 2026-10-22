@@ -23,7 +23,7 @@ struct DuoLapseApp: App {
             }
         }
 
-        MenuBarExtra(isInserted: appDelegate.preferences.menuBarItemInsertion) {
+        MenuBarExtra(isInserted: Bindable(appDelegate.preferences).isMenuBarItemInserted) {
             if let library = appDelegate.library {
                 MenuBarMenu(library: library, navigation: appDelegate.navigation, updater: appDelegate.updater)
             }
