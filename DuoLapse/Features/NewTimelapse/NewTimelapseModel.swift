@@ -13,18 +13,11 @@ final class NewTimelapseModel {
     private(set) var cameras: [CapturableCamera] = []
     var errorMessage: String?
 
-    var capturesScreen: Bool {
-        didSet { defaults.set(capturesScreen, forKey: PreferenceKey.capturesScreen) }
-    }
+    static let capturesScreenKey = "capture.capturesScreen"
+    static let capturesCameraKey = "capture.capturesCamera"
 
-    var capturesCamera: Bool {
-        didSet {
-            defaults.set(capturesCamera, forKey: PreferenceKey.capturesCamera)
-            if capturesCamera, cameraPermission == .notDetermined {
-                Task { await requestCameraAccess() }
-            }
-        }
-    }
+    private(set) var capturesScreen: Bool
+    private(set) var capturesCamera: Bool
 
     var selectedDisplayUUID: String? {
         didSet { defaults.set(selectedDisplayUUID, forKey: PreferenceKey.displayUUID) }
@@ -46,8 +39,8 @@ final class NewTimelapseModel {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        self.capturesScreen = defaults.object(forKey: PreferenceKey.capturesScreen) as? Bool ?? true
-        self.capturesCamera = defaults.bool(forKey: PreferenceKey.capturesCamera)
+        self.capturesScreen = Self.capturesScreen(in: defaults)
+        self.capturesCamera = defaults.bool(forKey: Self.capturesCameraKey)
         self.selectedDisplayUUID = defaults.string(forKey: PreferenceKey.displayUUID)
         self.selectedCameraID = defaults.string(forKey: PreferenceKey.cameraID)
         let storedInterval = defaults.integer(forKey: PreferenceKey.captureIntervalSeconds)
@@ -68,6 +61,19 @@ final class NewTimelapseModel {
             displayUUID: capturesScreen ? selectedDisplayUUID : nil,
             cameraID: capturesCamera ? selectedCameraID : nil
         )
+    }
+
+    func reloadSourceChoices() async {
+        let storedCapturesScreen = Self.capturesScreen(in: defaults)
+        let storedCapturesCamera = defaults.bool(forKey: Self.capturesCameraKey)
+        guard capturesScreen != storedCapturesScreen || capturesCamera != storedCapturesCamera else { return }
+        capturesScreen = storedCapturesScreen
+        capturesCamera = storedCapturesCamera
+        await refreshDevicesAndPermissions()
+    }
+
+    private static func capturesScreen(in defaults: UserDefaults) -> Bool {
+        defaults.object(forKey: capturesScreenKey) as? Bool ?? true
     }
 
     var isCaptureIntervalDefault: Bool {
@@ -127,8 +133,6 @@ final class NewTimelapseModel {
 }
 
 private enum PreferenceKey {
-    static let capturesScreen = "capture.capturesScreen"
-    static let capturesCamera = "capture.capturesCamera"
     static let displayUUID = "capture.displayUUID"
     static let cameraID = "capture.cameraID"
     static let captureIntervalSeconds = "capture.intervalSeconds"

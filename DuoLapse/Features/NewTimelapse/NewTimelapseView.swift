@@ -13,6 +13,18 @@ struct NewTimelapseView: View {
     var body: some View {
         Form {
             SourcePreviewSection(screenImage: screenPreview, cameraImage: cameraPreview)
+            if !model.capturesScreen && !model.capturesCamera {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Screen and camera recording are both turned off.", systemImage: "info.circle")
+                            .foregroundStyle(.secondary)
+                        SettingsLink {
+                            Text("Choose Sources in Settings…")
+                        }
+                        .buttonStyle(.glass)
+                    }
+                }
+            }
             ScreenSourceSection(model: model)
             CameraSourceSection(model: model)
             TimingSection(model: model)
@@ -41,6 +53,9 @@ struct NewTimelapseView: View {
                 displayUUID: previewedSources.displayUUID,
                 cameraID: previewedSources.cameraID
             )
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+            Task { await model.reloadSourceChoices() }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task { await model.refreshDevicesAndPermissions() }
@@ -130,9 +145,8 @@ private struct ScreenSourceSection: View {
     @Bindable var model: NewTimelapseModel
 
     var body: some View {
-        Section("Screen") {
-            Toggle("Record screen", isOn: $model.capturesScreen)
-            if model.capturesScreen {
+        if model.capturesScreen {
+            Section("Screen") {
                 if model.isScreenCaptureAllowed {
                     Picker("Display", selection: $model.selectedDisplayUUID) {
                         ForEach(model.displays) { display in
@@ -156,9 +170,8 @@ private struct CameraSourceSection: View {
     @Bindable var model: NewTimelapseModel
 
     var body: some View {
-        Section("Camera") {
-            Toggle("Record camera", isOn: $model.capturesCamera)
-            if model.capturesCamera {
+        if model.capturesCamera {
+            Section("Camera") {
                 switch model.cameraPermission {
                 case .granted where model.cameras.isEmpty:
                     Text("No camera found. Connect a camera to record it.")

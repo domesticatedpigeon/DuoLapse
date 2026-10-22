@@ -111,12 +111,18 @@ private struct RecordingSettings: View {
 private struct PermissionSettings: View {
     @State private var isScreenCaptureAllowed = ScreenCapturePermission.isGranted
     @State private var cameraPermission = CameraPermission.status
+    @AppStorage(NewTimelapseModel.capturesScreenKey) private var capturesScreen = true
+    @AppStorage(NewTimelapseModel.capturesCameraKey) private var capturesCamera = false
 
     var body: some View {
         Form {
-            Section {
+            Section("Screen") {
+                Toggle(isOn: $capturesScreen) {
+                    Text("Record screen")
+                    Text("Include a display in new timelapses.")
+                }
                 PermissionRow(
-                    title: "Screen Recording",
+                    title: "Screen Recording access",
                     detail: isScreenCaptureAllowed
                         ? "Needed to record your screen."
                         : "Needed to record your screen. After allowing it in System Settings, quit and reopen DuoLapse.",
@@ -124,8 +130,20 @@ private struct PermissionSettings: View {
                     actionTitle: "Allow…",
                     action: { ScreenCapturePermission.requestOrOpenSystemSettings() }
                 )
+            }
+
+            Section("Camera") {
+                Toggle(isOn: $capturesCamera) {
+                    Text("Record camera")
+                    Text("Include a webcam in new timelapses.")
+                }
+                .onChange(of: capturesCamera) { _, isEnabled in
+                    if isEnabled, cameraPermission == .notDetermined {
+                        requestCameraAccess()
+                    }
+                }
                 PermissionRow(
-                    title: "Camera",
+                    title: "Camera access",
                     detail: "Needed to record your webcam.",
                     isGranted: cameraPermission == .granted,
                     actionTitle: cameraPermission == .notDetermined ? "Allow…" : "Open System Settings…",
