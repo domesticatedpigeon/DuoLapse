@@ -1,14 +1,12 @@
-import DuoLapseCapture
-import DuoLapseCore
 import SwiftUI
 
 @main
 struct DuoLapseApp: App {
-    @State private var library = Self.makeLibrary()
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
 
     var body: some Scene {
         Window("DuoLapse", id: "library") {
-            if let library {
+            if let library = appDelegate.library {
                 LibraryView(library: library)
             } else {
                 ContentUnavailableView(
@@ -22,10 +20,5 @@ struct DuoLapseApp: App {
         Settings {
             SettingsView()
         }
-    }
-
-    private static func makeLibrary() -> TimelapseLibrary? {
-        guard let store = try? SessionStore.inApplicationSupport() else { return nil }
-        return TimelapseLibrary(store: store)
     }
 }

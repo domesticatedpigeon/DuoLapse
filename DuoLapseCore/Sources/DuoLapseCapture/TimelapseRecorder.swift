@@ -15,7 +15,9 @@ public final class TimelapseRecorder {
     @ObservationIgnored private var captureTask: Task<Void, Never>?
     @ObservationIgnored private var cameraSource: CameraFrameSource?
     @ObservationIgnored private var segmentWriters: [CaptureSource: SegmentWriter] = [:]
-    @ObservationIgnored private var capturingSince: ContinuousClock.Instant?
+    @ObservationIgnored private var capturingSince: SuspendingClock.Instant?
+    @ObservationIgnored private var screenFailingSince: Date?
+    @ObservationIgnored private var observedSystemWakeCount = 0
 
     private static let checkpointFrameInterval = 30
 
@@ -26,7 +28,7 @@ public final class TimelapseRecorder {
     }
 
     public var recordedDuration: Duration {
-        .seconds(session.recordedSeconds) + (capturingSince.map { ContinuousClock.now - $0 } ?? .zero)
+        .seconds(session.recordedSeconds) + (capturingSince.map { SuspendingClock.now - $0 } ?? .zero)
     }
 
     public var isCapturing: Bool {
@@ -42,6 +44,9 @@ public final class TimelapseRecorder {
         }
         try updateState(.recording)
         capturingSince = .now
+        screenFailingSince = nil
+        observedSystemWakeCount = DisplayStateMonitor.shared.systemWakeCount
+        lastCaptureError = nil
         let scheduler = CaptureScheduler(interval: session.settings.captureInterval, clock: ContinuousClock())
         captureTask = Task {
             await scheduler.run { [weak self] in
@@ -51,9 +56,22 @@ public final class TimelapseRecorder {
     }
 
     public func pause() async throws {
-        guard session.state == .recording else { return }
+        guard session.state == .recording || session.state == .idlePaused else { return }
         await stopCapturing()
         try updateState(.paused)
+    }
+
+    public func pauseForIdle() async throws {
+        guard session.state == .recording else { return }
+        await stopCapturing()
+        try updateState(.idlePaused)
+    }
+
+    private func pauseAutomatically(because reason: String) {
+        Task {
+            try? await pause()
+            lastCaptureError = reason
+        }
     }
 
     public func stop() async throws {
@@ -66,7 +84,9 @@ public final class TimelapseRecorder {
         let capturedAt = Date.now
         var errorDescriptions: [String] = []
         var appendedSources = 0
-        if let displayUUID = session.settings.displayUUID {
+        recoverCameraAfterSystemWake()
+        guard ensureEnoughFreeSpace() else { return }
+        if let displayUUID = session.settings.displayUUID, DisplayStateMonitor.shared.isScreenAvailable {
             do {
                 let sampleBuffer = try await ScreenFrameSource.captureFrame(
                     displayUUID: displayUUID,
@@ -76,8 +96,10 @@ public final class TimelapseRecorder {
                 if try await append(pixelBuffer, from: .screen, capturedAt: capturedAt) {
                     appendedSources += 1
                 }
+                screenFailingSince = nil
             } catch {
                 errorDescriptions.append(error.localizedDescription)
+                pauseIfScreenKeepsFailing(since: capturedAt)
             }
         }
         if let cameraSource {
@@ -149,6 +171,35 @@ public final class TimelapseRecorder {
         await writer.finish()
     }
 
+    private func recoverCameraAfterSystemWake() {
+        let systemWakeCount = DisplayStateMonitor.shared.systemWakeCount
+        guard systemWakeCount != observedSystemWakeCount else { return }
+        observedSystemWakeCount = systemWakeCount
+        cameraSource?.recoverAfterSystemWake()
+    }
+
+    private func ensureEnoughFreeSpace() -> Bool {
+        let values = try? store.rootDirectory.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+        guard let availableBytes = values?.volumeAvailableCapacityForImportantUsage,
+            !RecordingPolicy.hasEnoughFreeSpace(availableBytes: availableBytes)
+        else {
+            return true
+        }
+        pauseAutomatically(
+            because: "Paused because your Mac is running out of storage space. Free up space, then resume.")
+        return false
+    }
+
+    private func pauseIfScreenKeepsFailing(since failedAt: Date) {
+        let failingSince = screenFailingSince ?? failedAt
+        screenFailingSince = failingSince
+        guard RecordingPolicy.shouldPauseForScreenFailures(failingForSeconds: failedAt.timeIntervalSince(failingSince))
+        else {
+            return
+        }
+        pauseAutomatically(because: "Paused because the display couldn’t be captured for 30 seconds.")
+    }
+
     private func saveCheckpoint() throws {
         foldCapturingTimeIntoSession()
         capturingSince = .now
@@ -158,7 +209,7 @@ public final class TimelapseRecorder {
 
     private func foldCapturingTimeIntoSession() {
         guard let capturingSince else { return }
-        let elapsed = ContinuousClock.now - capturingSince
+        let elapsed = SuspendingClock.now - capturingSince
         session.recordedSeconds +=
             Double(elapsed.components.seconds) + Double(elapsed.components.attoseconds) / 1e18
         self.capturingSince = nil

@@ -6,6 +6,10 @@ import Observation
 public final class TimelapseLibrary {
     public let store: SessionStore
     public private(set) var recorders: [TimelapseRecorder] = []
+    public private(set) var interruptedRecorder: TimelapseRecorder?
+
+    @ObservationIgnored private let sleepAssertion = SleepAssertion()
+    @ObservationIgnored private var hasLoaded = false
 
     public init(store: SessionStore) {
         self.store = store
@@ -19,6 +23,10 @@ public final class TimelapseLibrary {
         recorders.filter { !$0.session.isOpen }
     }
 
+    public var hasRecordingInProgress: Bool {
+        recorders.contains { $0.session.state == .recording || $0.session.state == .idlePaused }
+    }
+
     public var activeRecorder: TimelapseRecorder? {
         recorders.first { $0.isCapturing }
     }
@@ -29,10 +37,59 @@ public final class TimelapseLibrary {
 
     public func reload() {
         let loadedIDs = Set(recorders.map { $0.session.id })
-        let newRecorders = store.loadAll()
-            .filter { !loadedIDs.contains($0.id) }
-            .map { TimelapseRecorder(session: Self.recoveredFromInterruptedRecording($0, store: store), store: store) }
+        let unloadedSessions = store.loadAll().filter { !loadedIDs.contains($0.id) }
+        let interruptedID =
+            hasLoaded ? nil : unloadedSessions.first { $0.state == .recording || $0.state == .idlePaused }?.id
+        let newRecorders = unloadedSessions.map {
+            TimelapseRecorder(session: Self.recoveredFromInterruptedRecording($0, store: store), store: store)
+        }
         recorders = (recorders + newRecorders).sorted { $0.session.createdAt > $1.session.createdAt }
+        interruptedRecorder = interruptedID.flatMap { recorder(for: $0) }
+        hasLoaded = true
+    }
+
+    public func dismissInterruptedRecording() {
+        interruptedRecorder = nil
+    }
+
+    public func superviseRecording() async {
+        while !Task.isCancelled {
+            await applyRecordingPolicy()
+            try? await Task.sleep(for: .seconds(hasRecordingInProgress ? 1 : 5), tolerance: .milliseconds(500))
+        }
+        sleepAssertion.hold(false)
+    }
+
+    public func pauseAllForTermination() async {
+        for recorder in recorders where recorder.session.state == .recording || recorder.session.state == .idlePaused {
+            try? await recorder.pause()
+        }
+        sleepAssertion.hold(false)
+    }
+
+    private func applyRecordingPolicy() async {
+        sleepAssertion.hold(
+            RecordingPolicy.shouldPreventSleep(
+                states: recorders.map { $0.session.state },
+                isKeepAwakeEnabled: RecordingPreferences.isKeepAwakeEnabled
+            )
+        )
+        let idleSeconds = UserActivity.secondsSinceLastInput
+        for recorder in recorders {
+            let action = RecordingPolicy.idleAction(
+                for: recorder.session.state,
+                idleSeconds: idleSeconds,
+                isSmartPauseEnabled: RecordingPreferences.isSmartPauseEnabled
+            )
+            switch action {
+            case .pauseForIdle:
+                try? await recorder.pauseForIdle()
+            case .resumeFromIdle:
+                try? await record(recorder)
+            case .none:
+                break
+            }
+        }
     }
 
     public func startNewTimelapse(settings: CaptureSettings) async throws -> UUID {
@@ -71,7 +128,7 @@ public final class TimelapseLibrary {
         _ session: TimelapseSession,
         store: SessionStore
     ) -> TimelapseSession {
-        guard session.state == .recording else { return session }
+        guard session.state == .recording || session.state == .idlePaused else { return session }
         var recovered = session
         recovered.state = .paused
         recovered.updatedAt = .now

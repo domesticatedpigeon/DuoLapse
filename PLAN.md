@@ -105,7 +105,10 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - **Keep awake:** see §4.3.
 - **Display sleep and wake:** see §4.3.
 - **Crash recovery:** on launch, any timelapse left in `recording` is set to `paused`, its open segment is closed out, and the app offers to resume it.
-- Disk-space guard: pause and warn below a threshold (e.g. 2 GB free).
+- Disk-space guard: pause and warn below 2 GB free.
+- Quitting DuoLapse pauses any recording first, so segments are finalised and the timelapse reopens as paused without a recovery prompt.
+- Recorded time uses a suspending clock, so time the Mac spends asleep isn’t counted.
+- The decision rules (idle pause and resume, keep awake, free space, screen failures) live in `RecordingPolicy` in `DuoLapseCore` and are unit-tested.
 
 ### M6: Controls and polish
 - `MenuBarExtra` with live elapsed timer and a quick-access menu (start/stop, open timelapse, export, settings).
@@ -164,7 +167,7 @@ A running `AVCaptureSession` keeps the camera light on. Stopping between frames 
 - On wake or unlock, before the next screen capture:
   1. Re-fetch `SCShareableContent`, since `SCDisplay` objects can go stale after sleep.
   2. Find the chosen display again by its stored UUID, since its display ID can change.
-  3. Take a test capture and check it isn’t blank. If it fails, retry with backoff for up to 30 s, then pause and notify the user.
+  3. Keep capturing on the normal interval. If screen captures keep failing for 30 s, pause and show the reason on the timelapse. Blank-frame detection isn’t implemented: screen ticks are skipped while displays are asleep or the screen is locked, which covers the cases that would produce blank frames.
   4. Restart the camera session if it was interrupted by system sleep.
 - Manual test matrix for M5: display sleep, system sleep, lid close, screen lock, external monitor unplugged and replugged, and USB webcam replugged. Each must resume recording without user action.
 

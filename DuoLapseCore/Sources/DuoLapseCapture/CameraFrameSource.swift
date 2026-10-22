@@ -102,6 +102,10 @@ nonisolated final class CameraFrameSource: NSObject, AVCaptureVideoDataOutputSam
         Self.throttleToLowestFrameRate(device)
     }
 
+    func recoverAfterSystemWake() {
+        scheduleRestart()
+    }
+
     private func scheduleRestart() {
         sessionQueue.async { self.restartIfActive() }
     }

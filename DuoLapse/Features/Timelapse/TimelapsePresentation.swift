@@ -12,7 +12,7 @@ extension TimelapseState {
         switch self {
         case .recording: "Recording"
         case .paused: "Paused"
-        case .idlePaused: "Paused while idle"
+        case .idlePaused: "Paused while you’re away"
         case .finished: "Closed"
         }
     }
