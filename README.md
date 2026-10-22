@@ -10,6 +10,8 @@
   <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
 </p>
 
+DuoLapse turns hours of work into a minute of video. While you draw, code or build, it quietly captures your screen and your reaction on the webcam, then hands you a clip ready to share: widescreen for YouTube, vertical for Reels and TikTok. Pick up a project days later right where you left off.
+
 ## Features
 
 **Recording**
