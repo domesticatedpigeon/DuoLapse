@@ -4,6 +4,7 @@ import SwiftUI
 
 struct ExportSheet: View {
     @State private var model: ExportModel
+    @State private var settingsScrollPosition = ScrollPosition(edge: .top)
     @Environment(\.dismiss) private var dismiss
 
     init(session: TimelapseSession, store: SessionStore) {
@@ -56,6 +57,14 @@ struct ExportSheet: View {
         }
         .formStyle(.grouped)
         .defaultScrollAnchor(.top)
+        .scrollPosition($settingsScrollPosition)
+        .onChange(of: isEditable) { _, isReady in
+            guard isReady else { return }
+            Task {
+                await Task.yield()
+                settingsScrollPosition.scrollTo(edge: .top)
+            }
+        }
         .disabled(!isEditable)
     }
 
