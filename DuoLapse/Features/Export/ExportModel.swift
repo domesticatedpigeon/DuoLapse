@@ -92,6 +92,10 @@ final class ExportModel {
         if case .exporting = phase { true } else { false }
     }
 
+    var selectableDurationOptions: [ExportDurationOption] {
+        ExportDurationOption.allCases.filter { fits($0) || $0 == durationOption }
+    }
+
     func fits(_ option: ExportDurationOption) -> Bool {
         option == .custom
             || option.duration(customSeconds: customDurationSeconds).fits(availableFrames: availableFrameCount)

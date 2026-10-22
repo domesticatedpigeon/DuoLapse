@@ -75,10 +75,8 @@ private struct ExportLengthSection: View {
     var body: some View {
         Section("Length") {
             Picker("Video length", selection: $model.durationOption) {
-                ForEach(ExportDurationOption.allCases, id: \.self) { option in
-                    Text(label(for: option))
-                        .tag(option)
-                        .disabled(!model.fits(option))
+                ForEach(model.selectableDurationOptions, id: \.self) { option in
+                    Text(label(for: option)).tag(option)
                 }
             }
             if model.durationOption == .custom {
