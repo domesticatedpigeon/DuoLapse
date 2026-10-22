@@ -205,15 +205,22 @@ private struct TimingSection: View {
 
     var body: some View {
         Section("Timing and Quality") {
-            HStack {
-                Stepper(value: $model.captureIntervalSeconds, in: 1...300) {
-                    LabeledContent("Interval", value: intervalDescription)
-                }
-                Button("Reset to Default", systemImage: "arrow.counterclockwise", action: model.resetCaptureInterval)
+            LabeledContent("Interval") {
+                HStack(spacing: 8) {
+                    Text(intervalDescription)
+                        .monospacedDigit()
+                    Stepper("Interval", value: $model.captureIntervalSeconds, in: 1...300)
+                        .labelsHidden()
+                    Button(
+                        "Reset to Default",
+                        systemImage: "arrow.counterclockwise",
+                        action: model.resetCaptureInterval
+                    )
                     .labelStyle(.iconOnly)
                     .buttonStyle(.borderless)
                     .help("Reset to every \(NewTimelapseModel.defaultCaptureIntervalSeconds) seconds")
                     .disabled(model.isCaptureIntervalDefault)
+                }
             }
 
             Picker("Screen quality", selection: $model.storageResolution) {
