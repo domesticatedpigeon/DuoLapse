@@ -66,6 +66,8 @@ struct LibraryView: View {
                     if navigation.selection != .newTimelapse {
                         ToolbarItem(placement: .primaryAction) {
                             Button("New Timelapse", systemImage: "plus", action: navigation.showNewTimelapse)
+                                .fontWeight(.semibold)
+                                .imageScale(.large)
                                 .help("New Timelapse")
                         }
                     }
