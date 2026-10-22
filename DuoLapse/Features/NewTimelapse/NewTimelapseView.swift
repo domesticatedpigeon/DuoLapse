@@ -39,7 +39,8 @@ struct NewTimelapseView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("New Timelapse")
+        .navigationTitle("Library")
+        .navigationSubtitle("New Timelapse")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Start Recording", systemImage: "record.circle", action: start)

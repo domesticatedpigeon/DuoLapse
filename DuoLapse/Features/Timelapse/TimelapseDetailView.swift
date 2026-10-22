@@ -36,7 +36,8 @@ struct TimelapseDetailView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle(recorder.session.title)
+        .navigationTitle("Library")
+        .navigationSubtitle(recorder.session.title)
         .toolbar {
             toolbarContent
         }
