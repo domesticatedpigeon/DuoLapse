@@ -8,7 +8,7 @@ struct NewTimelapseView: View {
     let onStart: (UUID) -> Void
     @State private var model = NewTimelapseModel()
     @State private var isStarting = false
-    @State private var previewer = SourcePreviewer()
+    @State private var previewer = SourcePreviewer.shared
 
     var body: some View {
         Form {
@@ -85,7 +85,7 @@ struct NewTimelapseView: View {
     }
 
     private var screenPreview: CGImage? {
-        previewedSources.displayUUID == nil ? nil : previewer.screenImage
+        previewedSources.displayUUID.flatMap(previewer.screenImage(forDisplay:))
     }
 
     private var cameraPreview: CGImage? {
@@ -93,7 +93,7 @@ struct NewTimelapseView: View {
         if cameraID == recordingCameraID {
             return library.activeRecorder?.latestPreviews[.camera]
         }
-        return previewedSources.cameraID == nil ? nil : previewer.cameraImage
+        return previewedSources.cameraID.flatMap(previewer.cameraImage(forCamera:))
     }
 
     private var isShowingError: Binding<Bool> {

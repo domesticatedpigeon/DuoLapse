@@ -5,26 +5,37 @@ import Observation
 
 @Observable
 public final class SourcePreviewer {
-    public private(set) var screenImage: CGImage?
-    public private(set) var cameraImage: CGImage?
+    public static let shared = SourcePreviewer()
+
+    private var screenImages: [String: CGImage] = [:]
+    private var cameraImages: [String: CGImage] = [:]
 
     @ObservationIgnored private let renderer = PreviewRenderer()
     @ObservationIgnored private var camera: CameraFrameSource?
 
     public init() {}
 
+    public func screenImage(forDisplay uuid: String) -> CGImage? {
+        screenImages[uuid]
+    }
+
+    public func cameraImage(forCamera id: String) -> CGImage? {
+        cameraImages[id]
+    }
+
     public func showPreviews(displayUUID: String?, cameraID: String?, refreshInterval: Duration = .seconds(1)) async {
-        screenImage = nil
-        cameraImage = nil
+        if let displayUUID {
+            await refreshScreenImage(displayUUID: displayUUID)
+        }
         await stopCamera()
         let previewCamera = await startedCamera(cameraID)
         camera = previewCamera
         while !Task.isCancelled {
             if let displayUUID {
-                screenImage = await latestScreenImage(displayUUID: displayUUID) ?? screenImage
+                await refreshScreenImage(displayUUID: displayUUID)
             }
-            if let previewCamera, let pixelBuffer = try? previewCamera.currentFrame() {
-                cameraImage = await renderer.image(from: PreviewFrame(pixelBuffer: pixelBuffer))
+            if let cameraID, let previewCamera, let pixelBuffer = try? previewCamera.currentFrame() {
+                cameraImages[cameraID] = await renderer.image(from: PreviewFrame(pixelBuffer: pixelBuffer))
             }
             try? await Task.sleep(for: refreshInterval, tolerance: .milliseconds(200))
         }
@@ -32,6 +43,12 @@ public final class SourcePreviewer {
             camera = nil
         }
         await previewCamera?.stop()
+    }
+
+    private func refreshScreenImage(displayUUID: String) async {
+        if let image = try? await ScreenFrameSource.capturePreviewImage(displayUUID: displayUUID) {
+            screenImages[displayUUID] = image
+        }
     }
 
     public func stopCamera() async {
@@ -50,9 +67,5 @@ public final class SourcePreviewer {
             await camera.stop()
             return nil
         }
-    }
-
-    private func latestScreenImage(displayUUID: String) async -> CGImage? {
-        try? await ScreenFrameSource.capturePreviewImage(displayUUID: displayUUID)
     }
 }
