@@ -201,4 +201,13 @@ struct LayoutEngineTests {
         let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
         #expect(layout.verticalTimestampCorner == .topTrailing)
     }
+
+    @Test(arguments: VerticalOrder.allCases)
+    func verticalSourcesHugTheSeamBetweenThem(order: VerticalOrder) {
+        let layout = ExportLayout(orientation: .vertical, verticalOrder: order)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        let screenOnTop = order == .screenOnTop
+        #expect(plan.screen?.verticalAlignment == (screenOnTop ? .bottom : .top))
+        #expect(plan.camera?.verticalAlignment == (screenOnTop ? .top : .bottom))
+    }
 }

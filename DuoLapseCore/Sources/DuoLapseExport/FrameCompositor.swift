@@ -56,17 +56,17 @@ final class FrameCompositor {
         let heightScale = target.height / extent.height
         let scale = placement.contentMode == .fill ? max(widthScale, heightScale) : min(widthScale, heightScale)
         let scaled = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-        let centered =
+        let aligned =
             scaled
             .transformed(
                 by: CGAffineTransform(
                     translationX: target.midX - scaled.extent.midX,
-                    y: target.midY - scaled.extent.midY
+                    y: verticalOffset(of: scaled.extent, in: target, alignment: placement.verticalAlignment)
                 )
             )
             .cropped(to: target)
-        guard placement.cornerRadius > 0 else { return centered }
-        return centered.applyingFilter(
+        guard placement.cornerRadius > 0 else { return aligned }
+        return aligned.applyingFilter(
             "CIBlendWithMask",
             parameters: [
                 kCIInputBackgroundImageKey: CIImage.empty(),
@@ -120,6 +120,18 @@ final class FrameCompositor {
         generator.radius = Float(radius)
         generator.color = color
         return generator.outputImage ?? .empty()
+    }
+
+    private func verticalOffset(
+        of extent: CGRect,
+        in target: CGRect,
+        alignment: ContentVerticalAlignment
+    ) -> CGFloat {
+        switch alignment {
+        case .top: target.maxY - extent.maxY
+        case .center: target.midY - extent.midY
+        case .bottom: target.minY - extent.minY
+        }
     }
 
     private func coreImageRect(_ rect: LayoutRect) -> CGRect {

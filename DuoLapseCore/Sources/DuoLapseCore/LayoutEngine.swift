@@ -26,10 +26,29 @@ extension SourceFraming {
     }
 }
 
+public enum ContentVerticalAlignment: Sendable {
+    case top
+    case center
+    case bottom
+}
+
 public struct Placement: Hashable, Sendable {
     public let frame: LayoutRect
     public let contentMode: ContentMode
     public let cornerRadius: Double
+    public let verticalAlignment: ContentVerticalAlignment
+
+    init(
+        frame: LayoutRect,
+        contentMode: ContentMode,
+        cornerRadius: Double,
+        verticalAlignment: ContentVerticalAlignment = .center
+    ) {
+        self.frame = frame
+        self.contentMode = contentMode
+        self.cornerRadius = cornerRadius
+        self.verticalAlignment = verticalAlignment
+    }
 }
 
 public struct LayoutPlan: Hashable, Sendable {
@@ -162,12 +181,14 @@ public enum LayoutEngine {
             screen: Placement(
                 frame: LayoutRect(x: 0, y: screenOnTop ? 0 : cameraHeight, width: width, height: screenHeight),
                 contentMode: layout.screenFraming.contentMode,
-                cornerRadius: 0
+                cornerRadius: 0,
+                verticalAlignment: screenOnTop ? .bottom : .top
             ),
             camera: Placement(
                 frame: LayoutRect(x: 0, y: screenOnTop ? screenHeight : 0, width: width, height: cameraHeight),
                 contentMode: layout.cameraFraming.contentMode,
-                cornerRadius: 0
+                cornerRadius: 0,
+                verticalAlignment: screenOnTop ? .top : .bottom
             ),
             timestampCorner: layout.verticalTimestampCorner
         )
