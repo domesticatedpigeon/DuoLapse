@@ -1,22 +1,17 @@
 # App icon source
 
-The shipped icon is `DuoLapse/Resources/AppIcon.icon`, exported from Icon Composer. That file is the source of truth for colours, glass and appearance variants. The SVGs here are the original layer artwork it was built from.
+The shipped icon is `DuoLapse/Resources/AppIcon.icon`, an Icon Composer document. It's the source of truth for colours, glass and appearance variants. The files here are its artwork.
 
-A graphite screen with a pink recording dot on its corner, on a light neutral background. Inside the screen, a strip of four frames brightens towards the dot, suggesting time passing up to the moment being recorded. `preview.svg` and `preview.png` show the finished look. Every file is a 1024 × 1024 canvas so the layers line up when imported.
+A hand-drawn smiling face: two closed, happy eyes in graphite and a pink smile, on the system's light background. `drawing.webp` is the original drawing; `eyes.svg` and `smile.svg` are smoothed vector traces of it on a 1024 × 1024 canvas, and `preview.svg` / `preview.png` show the finished look.
 
-## Layers for Icon Composer
-
-Import these into one group, back to front:
+## Layers
 
 | Order | File | Content | Fill |
 | --- | --- | --- | --- |
-| 1 | `screen.svg` | Screen | Graphite `#2C2C2E` |
-| 2 | `frames.svg` | Frame strip | Off-white `#F5F5F3` at 20%, 40%, 65% and 90% |
-| 3 | `dot.svg` | Recording dot | Pink `#FF4F8B` |
+| 1 | `smile.svg` | Smile | Pink `#FF4F8B` |
+| 2 | `eyes.svg` | Eyes | Graphite `#1C1C1E`, light in dark mode |
 
-Background: a vertical gradient from `#F5F5F3` (top) to `#DEDEDA` (bottom).
-
-Icon Composer adds the Liquid Glass material, lighting and shadows, so the SVGs contain flat shapes only. Keep the screen and dot layers opaque. The dot sits on its own layer, so Icon Composer gives it a little depth over the screen.
+Icon Composer adds the Liquid Glass material, lighting and shadows, so the SVGs contain flat shapes only.
 
 ## Updating the icon
 

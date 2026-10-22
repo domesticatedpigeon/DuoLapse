@@ -6,10 +6,10 @@
         {
           "fill" : "automatic",
           "glass" : true,
-          "image-name" : "dot.svg",
-          "name" : "dot",
+          "image-name" : "smile.svg",
+          "name" : "smile",
           "position" : {
-            "scale" : 1.26,
+            "scale" : 1.2,
             "translation-in-points" : [
               0,
               0
@@ -17,62 +17,7 @@
           }
         },
         {
-          "fill-specializations" : [
-            {
-              "value" : {
-                "linear-gradient" : [
-                  "display-p3:0.92513,0.46540,0.62076,1.00000",
-                  "display-p3:0.96924,0.96925,0.96877,0.71511"
-                ],
-                "orientation" : {
-                  "start" : {
-                    "x" : 1,
-                    "y" : 0
-                  },
-                  "stop" : {
-                    "x" : 0,
-                    "y" : 0
-                  }
-                }
-              }
-            },
-            {
-              "appearance" : "dark",
-              "value" : {
-                "linear-gradient" : [
-                  "display-p3:0.87563,0.60304,0.65589,1.00000",
-                  "display-p3:0.41736,0.41736,0.41736,0.37681"
-                ],
-                "orientation" : {
-                  "start" : {
-                    "x" : 1,
-                    "y" : 0
-                  },
-                  "stop" : {
-                    "x" : 0,
-                    "y" : 0
-                  }
-                }
-              }
-            }
-          ],
-          "image-name" : "frames.svg",
-          "name" : "frames",
-          "position" : {
-            "scale" : 1.26,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "blend-mode-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : "normal"
-            }
-          ],
+          "fill" : "automatic",
           "fill-specializations" : [
             {
               "appearance" : "dark",
@@ -80,11 +25,10 @@
             }
           ],
           "glass" : true,
-          "hidden" : false,
-          "image-name" : "screen.svg",
-          "name" : "screen",
+          "image-name" : "eyes.svg",
+          "name" : "eyes",
           "position" : {
-            "scale" : 1.26,
+            "scale" : 1.2,
             "translation-in-points" : [
               0,
               0
