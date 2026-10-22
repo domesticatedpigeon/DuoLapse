@@ -34,4 +34,7 @@ if pgrep -x DuoLapse > /dev/null; then
 fi
 rm -rf /Applications/DuoLapse.app
 ditto "$app" /Applications/DuoLapse.app
+touch /Applications/DuoLapse.app
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/DuoLapse.app
+killall Dock
 open /Applications/DuoLapse.app
