@@ -52,6 +52,9 @@ jobs:
             echo "::error::DuoLapse exited within 10 seconds of launch"
             exit 1
           fi
+          sample "$pid" 3 -file "$RUNNER_TEMP/launch-sample.txt" > /dev/null 2>&1 || true
+          echo "--- Main thread 10 s after launch ---"
+          awk '/Call graph:/{found=1} found' "$RUNNER_TEMP/launch-sample.txt" | head -n 120
           kill "$pid"
 
       - name: Check app icon
