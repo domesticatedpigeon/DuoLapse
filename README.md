@@ -17,7 +17,7 @@ A simple, native macOS app for recording lightweight time-lapses of your screen 
 - **Video export options:** Choose your preferred video duration. Presets are `30 seconds`, `60 seconds`, `3 minutes`, `Full length`, or set a custom duration.
 - **Vertical video:** Choose to export videos in a vertical aspect ratio for mobile devices.
 - **Storage:** Choose where to save exported videos. The default folder is `~/Movies/DuoLapse Recordings`.
-- **Custom filename format:** Define how exported videos are named, with support for dynamic date and time variables. The default is `DuoLapse Recording YYYY-MM-DD at hh.mm.ss`
+- **Custom filename format:** Define how exported videos are named, with support for dynamic date and time variables. The default is `DuoLapse Recording {YYYY}-{MM}-{DD} at {hh}.{mm}.{ss}`, which gives names like `DuoLapse Recording 2026-10-22 at 15.03.05`
 - **Timestamp export:** Include or hide timestamps in your final video.
 
 ### Customization & Controls

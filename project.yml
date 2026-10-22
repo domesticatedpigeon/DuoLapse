@@ -23,6 +23,8 @@ targets:
         product: DuoLapseCore
       - package: DuoLapseCore
         product: DuoLapseCapture
+      - package: DuoLapseCore
+        product: DuoLapseExport
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domesticatedpigeon.DuoLapse

@@ -8,7 +8,8 @@ Native macOS time-lapse recorder for screen and webcam. `README.md` lists the fe
 - `DuoLapse/`: app target. `App/` holds the entry point and scenes, `Features/<Feature>/` holds SwiftUI views and their models, `Resources/` holds assets.
 - `DuoLapseCore/`: Swift package with two libraries.
   - `DuoLapseCore`: pure Foundation logic (sessions, scheduling, sizing, naming). Builds and tests on Linux.
-  - `DuoLapseCapture`: Apple-framework code (ScreenCaptureKit, AVFoundation, AppKit). Defaults to `MainActor` isolation. Declared only on macOS in `Package.swift`.
+  - `DuoLapseCapture`: Apple-framework capture code (ScreenCaptureKit, AVFoundation, AppKit). Defaults to `MainActor` isolation. Declared only on macOS in `Package.swift`.
+  - `DuoLapseExport`: decoding, Core Image compositing and video writing. Nonisolated; heavy entry points are `@concurrent` so they run off the main actor. macOS only.
 - `.github/workflows/ci.yml`: lint, core tests and app build on a `macos-26` runner.
 
 ## Commands

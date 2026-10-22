@@ -12,6 +12,7 @@ final class RecorderModel {
     private(set) var recorder: TimelapseRecorder?
     private(set) var isChangingState = false
     var errorMessage: String?
+    var exportingSession: TimelapseSession?
 
     var capturesScreen: Bool {
         didSet { defaults.set(capturesScreen, forKey: PreferenceKey.capturesScreen) }
@@ -43,7 +44,7 @@ final class RecorderModel {
     }
 
     @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let store: SessionStore?
+    @ObservationIgnored let store: SessionStore?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -115,6 +116,15 @@ final class RecorderModel {
         let recorder = TimelapseRecorder(session: TimelapseSession(state: .paused, settings: settings), store: store)
         self.recorder = recorder
         changeState { try await recorder.record() }
+    }
+
+    var canExport: Bool {
+        guard let state = recorder?.session.state else { return false }
+        return state != .recording && store != nil
+    }
+
+    func openExport() {
+        exportingSession = recorder?.session
     }
 
     func pause() {

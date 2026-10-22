@@ -5,6 +5,9 @@ struct RecorderControls: View {
 
     var body: some View {
         HStack {
+            if model.canExport {
+                Button("Export…", systemImage: "square.and.arrow.up", action: model.openExport)
+            }
             Spacer()
             switch model.recorder?.session.state {
             case .recording?:

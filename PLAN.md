@@ -88,8 +88,10 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - `LayoutEngine` per §5.
 - `TimestampRenderer` burns in capture time via `CIAttributedTextImageGenerator`.
 - `VideoWriter` uses `AVAssetWriter` + pixel buffer pool, reports progress and supports cancellation. No audio track.
-- Output folder (default `~/Movies/DuoLapse Recordings`), stored as a security-scoped bookmark.
-- `FilenameTemplate` handles tokens, preview and sanitising. Default: `DuoLapse Recording YYYY-MM-DD at hh.mm.ss`. Any `:` or `/` typed by the user is swapped for `.` and `-`.
+- Output folder (default `~/Movies/DuoLapse Recordings`), stored as a path. The app isn’t sandboxed, so no security-scoped bookmark is needed.
+- Format: HEVC (smaller) or H.264 (plays everywhere), 30 fps, BT.709.
+- Until the library lands in M4, export is opened from the recorder window when a timelapse is paused or finished.
+- `FilenameTemplate` handles tokens, preview and sanitising. Tokens are braced (`{YYYY}`, `{YY}`, `{MM}`, `{DD}`, `{hh}`, `{mm}`, `{ss}`) so ordinary words like “Summer” aren’t rewritten. Default: `DuoLapse Recording {YYYY}-{MM}-{DD} at {hh}.{mm}.{ss}`, using the recording’s start time. Any `:` or `/` typed by the user is swapped for `.` and `-`, and taken names get a copy number.
 
 ### M4: Library and multi-session
 - Library window listing timelapses with thumbnail, duration, frame count, size on disk and state.

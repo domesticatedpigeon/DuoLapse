@@ -24,6 +24,8 @@ var targets: [Target] = [
             ]
         )
     )
+    products.append(.library(name: "DuoLapseExport", targets: ["DuoLapseExport"]))
+    targets.append(.target(name: "DuoLapseExport", dependencies: ["DuoLapseCore"]))
 #endif
 
 let package = Package(
