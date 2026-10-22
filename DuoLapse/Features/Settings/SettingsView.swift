@@ -10,41 +10,58 @@ struct SettingsView: View {
     @State private var searchText = ""
 
     var body: some View {
-        NavigationSplitView(columnVisibility: .constant(.all)) {
-            List(matchingPanes, selection: $selection) { pane in
-                Label(pane.title, systemImage: pane.symbolName)
-                    .tag(pane)
-            }
-            .navigationSplitViewColumnWidth(min: 220, ideal: 220, max: 220)
-            .searchable(text: $searchText, placement: .sidebar)
-            .toolbar(removing: .sidebarToggle)
-        } detail: {
-            Group {
-                switch selection ?? .general {
-                case .general: GeneralSettings(preferences: preferences)
-                case .recording: RecordingSettings()
-                case .export: ExportFileSettings()
-                case .shortcuts: ShortcutSettings()
-                case .permissions: PermissionSettings()
-                }
-            }
-            .defaultScrollAnchor(.top)
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollEdgeEffectStyle(.soft, for: .top)
-            .safeAreaBar(edge: .top, spacing: 0) {
-                Text((selection ?? .general).title)
-                    .font(.title2.weight(.semibold))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .accessibilityAddTraits(.isHeader)
-            }
+        HStack(spacing: 0) {
+            sidebar
+                .frame(width: Self.sidebarWidth)
+            Divider()
+                .ignoresSafeArea()
+            detail
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle((selection ?? .general).title)
         .toolbar(removing: .title)
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .toolbar(.hidden, for: .windowToolbar)
         .frame(minWidth: 620, idealWidth: 640, minHeight: 440, idealHeight: 500)
+    }
+
+    private static let sidebarWidth: CGFloat = 220
+
+    private var sidebar: some View {
+        VStack(spacing: 8) {
+            SettingsSearchField(text: $searchText)
+                .padding(.horizontal, 10)
+            List(matchingPanes, selection: $selection) { pane in
+                Label(pane.title, systemImage: pane.symbolName)
+                    .tag(pane)
+            }
+            .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+        }
+        .padding(.top, 8)
+        .background(.regularMaterial)
+    }
+
+    private var detail: some View {
+        Group {
+            switch selection ?? .general {
+            case .general: GeneralSettings(preferences: preferences)
+            case .recording: RecordingSettings()
+            case .export: ExportFileSettings()
+            case .shortcuts: ShortcutSettings()
+            case .permissions: PermissionSettings()
+            }
+        }
+        .defaultScrollAnchor(.top)
+        .scrollBounceBehavior(.basedOnSize)
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        .safeAreaBar(edge: .top, spacing: 0) {
+            Text((selection ?? .general).title)
+                .font(.title2.weight(.semibold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .accessibilityAddTraits(.isHeader)
+        }
     }
 
     private var matchingPanes: [SettingsPane] {
@@ -53,6 +70,29 @@ struct SettingsView: View {
         return SettingsPane.allCases.filter { pane in
             ([pane.title] + pane.keywords).contains { $0.localizedCaseInsensitiveContains(query) }
         }
+    }
+}
+
+private struct SettingsSearchField: View {
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            TextField("Search", text: $text)
+                .textFieldStyle(.plain)
+            if !text.isEmpty {
+                Button("Clear Search", systemImage: "xmark.circle.fill") { text = "" }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(.quaternary, in: .capsule)
     }
 }
 
