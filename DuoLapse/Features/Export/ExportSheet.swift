@@ -203,15 +203,15 @@ private struct ExportLayoutSection: View {
                         Text("Screen").tag(VerticalOrder.screenOnTop)
                         Text("Camera").tag(VerticalOrder.cameraOnTop)
                     }
-                    LabeledContent("Screen height") {
+                    LabeledContent("Screen / camera split") {
                         HStack {
                             Slider(
                                 value: $model.settings.layout.verticalScreenShare,
                                 in: ExportLayout.verticalScreenShareRange,
                                 step: 0.05
                             )
-                            .accessibilityValue(Text(screenSharePercentage))
-                            Text(screenSharePercentage)
+                            .accessibilityValue(Text(splitAccessibilityDescription))
+                            Text(splitDescription)
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
                                 .frame(minWidth: 40, alignment: .trailing)
@@ -239,8 +239,16 @@ private struct ExportLayoutSection: View {
         }
     }
 
-    private var screenSharePercentage: String {
-        model.settings.layout.verticalScreenShare.formatted(.percent.precision(.fractionLength(0)))
+    private var screenSharePercent: Int {
+        Int((model.settings.layout.verticalScreenShare * 100).rounded())
+    }
+
+    private var splitDescription: String {
+        "\(screenSharePercent) / \(100 - screenSharePercent)"
+    }
+
+    private var splitAccessibilityDescription: String {
+        "Screen \(screenSharePercent) percent, camera \(100 - screenSharePercent) percent"
     }
 }
 
