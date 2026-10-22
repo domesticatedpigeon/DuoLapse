@@ -11,7 +11,7 @@ Simple native macOS app for recording lightweight time-lapses of the chosen scre
 - **Video Export Options:** Choose your preferred video frame rate or total duration.
 - **Timestamp Export:** Include or exclude timestamps in your final video.
 - **Crash Recovery:** Automatically restore your recording session after a crash or system outage.
-- **Icon customization:** Liquid Glass support, option to hide the app icon from the dock and show it in the menu bar.
+- **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock and menu bar.
 
 ## How to Install
 
