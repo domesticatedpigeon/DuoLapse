@@ -1,3 +1,4 @@
+import AppKit
 import DuoLapseCapture
 import KeyboardShortcuts
 import ServiceManagement
@@ -16,6 +17,9 @@ struct SettingsView: View {
             }
             Tab("Shortcuts", systemImage: "keyboard") {
                 ShortcutSettings()
+            }
+            Tab("Permissions", systemImage: "lock.shield") {
+                PermissionSettings()
             }
         }
         .frame(width: 480)
@@ -102,6 +106,77 @@ private struct RecordingSettings: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+private struct PermissionSettings: View {
+    @State private var isScreenCaptureAllowed = ScreenCapturePermission.isGranted
+    @State private var cameraPermission = CameraPermission.status
+
+    var body: some View {
+        Form {
+            Section {
+                PermissionRow(
+                    title: "Screen Recording",
+                    detail: "Needed to record your screen.",
+                    isGranted: isScreenCaptureAllowed,
+                    actionTitle: "Allow…",
+                    action: { ScreenCapturePermission.requestOrOpenSystemSettings() }
+                )
+                PermissionRow(
+                    title: "Camera",
+                    detail: "Needed to record your webcam.",
+                    isGranted: cameraPermission == .granted,
+                    actionTitle: cameraPermission == .notDetermined ? "Allow…" : "Open System Settings…",
+                    action: requestCameraAccess
+                )
+            } footer: {
+                Text("After allowing Screen Recording in System Settings, quit and reopen DuoLapse.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            refresh()
+        }
+        .onAppear(perform: refresh)
+    }
+
+    private func refresh() {
+        isScreenCaptureAllowed = ScreenCapturePermission.isGranted
+        cameraPermission = CameraPermission.status
+    }
+
+    private func requestCameraAccess() {
+        if cameraPermission == .notDetermined {
+            Task { cameraPermission = await CameraPermission.request() }
+        } else {
+            CameraPermission.openSystemSettings()
+        }
+    }
+}
+
+private struct PermissionRow: View {
+    let title: String
+    let detail: String
+    let isGranted: Bool
+    let actionTitle: String
+    let action: () -> Void
+
+    var body: some View {
+        LabeledContent {
+            if isGranted {
+                Label("Allowed", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.glass)
+            }
+        } label: {
+            Text(title)
+            Text(detail)
+        }
     }
 }
 

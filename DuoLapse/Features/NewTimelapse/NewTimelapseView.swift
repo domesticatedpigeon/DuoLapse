@@ -8,9 +8,11 @@ struct NewTimelapseView: View {
     let onStart: (UUID) -> Void
     @State private var model = NewTimelapseModel()
     @State private var isStarting = false
+    @State private var previewer = SourcePreviewer()
 
     var body: some View {
         Form {
+            SourcePreviewSection(screenImage: screenPreview, cameraImage: cameraPreview)
             ScreenSourceSection(model: model)
             CameraSourceSection(model: model)
             TimingSection(model: model)
@@ -34,6 +36,12 @@ struct NewTimelapseView: View {
         .task {
             await model.refreshDevicesAndPermissions()
         }
+        .task(id: previewedSources) {
+            await previewer.showPreviews(
+                displayUUID: previewedSources.displayUUID,
+                cameraID: previewedSources.cameraID
+            )
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task { await model.refreshDevicesAndPermissions() }
         }
@@ -42,6 +50,31 @@ struct NewTimelapseView: View {
         } message: { message in
             Text(message)
         }
+    }
+
+    private var previewedSources: PreviewedSources {
+        let cameraID =
+            model.capturesCamera && model.cameraPermission == .granted && !isStarting ? model.selectedCameraID : nil
+        return PreviewedSources(
+            displayUUID: model.capturesScreen && model.isScreenCaptureAllowed ? model.selectedDisplayUUID : nil,
+            cameraID: cameraID == recordingCameraID ? nil : cameraID
+        )
+    }
+
+    private var recordingCameraID: String? {
+        library.activeRecorder?.session.settings.cameraID
+    }
+
+    private var screenPreview: CGImage? {
+        previewedSources.displayUUID == nil ? nil : previewer.screenImage
+    }
+
+    private var cameraPreview: CGImage? {
+        guard model.capturesCamera, let cameraID = model.selectedCameraID else { return nil }
+        if cameraID == recordingCameraID {
+            return library.activeRecorder?.latestPreviews[.camera]
+        }
+        return previewedSources.cameraID == nil ? nil : previewer.cameraImage
     }
 
     private var isShowingError: Binding<Bool> {
@@ -58,10 +91,36 @@ struct NewTimelapseView: View {
         isStarting = true
         Task {
             defer { isStarting = false }
+            await previewer.stopCamera()
             do {
                 onStart(try await library.startNewTimelapse(settings: settings))
             } catch {
                 model.errorMessage = error.localizedDescription
+            }
+        }
+    }
+}
+
+private struct PreviewedSources: Hashable {
+    let displayUUID: String?
+    let cameraID: String?
+}
+
+private struct SourcePreviewSection: View {
+    let screenImage: CGImage?
+    let cameraImage: CGImage?
+
+    var body: some View {
+        if let primaryImage = screenImage ?? cameraImage {
+            let preview = CapturePreview(
+                primaryImage: primaryImage,
+                cameraInset: screenImage == nil ? nil : cameraImage
+            )
+            Section {
+                preview
+                    .aspectRatio(preview.aspectRatio, contentMode: .fit)
+                    .clipShape(.rect(cornerRadius: 8))
+                    .accessibilityLabel("Preview of the selected sources")
             }
         }
     }
@@ -138,8 +197,15 @@ private struct TimingSection: View {
 
     var body: some View {
         Section("Timing and Quality") {
-            Stepper(value: $model.captureIntervalSeconds, in: 1...300) {
-                LabeledContent("Interval", value: intervalDescription)
+            HStack {
+                Stepper(value: $model.captureIntervalSeconds, in: 1...300) {
+                    LabeledContent("Interval", value: intervalDescription)
+                }
+                Button("Reset to Default", systemImage: "arrow.counterclockwise", action: model.resetCaptureInterval)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+                    .help("Reset to every \(NewTimelapseModel.defaultCaptureIntervalSeconds) seconds")
+                    .disabled(model.isCaptureIntervalDefault)
             }
 
             Picker("Screen quality", selection: $model.storageResolution) {

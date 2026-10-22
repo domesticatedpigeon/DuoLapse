@@ -5,6 +5,8 @@ import Observation
 
 @Observable
 final class NewTimelapseModel {
+    static let defaultCaptureIntervalSeconds = 5
+
     private(set) var isScreenCaptureAllowed = ScreenCapturePermission.isGranted
     private(set) var cameraPermission = CameraPermission.status
     private(set) var displays: [CapturableDisplay] = []
@@ -49,7 +51,7 @@ final class NewTimelapseModel {
         self.selectedDisplayUUID = defaults.string(forKey: PreferenceKey.displayUUID)
         self.selectedCameraID = defaults.string(forKey: PreferenceKey.cameraID)
         let storedInterval = defaults.integer(forKey: PreferenceKey.captureIntervalSeconds)
-        self.captureIntervalSeconds = storedInterval > 0 ? storedInterval : 5
+        self.captureIntervalSeconds = storedInterval > 0 ? storedInterval : Self.defaultCaptureIntervalSeconds
         self.storageResolution =
             defaults.string(forKey: PreferenceKey.storageResolution).flatMap { StorageResolution(rawValue: $0) }
             ?? .standard
@@ -68,6 +70,14 @@ final class NewTimelapseModel {
         )
     }
 
+    var isCaptureIntervalDefault: Bool {
+        captureIntervalSeconds == Self.defaultCaptureIntervalSeconds
+    }
+
+    func resetCaptureInterval() {
+        captureIntervalSeconds = Self.defaultCaptureIntervalSeconds
+    }
+
     func refreshDevicesAndPermissions() async {
         isScreenCaptureAllowed = ScreenCapturePermission.isGranted
         cameraPermission = CameraPermission.status
@@ -80,12 +90,7 @@ final class NewTimelapseModel {
     }
 
     func requestScreenCaptureAccess() {
-        if defaults.bool(forKey: PreferenceKey.hasRequestedScreenCapture) {
-            ScreenCapturePermission.openSystemSettings()
-        } else {
-            defaults.set(true, forKey: PreferenceKey.hasRequestedScreenCapture)
-            ScreenCapturePermission.request()
-        }
+        ScreenCapturePermission.requestOrOpenSystemSettings(defaults: defaults)
     }
 
     func requestCameraAccess() async {
@@ -128,5 +133,4 @@ private enum PreferenceKey {
     static let cameraID = "capture.cameraID"
     static let captureIntervalSeconds = "capture.intervalSeconds"
     static let storageResolution = "capture.storageResolution"
-    static let hasRequestedScreenCapture = "permissions.hasRequestedScreenCapture"
 }
