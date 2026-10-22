@@ -14,7 +14,7 @@ struct TimelapseRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            RecorderSourcesPreview(recorder: recorder, store: store, style: .compact, thumbnailSide: 192)
+            RecorderSourcesPreview(recorder: recorder, store: store, style: .compact)
                 .frame(width: 96)
 
             VStack(alignment: .leading, spacing: 2) {

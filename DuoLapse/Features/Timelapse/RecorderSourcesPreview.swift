@@ -7,34 +7,48 @@ struct RecorderSourcesPreview: View {
     let recorder: TimelapseRecorder
     let store: SessionStore
     var style = SourcesPreviewStyle.regular
-    var thumbnailSide: Double = 960
-    @State private var storedThumbnails: [CaptureSource: CGImage] = [:]
+    @State private var thumbnails = StoredThumbnails.shared
 
     var body: some View {
         SourcesPreview(screenImage: image(for: .screen), cameraImage: image(for: .camera), style: style)
-            .task(id: refreshKey) {
-                await loadStoredThumbnails()
+            .task(id: thumbnailKey) {
+                await thumbnails.load(for: recorder.session, store: store, key: thumbnailKey)
             }
     }
 
     private func image(for source: CaptureSource) -> CGImage? {
-        recorder.latestPreviews[source] ?? storedThumbnails[source]
+        recorder.latestPreviews[source] ?? thumbnails.image(for: recorder.session.id, source: source)
     }
 
-    private var refreshKey: String {
-        "\(recorder.session.id)-\(recorder.session.state)-\(recorder.session.settings.sources)"
+    private var thumbnailKey: String {
+        "\(recorder.session.state)-\(recorder.session.settings.sources)"
+    }
+}
+
+@Observable
+final class StoredThumbnails {
+    static let shared = StoredThumbnails()
+    private static let maximumSide: Double = 960
+
+    private var images: [UUID: [CaptureSource: CGImage]] = [:]
+    @ObservationIgnored private var loadedKeys: [UUID: String] = [:]
+
+    func image(for sessionID: UUID, source: CaptureSource) -> CGImage? {
+        images[sessionID]?[source]
     }
 
-    private func loadStoredThumbnails() async {
-        var thumbnails: [CaptureSource: CGImage] = [:]
-        for source in recorder.session.settings.sources {
-            thumbnails[source] = await ThumbnailGenerator().thumbnail(
-                for: recorder.session,
+    func load(for session: TimelapseSession, store: SessionStore, key: String) async {
+        guard loadedKeys[session.id] != key else { return }
+        loadedKeys[session.id] = key
+        var loaded: [CaptureSource: CGImage] = [:]
+        for source in session.settings.sources {
+            loaded[source] = await ThumbnailGenerator().thumbnail(
+                for: session,
                 source: source,
                 store: store,
-                maximumSize: CGSize(width: thumbnailSide, height: thumbnailSide)
+                maximumSize: CGSize(width: Self.maximumSide, height: Self.maximumSide)
             )
         }
-        storedThumbnails = thumbnails
+        images[session.id] = loaded.merging(images[session.id] ?? [:]) { new, _ in new }
     }
 }

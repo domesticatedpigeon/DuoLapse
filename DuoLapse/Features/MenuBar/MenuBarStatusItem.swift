@@ -69,7 +69,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
 
     private func previewItem(for recorder: TimelapseRecorder) -> NSMenuItem {
         let preview = NSHostingView(
-            rootView: RecorderSourcesPreview(recorder: recorder, store: library.store, thumbnailSide: 600)
+            rootView: RecorderSourcesPreview(recorder: recorder, store: library.store)
                 .frame(width: Self.previewWidth)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
