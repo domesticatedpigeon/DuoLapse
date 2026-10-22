@@ -9,7 +9,7 @@ Native macOS time-lapse recorder for screen and webcam, built from the feature l
 | Minimum OS | macOS 26 Tahoe | Liquid Glass icon and materials are a stated feature; avoids `#available` branches everywhere. |
 | Language | Swift 6, strict concurrency | Capture, timers and file I/O cross actors; let the compiler catch races. |
 | UI | SwiftUI (`Window`, `MenuBarExtra`, `Settings`), AppKit only where SwiftUI has gaps | Native look, small codebase. |
-| State | `@Observable` models, one `RecordingController` actor owning the active session | Enforces “one active recording” in a single place. |
+| State | `@Observable` models on the main actor; `TimelapseRecorder` owns one timelapse’s capture loop | Capture and encoding are asynchronous and hardware-backed, so the main actor stays responsive without extra actors. |
 | Screen capture | `SCScreenshotManager.captureImage` per tick | Grabs a single frame on demand. No running stream, so near-zero idle cost. |
 | Webcam capture | `AVCaptureSession` + `AVCaptureVideoDataOutput` at a throttled frame rate, keep latest frame only | See §4.2. |
 | Frame storage | HEVC video segments (fragmented MP4), one track per source, one sample per tick | Smallest on disk by a wide margin; see §4.1. |
@@ -46,12 +46,12 @@ DuoLapse.app
 ```
 ~/Library/Application Support/DuoLapse/Sessions/<uuid>/
 ├── session.json          settings, state, created and updated dates
-├── screen/0001.mp4       HEVC segment; each sample's timestamp is its capture time
-├── screen/0002.mp4
-└── camera/0001.mp4
+├── screen/<start-epoch-ms>.mp4   HEVC segment; sample time = offset from the segment start
+└── camera/<start-epoch-ms>.mp4
 ```
 
-- A new segment starts on every resume and every 10 minutes of recording. Old segments are closed and finalized, so at most the open segment is exposed to a crash.
+- Each segment is named by the capture time of its first frame, so a frame’s capture time is the segment start plus the frame’s presentation time.
+- A new segment starts on every resume, every 10 minutes of recording, and whenever the frame size changes (for example after a display resolution change). Old segments are closed and finalized, so at most the open segment is exposed to a crash.
 - The open segment is written as a fragmented MP4 (`movieFragmentInterval` = 10 s). After a crash or power loss it’s readable up to its last fragment.
 - `session.json` is written atomically (`Data.write(options: .atomic)`) on every state change.
 - Timelapse states: `recording`, `paused`, `idlePaused`, `finished`.

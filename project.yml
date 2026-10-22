@@ -20,6 +20,9 @@ targets:
       - DuoLapse
     dependencies:
       - package: DuoLapseCore
+        product: DuoLapseCore
+      - package: DuoLapseCore
+        product: DuoLapseCapture
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domesticatedpigeon.DuoLapse

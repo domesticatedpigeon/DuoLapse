@@ -6,7 +6,9 @@ Native macOS time-lapse recorder for screen and webcam. `README.md` lists the fe
 
 - `project.yml`: XcodeGen spec. The `.xcodeproj` is generated and gitignored; never edit or commit it.
 - `DuoLapse/`: app target. `App/` holds the entry point and scenes, `Features/<Feature>/` holds SwiftUI views and their models, `Resources/` holds assets.
-- `DuoLapseCore/`: Swift package with all logic that can be tested without the UI: capture, sessions, export, system services, naming.
+- `DuoLapseCore/`: Swift package with two libraries.
+  - `DuoLapseCore`: pure Foundation logic (sessions, scheduling, sizing, naming). Builds and tests on Linux.
+  - `DuoLapseCapture`: Apple-framework code (ScreenCaptureKit, AVFoundation, AppKit). Defaults to `MainActor` isolation. Declared only on macOS in `Package.swift`.
 - `.github/workflows/ci.yml`: lint, core tests and app build on a `macos-26` runner.
 
 ## Commands
@@ -19,7 +21,7 @@ xcrun swift-format lint --strict --recursive DuoLapse DuoLapseCore  # lint
 xcrun swift-format format --in-place --recursive DuoLapse DuoLapseCore
 ```
 
-On Linux (cloud sessions) there is no Xcode. Use a Swift 6.2 toolchain to run `swift-format` and, while `DuoLapseCore` doesn't import Apple-only frameworks, `swift test`. CI is the source of truth for the app build.
+On Linux (cloud sessions) there is no Xcode. A Swift 6.2 toolchain runs `swift-format` and `swift test` for `DuoLapseCore`; `DuoLapseCapture` and the app only compile on macOS, so CI is the source of truth for them. Keep anything that can be pure Foundation in `DuoLapseCore`.
 
 ## Conventions
 
