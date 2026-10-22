@@ -3,8 +3,6 @@ import Foundation
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-    static let startRecording = Self("startRecording")
-    static let pauseRecording = Self("pauseRecording")
     static let toggleRecording = Self("toggleRecording")
 }
 
@@ -13,12 +11,6 @@ struct RecordingCommands {
     let navigation: AppNavigation
 
     func registerShortcuts() {
-        KeyboardShortcuts.onKeyUp(for: .startRecording) {
-            Task { @MainActor in try? await startOrResume() }
-        }
-        KeyboardShortcuts.onKeyUp(for: .pauseRecording) {
-            Task { @MainActor in try? await pause() }
-        }
         KeyboardShortcuts.onKeyUp(for: .toggleRecording) {
             Task { @MainActor in try? await toggle() }
         }

@@ -21,7 +21,7 @@ A simple, native macOS app for recording lightweight time-lapses of your screen 
 - **Timestamp export:** Include or hide timestamps in your final video.
 
 ### Customization & Controls
-- **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
+- **Keyboard shortcut:** Choose a custom keyboard shortcut that starts or pauses recording from any app.
 - **Menu bar:** Show DuoLapse icon and timer in the menu bar. Clicking on it reveals a Quick Access menu.
 - **Run on startup:** Automatically start DuoLapse when you log in.
 - **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.

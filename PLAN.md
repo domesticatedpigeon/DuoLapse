@@ -112,7 +112,7 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 
 ### M6: Controls and polish
 - `MenuBarExtra` with live elapsed timer and a quick-access menu (start/stop, open timelapse, export, settings).
-- Global shortcuts for start, stop and toggle.
+- A global shortcut that starts or pauses recording.
 - Run on startup toggle.
 - Dock icon toggle via `NSApp.setActivationPolicy(.accessory / .regular)`.
 - Liquid Glass app icon built in Icon Composer and stored as `DuoLapse/Resources/AppIcon.icon`, with the layer artwork in `Design/AppIcon/`.

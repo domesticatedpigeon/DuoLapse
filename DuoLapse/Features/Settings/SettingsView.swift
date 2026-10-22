@@ -201,11 +201,9 @@ private struct PermissionRow: View {
 private struct ShortcutSettings: View {
     var body: some View {
         Form {
-            KeyboardShortcuts.Recorder("Start or resume recording", name: .startRecording)
-            KeyboardShortcuts.Recorder("Pause recording", name: .pauseRecording)
             KeyboardShortcuts.Recorder("Start or pause recording", name: .toggleRecording)
             Text(
-                "Shortcuts work from any app. Starting resumes your latest paused timelapse, or starts a new one with your last settings."
+                "Works from any app. While recording, it pauses. Otherwise it resumes your latest paused timelapse, or starts a new one with your last settings."
             )
             .font(.footnote)
             .foregroundStyle(.secondary)
