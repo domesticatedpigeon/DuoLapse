@@ -76,6 +76,7 @@ struct TimelapseDetailView: View {
                         perform { try await library.stop(recorder) }
                     }
                     .help("Close timelapse")
+                    Divider()
                     Button("Pause", systemImage: "pause.fill") {
                         perform { try await library.pause(recorder) }
                     }
@@ -85,6 +86,7 @@ struct TimelapseDetailView: View {
                         perform { try await library.stop(recorder) }
                     }
                     .help("Close timelapse")
+                    Divider()
                     Button("Resume", systemImage: "record.circle") {
                         perform { try await library.record(recorder) }
                     }
