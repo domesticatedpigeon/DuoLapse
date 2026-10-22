@@ -4,13 +4,15 @@ import DuoLapseCore
 import SwiftUI
 
 final class MenuBarStatusItem: NSObject, NSMenuDelegate {
-    private static let previewWidth: CGFloat = 300
 
     private let library: TimelapseLibrary
     private let navigation: AppNavigation
     private let updater: AppUpdater
     private var statusItem: NSStatusItem?
     private var displays: [CapturableDisplay] = []
+    private var previewRefreshTimer: Timer?
+    private weak var refreshingPreview: NSHostingView<MenuSourcesPreview>?
+    private weak var refreshingRecorder: TimelapseRecorder?
 
     init(library: TimelapseLibrary, navigation: AppNavigation, updater: AppUpdater) {
         self.library = library
@@ -67,17 +69,56 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         menu.addItem(actionItem("Quit DuoLapse", keyEquivalent: "q") { NSApplication.shared.terminate(nil) })
     }
 
+    func menuDidClose(_ menu: NSMenu) {
+        previewRefreshTimer?.invalidate()
+        previewRefreshTimer = nil
+        refreshingPreview = nil
+        refreshingRecorder = nil
+    }
+
     private func previewItem(for recorder: TimelapseRecorder) -> NSMenuItem {
-        let preview = NSHostingView(
-            rootView: RecorderSourcesPreview(recorder: recorder, store: library.store)
-                .frame(width: Self.previewWidth)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-        )
+        let store = library.store
+        Task {
+            await StoredThumbnails.shared.load(for: recorder.session, store: store, key: "\(recorder.session.state)")
+        }
+        let preview = NSHostingView(rootView: MenuSourcesPreview(images: Self.previewImages(of: recorder)))
         preview.frame = NSRect(origin: .zero, size: preview.fittingSize)
+        startRefreshing(preview, from: recorder)
         let item = NSMenuItem()
         item.view = preview
         return item
+    }
+
+    private func startRefreshing(_ preview: NSHostingView<MenuSourcesPreview>, from recorder: TimelapseRecorder) {
+        previewRefreshTimer?.invalidate()
+        refreshingPreview = preview
+        refreshingRecorder = recorder
+        let timer = Timer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(refreshPreview),
+            userInfo: nil,
+            repeats: true
+        )
+        RunLoop.main.add(timer, forMode: .common)
+        previewRefreshTimer = timer
+    }
+
+    @objc private func refreshPreview() {
+        guard let preview = refreshingPreview, let recorder = refreshingRecorder else { return }
+        let images = Self.previewImages(of: recorder)
+        guard images != preview.rootView.images else { return }
+        preview.rootView = MenuSourcesPreview(images: images)
+    }
+
+    private static func previewImages(of recorder: TimelapseRecorder) -> MenuPreviewImages {
+        let thumbnails = StoredThumbnails.shared
+        return MenuPreviewImages(
+            screen: recorder.latestPreviews[.screen]
+                ?? thumbnails.image(for: recorder.session.id, source: .screen),
+            camera: recorder.latestPreviews[.camera]
+                ?? thumbnails.image(for: recorder.session.id, source: .camera)
+        )
     }
 
     private func addSourceSwitchers(for recorder: TimelapseRecorder, to menu: NSMenu) {
@@ -178,4 +219,26 @@ private struct MenuChoice {
     let title: String
     let isCurrent: Bool
     let choose: () -> Void
+}
+
+private struct MenuPreviewImages: Equatable {
+    let screen: CGImage?
+    let camera: CGImage?
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.screen === rhs.screen && lhs.camera === rhs.camera
+    }
+}
+
+private struct MenuSourcesPreview: View {
+    static let width: CGFloat = 300
+
+    let images: MenuPreviewImages
+
+    var body: some View {
+        SourcesPreview(screenImage: images.screen, cameraImage: images.camera)
+            .frame(width: Self.width)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+    }
 }

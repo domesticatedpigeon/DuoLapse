@@ -11,8 +11,8 @@ struct RecorderSourcesPreview: View {
 
     var body: some View {
         SourcesPreview(screenImage: image(for: .screen), cameraImage: image(for: .camera), style: style)
-            .task(id: thumbnailKey) {
-                await thumbnails.load(for: recorder.session, store: store, key: thumbnailKey)
+            .task(id: StoredThumbnails.key(for: recorder.session)) {
+                await thumbnails.load(for: recorder.session, store: store)
             }
     }
 
@@ -20,9 +20,6 @@ struct RecorderSourcesPreview: View {
         recorder.latestPreviews[source] ?? thumbnails.image(for: recorder.session.id, source: source)
     }
 
-    private var thumbnailKey: String {
-        "\(recorder.session.state)-\(recorder.session.settings.sources)"
-    }
 }
 
 @Observable
@@ -37,7 +34,12 @@ final class StoredThumbnails {
         images[sessionID]?[source]
     }
 
-    func load(for session: TimelapseSession, store: SessionStore, key: String) async {
+    static func key(for session: TimelapseSession) -> String {
+        "\(session.state)-\(session.settings.sources)"
+    }
+
+    func load(for session: TimelapseSession, store: SessionStore) async {
+        let key = Self.key(for: session)
         guard loadedKeys[session.id] != key else { return }
         loadedKeys[session.id] = key
         var loaded: [CaptureSource: CGImage] = [:]
