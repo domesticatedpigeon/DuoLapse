@@ -4,6 +4,7 @@ import SwiftUI
 
 struct TimelapseDetailView: View {
     let library: TimelapseLibrary
+    let navigation: AppNavigation
     let recorder: TimelapseRecorder
     let onDelete: () -> Void
     @State private var isChangingState = false
@@ -45,6 +46,11 @@ struct TimelapseDetailView: View {
         .safeAreaInset(edge: .bottom) {
             controls
                 .padding()
+        }
+        .onChange(of: navigation.exportRequestID, initial: true) { _, requestedID in
+            guard requestedID == recorder.session.id else { return }
+            navigation.exportRequestID = nil
+            isExporting = true
         }
         .sheet(isPresented: $isExporting) {
             ExportSheet(session: recorder.session, store: library.store)

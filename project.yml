@@ -12,6 +12,9 @@ settings:
 packages:
   DuoLapseCore:
     path: DuoLapseCore
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: 2.0.0
 targets:
   DuoLapse:
     type: application
@@ -25,6 +28,7 @@ targets:
         product: DuoLapseCapture
       - package: DuoLapseCore
         product: DuoLapseExport
+      - package: KeyboardShortcuts
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domesticatedpigeon.DuoLapse

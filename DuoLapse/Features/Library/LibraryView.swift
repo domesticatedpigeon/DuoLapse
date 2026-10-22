@@ -1,18 +1,13 @@
 import DuoLapseCapture
 import SwiftUI
 
-enum LibrarySelection: Hashable {
-    case newTimelapse
-    case timelapse(UUID)
-}
-
 struct LibraryView: View {
     let library: TimelapseLibrary
-    @State private var selection: LibrarySelection? = .newTimelapse
+    @Bindable var navigation: AppNavigation
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $selection) {
+            List(selection: $navigation.selection) {
                 Label("New Timelapse", systemImage: "plus.circle")
                     .tag(LibrarySelection.newTimelapse)
 
@@ -41,12 +36,6 @@ struct LibraryView: View {
         .frame(minWidth: 760, minHeight: 520)
         .task {
             library.reload()
-            if let interrupted = library.interruptedRecorder {
-                selection = .timelapse(interrupted.session.id)
-            }
-        }
-        .task {
-            await library.superviseRecording()
         }
         .alert(
             "Resume Recording?",
@@ -78,11 +67,11 @@ struct LibraryView: View {
 
     @ViewBuilder
     private var detail: some View {
-        switch selection {
+        switch navigation.selection {
         case .timelapse(let id):
             if let recorder = library.recorder(for: id) {
-                TimelapseDetailView(library: library, recorder: recorder) {
-                    selection = .newTimelapse
+                TimelapseDetailView(library: library, navigation: navigation, recorder: recorder) {
+                    navigation.selection = .newTimelapse
                 }
                 .id(id)
             } else {
@@ -90,7 +79,7 @@ struct LibraryView: View {
             }
         case .newTimelapse, nil:
             NewTimelapseView(library: library) { id in
-                selection = .timelapse(id)
+                navigation.show(id)
             }
         }
     }

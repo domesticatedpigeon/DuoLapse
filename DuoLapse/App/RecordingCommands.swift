@@ -1,0 +1,49 @@
+import DuoLapseCapture
+import Foundation
+import KeyboardShortcuts
+
+extension KeyboardShortcuts.Name {
+    static let startRecording = Self("startRecording")
+    static let pauseRecording = Self("pauseRecording")
+    static let toggleRecording = Self("toggleRecording")
+}
+
+struct RecordingCommands {
+    let library: TimelapseLibrary
+    let navigation: AppNavigation
+
+    func registerShortcuts() {
+        KeyboardShortcuts.onKeyUp(for: .startRecording) {
+            Task { @MainActor in try? await startOrResume() }
+        }
+        KeyboardShortcuts.onKeyUp(for: .pauseRecording) {
+            Task { @MainActor in try? await pause() }
+        }
+        KeyboardShortcuts.onKeyUp(for: .toggleRecording) {
+            Task { @MainActor in try? await toggle() }
+        }
+    }
+
+    func startOrResume() async throws {
+        guard library.activeRecorder == nil else { return }
+        if let paused = library.latestPausedRecorder {
+            try await library.record(paused)
+            navigation.show(paused.session.id)
+        } else if let settings = NewTimelapseModel().captureSettings {
+            navigation.show(try await library.startNewTimelapse(settings: settings))
+        }
+    }
+
+    func pause() async throws {
+        guard let active = library.activeRecorder else { return }
+        try await library.pause(active)
+    }
+
+    func toggle() async throws {
+        if library.activeRecorder != nil {
+            try await pause()
+        } else {
+            try await startOrResume()
+        }
+    }
+}

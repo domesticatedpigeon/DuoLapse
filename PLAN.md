@@ -115,7 +115,10 @@ Each milestone ends in a runnable app and a PR into `alpha`.
 - Global shortcuts for start, stop and toggle.
 - Run on startup toggle.
 - Dock icon toggle via `NSApp.setActivationPolicy(.accessory / .regular)`.
-- Liquid Glass app icon built in Icon Composer.
+- Liquid Glass app icon built in Icon Composer. Icon Composer is a Mac design tool, so the icon is made there and added as `DuoLapse/Resources/AppIcon.icon`; the asset catalog placeholder stays until then.
+- Settings has General (open at login, menu bar, Dock; one of menu bar or Dock always stays on), Recording (smart pause, keep awake) and Shortcuts tabs.
+- Global shortcuts: start or resume (resumes the latest paused timelapse, otherwise starts a new one with the last settings), pause, and toggle. No defaults are assigned, so they never clash with other apps until the user picks keys.
+- Recording supervision (smart pause, keep awake) runs for the app’s lifetime from the app delegate, not from the library window, so it keeps working with the window closed.
 - Accessibility pass: VoiceOver labels, keyboard navigation, Reduce Motion.
 
 ### M7: Release
