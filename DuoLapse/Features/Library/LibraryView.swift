@@ -35,6 +35,11 @@ struct LibraryView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 320)
+            .onDeleteCommand {
+                if case .timelapse(let id) = navigation.selection {
+                    trashCandidate = library.recorder(for: id)
+                }
+            }
             .toolbar {
                 ToolbarItem {
                     SettingsLink {
@@ -45,7 +50,7 @@ struct LibraryView: View {
             }
         } detail: {
             detail
-                .navigationSplitViewColumnWidth(min: 420, ideal: 640)
+                .navigationSplitViewColumnWidth(min: 460, ideal: 640)
                 .toolbar {
                     if navigation.selection != .newTimelapse {
                         ToolbarItem(placement: .primaryAction) {
@@ -55,7 +60,7 @@ struct LibraryView: View {
                     }
                 }
         }
-        .frame(minWidth: 760, minHeight: 520)
+        .frame(minWidth: 800, minHeight: 520)
         .task {
             library.reload()
         }
@@ -195,10 +200,8 @@ struct LibraryView: View {
         switch navigation.selection {
         case .timelapse(let id):
             if let recorder = library.recorder(for: id) {
-                TimelapseDetailView(library: library, navigation: navigation, recorder: recorder) {
-                    navigation.selection = .newTimelapse
-                }
-                .id(id)
+                TimelapseDetailView(library: library, navigation: navigation, recorder: recorder)
+                    .id(id)
             } else {
                 ContentUnavailableView("Timelapse Not Found", systemImage: "questionmark.folder")
             }

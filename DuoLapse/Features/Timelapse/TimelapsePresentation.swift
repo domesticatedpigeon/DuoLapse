@@ -23,12 +23,3 @@ extension Duration {
         RecordingTimeFormat.compact(seconds: Double(components.seconds))
     }
 }
-
-extension CaptureSource {
-    var framesLabel: String {
-        switch self {
-        case .screen: "Screen frames"
-        case .camera: "Camera frames"
-        }
-    }
-}

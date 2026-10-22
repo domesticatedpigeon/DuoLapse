@@ -6,9 +6,7 @@ struct TimelapseDetailView: View {
     let library: TimelapseLibrary
     let navigation: AppNavigation
     let recorder: TimelapseRecorder
-    let onDelete: () -> Void
     @State private var isChangingState = false
-    @State private var isConfirmingDelete = false
     @State private var isExporting = false
     @State private var errorMessage: String?
 
@@ -33,12 +31,6 @@ struct TimelapseDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-
-            Section("Capture") {
-                LabeledContent("Sources", value: sourcesDescription)
-                LabeledContent("Interval", value: intervalDescription)
-                LabeledContent("Frames", value: recorder.session.capturedFrameCount.formatted())
-            }
         }
         .formStyle(.grouped)
         .navigationTitle(recorder.session.title)
@@ -53,20 +45,6 @@ struct TimelapseDetailView: View {
         .sheet(isPresented: $isExporting) {
             ExportSheet(session: recorder.session, store: library.store)
         }
-        .confirmationDialog(
-            "Move this timelapse to the Trash?",
-            isPresented: $isConfirmingDelete,
-            titleVisibility: .visible
-        ) {
-            Button("Move to Trash", role: .destructive) {
-                perform {
-                    try await library.moveToTrash(recorder)
-                    onDelete()
-                }
-            }
-        } message: {
-            Text("Its recorded frames are deleted when you empty the Trash. Exported videos are kept.")
-        }
         .alert("Something Went Wrong", isPresented: isShowingError, presenting: errorMessage) { _ in
             Button("OK") {}
         } message: { message in
@@ -76,11 +54,7 @@ struct TimelapseDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItemGroup {
-            Button("Move to Trash…", systemImage: "trash", role: .destructive) {
-                isConfirmingDelete = true
-            }
-            .help("Move to Trash")
+        ToolbarItem {
             Button("Export…", systemImage: "square.and.arrow.up") {
                 isExporting = true
             }
@@ -121,17 +95,6 @@ struct TimelapseDetailView: View {
             }
             .disabled(isChangingState)
         }
-    }
-
-    private var sourcesDescription: String {
-        recorder.session.settings.sources
-            .map { $0 == .screen ? "Screen" : "Camera" }
-            .formatted(.list(type: .and))
-    }
-
-    private var intervalDescription: String {
-        let interval = Duration.seconds(recorder.session.settings.captureIntervalSeconds)
-        return "Every \(interval.formatted(.units(allowed: [.minutes, .seconds], width: .wide)))"
     }
 
     private var isShowingError: Binding<Bool> {
