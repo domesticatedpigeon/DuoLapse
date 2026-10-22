@@ -248,6 +248,6 @@ private struct ExportActionBar: View {
             }
         }
         .buttonStyle(.glass)
-        .controlSize(.large)
+        .controlSize(.extraLarge)
     }
 }
