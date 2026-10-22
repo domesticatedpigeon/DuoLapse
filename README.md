@@ -10,8 +10,6 @@
   <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
 </p>
 
-DuoLapse captures a frame at a set interval and stitches the frames into a video. Keep several time-lapses open and record one at a time.
-
 ## Features
 
 **Recording**
