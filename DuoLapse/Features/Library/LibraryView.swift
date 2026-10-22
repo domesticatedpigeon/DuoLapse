@@ -4,6 +4,8 @@ import SwiftUI
 struct LibraryView: View {
     let library: TimelapseLibrary
     @Bindable var navigation: AppNavigation
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         NavigationSplitView {
@@ -30,12 +32,24 @@ struct LibraryView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 240, ideal: 280)
+            .toolbar {
+                ToolbarItem {
+                    SettingsLink {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                    .help("Settings")
+                }
+            }
         } detail: {
             detail
         }
         .frame(minWidth: 760, minHeight: 520)
         .task {
             library.reload()
+        }
+        .onAppear {
+            navigation.openWindowAction = openWindow
+            navigation.openSettingsAction = openSettings
         }
         .alert(
             "Resume Recording?",

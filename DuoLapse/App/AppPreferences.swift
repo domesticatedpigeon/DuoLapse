@@ -7,8 +7,13 @@ final class AppPreferences {
     private static let showsDockIconKey = "appearance.showsDockIcon"
 
     var showsMenuBarItem: Bool {
-        didSet { defaults.set(showsMenuBarItem, forKey: Self.showsMenuBarItemKey) }
+        didSet {
+            defaults.set(showsMenuBarItem, forKey: Self.showsMenuBarItemKey)
+            onShowsMenuBarItemChange?(showsMenuBarItem)
+        }
     }
+
+    @ObservationIgnored var onShowsMenuBarItemChange: ((Bool) -> Void)?
 
     var showsDockIcon: Bool {
         didSet {
@@ -23,15 +28,6 @@ final class AppPreferences {
         self.defaults = defaults
         showsMenuBarItem = defaults.object(forKey: Self.showsMenuBarItemKey) as? Bool ?? true
         showsDockIcon = defaults.object(forKey: Self.showsDockIconKey) as? Bool ?? true
-    }
-
-    var isMenuBarItemInserted: Bool {
-        get { showsMenuBarItem }
-        set {
-            if newValue != showsMenuBarItem {
-                showsMenuBarItem = newValue
-            }
-        }
     }
 
     func applyDockIconVisibility() {

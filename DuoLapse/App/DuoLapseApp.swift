@@ -23,18 +23,6 @@ struct DuoLapseApp: App {
             }
         }
 
-        MenuBarExtra(isInserted: Bindable(appDelegate.preferences).isMenuBarItemInserted) {
-            if let library = appDelegate.library {
-                MenuBarMenu(library: library, navigation: appDelegate.navigation, updater: appDelegate.updater)
-            }
-        } label: {
-            if let library = appDelegate.library {
-                MenuBarLabel(library: library)
-            } else {
-                Image(systemName: "camera.aperture")
-            }
-        }
-
         Settings {
             SettingsView(preferences: appDelegate.preferences)
         }

@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }()
 
     private var supervisionTask: Task<Void, Never>?
+    private var menuBarStatusItem: MenuBarStatusItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         preferences.applyDockIconVisibility()
@@ -21,13 +22,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             navigation.show(interrupted.session.id)
         }
         RecordingCommands(library: library, navigation: navigation).registerShortcuts()
+        let menuBarStatusItem = MenuBarStatusItem(library: library, navigation: navigation, updater: updater)
+        menuBarStatusItem.setVisible(preferences.showsMenuBarItem)
+        preferences.onShowsMenuBarItemChange = { [weak menuBarStatusItem] isVisible in
+            menuBarStatusItem?.setVisible(isVisible)
+        }
+        self.menuBarStatusItem = menuBarStatusItem
         supervisionTask = Task {
             await library.superviseRecording()
         }
     }
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
-        true
+        if !hasVisibleWindows {
+            navigation.showLibrary()
+        }
+        return true
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
