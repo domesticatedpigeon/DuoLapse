@@ -9,6 +9,13 @@ struct SourcesPreviewStyle {
     let placeholderSymbolFont: Font
 }
 
+struct SourceChoice: Identifiable {
+    let id: String
+    let title: String
+    let isSelected: Bool
+    let select: () -> Void
+}
+
 struct SourcesPreview: View {
     static let screenPlaceholderAspectRatio: CGFloat = 16 / 10
     static let cameraPlaceholderAspectRatio: CGFloat = 16 / 9
@@ -16,19 +23,56 @@ struct SourcesPreview: View {
     let screenImage: CGImage?
     let cameraImage: CGImage?
     var style = SourcesPreviewStyle.regular
+    var screenChoices: [SourceChoice] = []
+    var cameraChoices: [SourceChoice] = []
 
     var body: some View {
         EqualHeightRow(spacing: style.spacing) {
-            slot(image: screenImage, placeholderSymbol: "display", label: "Screen")
+            selectableSlot(image: screenImage, placeholderSymbol: "display", label: "Screen", choices: screenChoices)
                 .layoutValue(
                     key: AspectRatioKey.self,
                     value: aspectRatio(of: screenImage) ?? Self.screenPlaceholderAspectRatio
                 )
-            slot(image: cameraImage, placeholderSymbol: "web.camera", label: "Camera")
+            selectableSlot(image: cameraImage, placeholderSymbol: "web.camera", label: "Camera", choices: cameraChoices)
                 .layoutValue(
                     key: AspectRatioKey.self,
                     value: aspectRatio(of: cameraImage) ?? Self.cameraPlaceholderAspectRatio
                 )
+        }
+    }
+
+    @ViewBuilder
+    private func selectableSlot(
+        image: CGImage?,
+        placeholderSymbol: String,
+        label: String,
+        choices: [SourceChoice]
+    ) -> some View {
+        if choices.isEmpty {
+            slot(image: image, placeholderSymbol: placeholderSymbol, label: label)
+        } else {
+            Menu {
+                ForEach(choices) { choice in
+                    Button(action: choice.select) {
+                        if choice.isSelected {
+                            Label(choice.title, systemImage: "checkmark")
+                        } else {
+                            Text(choice.title)
+                        }
+                    }
+                }
+            } label: {
+                slot(image: image, placeholderSymbol: placeholderSymbol, label: label)
+                    .overlay(alignment: .bottomLeading) {
+                        SourceChoiceBadge(title: choices.first(where: \.isSelected)?.title ?? label)
+                    }
+            }
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+            .menuIndicator(.hidden)
+            .help("Choose \(label.lowercased())")
+            .accessibilityLabel("\(label): \(choices.first(where: \.isSelected)?.title ?? "none")")
+            .accessibilityHint("Opens a menu to choose another \(label.lowercased())")
         }
     }
 
@@ -56,6 +100,25 @@ struct SourcesPreview: View {
     private func aspectRatio(of image: CGImage?) -> CGFloat? {
         guard let image, image.height > 0 else { return nil }
         return CGFloat(image.width) / CGFloat(image.height)
+    }
+}
+
+private struct SourceChoiceBadge: View {
+    let title: String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(title)
+                .lineLimit(1)
+            Image(systemName: "chevron.up.chevron.down")
+                .imageScale(.small)
+        }
+        .font(.caption.weight(.medium))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .glassEffect(.regular, in: .capsule)
+        .padding(6)
+        .accessibilityHidden(true)
     }
 }
 

@@ -13,11 +13,12 @@ struct TimelapseDetailView: View {
     var body: some View {
         Form {
             Section {
-                RecorderSourcesPreview(recorder: recorder, store: library.store)
-            }
-
-            SourceSwitcherSection(library: library, recorder: recorder) { message in
-                errorMessage = message
+                RecorderSourcesPreview(
+                    recorder: recorder,
+                    store: library.store,
+                    switchingLibrary: library,
+                    onSwitchError: { message in errorMessage = message }
+                )
             }
 
             Section("Status") {

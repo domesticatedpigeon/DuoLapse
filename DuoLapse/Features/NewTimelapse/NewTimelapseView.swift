@@ -12,7 +12,14 @@ struct NewTimelapseView: View {
 
     var body: some View {
         Form {
-            SourcePreviewSection(screenImage: screenPreview, cameraImage: cameraPreview)
+            Section {
+                SourcesPreview(
+                    screenImage: screenPreview,
+                    cameraImage: cameraPreview,
+                    screenChoices: displayChoices,
+                    cameraChoices: cameraChoices
+                )
+            }
             if !model.capturesScreen && !model.capturesCamera {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
@@ -25,7 +32,7 @@ struct NewTimelapseView: View {
                     }
                 }
             }
-            if model.capturesScreen || model.capturesCamera {
+            if needsSourceNotice {
                 Section("Sources") {
                     ScreenSourceRows(model: model)
                     CameraSourceRows(model: model)
@@ -96,6 +103,32 @@ struct NewTimelapseView: View {
         return previewedSources.cameraID.flatMap(previewer.cameraImage(forCamera:))
     }
 
+    private var needsSourceNotice: Bool {
+        let screenNeedsAttention = model.capturesScreen && !model.isScreenCaptureAllowed
+        let cameraNeedsAttention =
+            model.capturesCamera && (model.cameraPermission != .granted || model.cameras.isEmpty)
+        return screenNeedsAttention || cameraNeedsAttention
+    }
+
+    private var displayChoices: [SourceChoice] {
+        guard model.capturesScreen, model.isScreenCaptureAllowed else { return [] }
+        return model.displays.map { display in
+            SourceChoice(id: display.uuid, title: display.name, isSelected: display.uuid == model.selectedDisplayUUID) {
+                model.selectedDisplayUUID = display.uuid
+            }
+        }
+    }
+
+    private var cameraChoices: [SourceChoice] {
+        guard model.capturesCamera, model.cameraPermission == .granted else { return [] }
+        return model.cameras.map { camera in
+            SourceChoice(id: camera.uniqueID, title: camera.name, isSelected: camera.uniqueID == model.selectedCameraID)
+            {
+                model.selectedCameraID = camera.uniqueID
+            }
+        }
+    }
+
     private var isShowingError: Binding<Bool> {
         Binding(
             get: { model.errorMessage != nil },
@@ -125,30 +158,13 @@ private struct PreviewedSources: Hashable {
     let cameraID: String?
 }
 
-private struct SourcePreviewSection: View {
-    let screenImage: CGImage?
-    let cameraImage: CGImage?
-
-    var body: some View {
-        Section {
-            SourcesPreview(screenImage: screenImage, cameraImage: cameraImage)
-        }
-    }
-}
-
 private struct ScreenSourceRows: View {
     @Bindable var model: NewTimelapseModel
 
     var body: some View {
         if model.capturesScreen {
             Group {
-                if model.isScreenCaptureAllowed {
-                    Picker("Display", selection: $model.selectedDisplayUUID) {
-                        ForEach(model.displays) { display in
-                            Text(display.name).tag(Optional(display.uuid))
-                        }
-                    }
-                } else {
+                if !model.isScreenCaptureAllowed {
                     PermissionNotice(
                         message:
                             "Allow Screen Recording for DuoLapse in System Settings, then quit and reopen DuoLapse.",
@@ -172,11 +188,7 @@ private struct CameraSourceRows: View {
                     Text("No camera found. Connect a camera to record it.")
                         .foregroundStyle(.secondary)
                 case .granted:
-                    Picker("Camera", selection: $model.selectedCameraID) {
-                        ForEach(model.cameras) { camera in
-                            Text(camera.name).tag(Optional(camera.uniqueID))
-                        }
-                    }
+                    EmptyView()
                 case .notDetermined:
                     PermissionNotice(
                         message: "DuoLapse needs access to your camera to record it.",

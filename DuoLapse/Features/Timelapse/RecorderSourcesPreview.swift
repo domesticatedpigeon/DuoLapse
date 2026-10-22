@@ -7,13 +7,67 @@ struct RecorderSourcesPreview: View {
     let recorder: TimelapseRecorder
     let store: SessionStore
     var style = SourcesPreviewStyle.regular
+    var switchingLibrary: TimelapseLibrary?
+    var onSwitchError: (String) -> Void = { _ in }
     @State private var thumbnails = StoredThumbnails.shared
+    @State private var devices = CaptureDevices.shared
 
     var body: some View {
-        SourcesPreview(screenImage: image(for: .screen), cameraImage: image(for: .camera), style: style)
-            .task(id: StoredThumbnails.key(for: recorder.session)) {
-                await thumbnails.load(for: recorder.session, store: store)
+        SourcesPreview(
+            screenImage: image(for: .screen),
+            cameraImage: image(for: .camera),
+            style: style,
+            screenChoices: displayChoices,
+            cameraChoices: cameraChoices
+        )
+        .task(id: StoredThumbnails.key(for: recorder.session)) {
+            await thumbnails.load(for: recorder.session, store: store)
+        }
+        .task {
+            if switchingLibrary != nil {
+                await devices.refresh()
             }
+        }
+    }
+
+    private var displayChoices: [SourceChoice] {
+        guard let library = switchingLibrary, recorder.session.isOpen,
+            let current = recorder.session.settings.displayUUID
+        else { return [] }
+        var choices = devices.displays.map { display in
+            SourceChoice(id: display.uuid, title: display.name, isSelected: display.uuid == current) {
+                switchSource { try await library.switchDisplay(of: recorder, to: display.uuid) }
+            }
+        }
+        if !devices.displays.contains(where: { $0.uuid == current }) {
+            choices.append(SourceChoice(id: current, title: "Unavailable display", isSelected: true) {})
+        }
+        return choices
+    }
+
+    private var cameraChoices: [SourceChoice] {
+        guard let library = switchingLibrary, recorder.session.isOpen,
+            let current = recorder.session.settings.cameraID
+        else { return [] }
+        var choices = devices.cameras.map { camera in
+            SourceChoice(id: camera.uniqueID, title: camera.name, isSelected: camera.uniqueID == current) {
+                switchSource { try await library.switchCamera(of: recorder, to: camera.uniqueID) }
+            }
+        }
+        if !devices.cameras.contains(where: { $0.uniqueID == current }) {
+            choices.append(SourceChoice(id: current, title: "Unavailable camera", isSelected: true) {})
+        }
+        return choices
+    }
+
+    private func switchSource(_ change: @escaping @MainActor () async throws -> Void) {
+        Task {
+            do {
+                try await change()
+            } catch {
+                onSwitchError(error.localizedDescription)
+            }
+        }
     }
 
     private func image(for source: CaptureSource) -> CGImage? {
