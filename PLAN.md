@@ -235,6 +235,7 @@ macOS CI is free for public repositories. For private repositories it uses the a
 - **Permissions across updates:** macOS ties Screen Recording and Camera permission to the app’s code signature. An ad-hoc signature changes on every build, which would make users re-grant both permissions after each update. Signing every release with one long-lived self-signed certificate, stored as a CI secret, keeps the signature identity stable so permissions survive updates. M7 verifies this on a real update.
 - **Homebrew:** the official Homebrew cask repository no longer accepts apps that fail Gatekeeper, so the cask lives in `Casks/` in this repo. Users tap the repo by its GitHub URL, as in the README. The cask doesn’t strip the quarantine flag, so first launch needs the same **Open Anyway** step as a manual download.
 - **Updates:** Sparkle verifies each update with its own EdDSA signature, independent of Apple, so in-app updates work without notarisation.
+- **Library validation:** the hardened runtime only loads frameworks signed by the same Team ID. Ad-hoc and self-signed builds have no Team ID, while the embedded Sparkle framework keeps Sparkle’s, so the app sets `com.apple.security.cs.disable-library-validation`. CI launches the built app to catch this class of startup failure.
 
 ## 8. License
 
