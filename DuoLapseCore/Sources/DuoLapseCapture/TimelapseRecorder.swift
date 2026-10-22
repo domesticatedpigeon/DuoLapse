@@ -155,7 +155,7 @@ public final class TimelapseRecorder {
             width: CVPixelBufferGetWidth(pixelBuffer),
             height: CVPixelBufferGetHeight(pixelBuffer)
         )
-        latestPreviews[source] = previewRenderer.image(from: pixelBuffer)
+        latestPreviews[source] = await previewRenderer.image(from: PreviewFrame(pixelBuffer: pixelBuffer))
         let writer = try await segmentWriter(for: source, frameSize: frameSize, capturedAt: date)
         guard writer.append(pixelBuffer, capturedAt: date) else { return false }
         capturedFrameCounts[source, default: 0] += 1

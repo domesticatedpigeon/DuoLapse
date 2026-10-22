@@ -21,6 +21,8 @@ struct TimelapseRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 if isRenaming {
                     TextField("Name", text: $draftName, prompt: Text(recorder.session.title))
+                        .textFieldStyle(.roundedBorder)
+                        .labelsHidden()
                         .focused($isNameFieldFocused)
                         .onSubmit { onRename(draftName) }
                         .onExitCommand(perform: onCancelRename)
@@ -28,7 +30,7 @@ struct TimelapseRow: View {
                             if !isFocused { onRename(draftName) }
                         }
                         .onAppear {
-                            draftName = recorder.session.name ?? ""
+                            draftName = recorder.session.title
                             isNameFieldFocused = true
                         }
                 } else {

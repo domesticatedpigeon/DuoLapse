@@ -146,6 +146,7 @@ struct LibraryView: View {
     private func finishRenaming(_ recorder: TimelapseRecorder, to name: String) {
         guard renamingID == recorder.session.id else { return }
         renamingID = nil
+        guard name != recorder.session.title else { return }
         perform { try library.rename(recorder, to: name) }
     }
 

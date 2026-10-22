@@ -24,7 +24,7 @@ public final class SourcePreviewer {
                 screenImage = await latestScreenImage(displayUUID: displayUUID) ?? screenImage
             }
             if let previewCamera, let pixelBuffer = try? previewCamera.currentFrame() {
-                cameraImage = renderer.image(from: pixelBuffer)
+                cameraImage = await renderer.image(from: PreviewFrame(pixelBuffer: pixelBuffer))
             }
             try? await Task.sleep(for: refreshInterval, tolerance: .milliseconds(200))
         }
@@ -53,11 +53,6 @@ public final class SourcePreviewer {
     }
 
     private func latestScreenImage(displayUUID: String) async -> CGImage? {
-        guard
-            let sampleBuffer = try? await ScreenFrameSource.captureFrame(
-                displayUUID: displayUUID, resolution: .standard),
-            let pixelBuffer = sampleBuffer.imageBuffer
-        else { return nil }
-        return renderer.image(from: pixelBuffer)
+        try? await ScreenFrameSource.capturePreviewImage(displayUUID: displayUUID)
     }
 }
