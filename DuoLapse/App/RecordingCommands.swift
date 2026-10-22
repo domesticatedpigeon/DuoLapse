@@ -3,7 +3,8 @@ import Foundation
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-    static let toggleRecording = Self("toggleRecording")
+    static let toggleRecording = Self(
+        "toggleRecording", default: Shortcut(.r, modifiers: [.control, .option, .command]))
 }
 
 struct RecordingCommands {
