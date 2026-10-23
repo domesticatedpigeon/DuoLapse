@@ -5,8 +5,8 @@
 <h1 align="center">DuoLapse</h1>
 
 <p align="center">
-  DuoLapse captures lightweight timelapses of your screen and webcam.<br>
-  Pause multiple recordings and resume them one by one.
+  DuoLapse records timelapses of your screen and webcam, with a focus on simplicity, file size, and low resource usage.<br>
+  Seamlessly pause and resume between multiple recordings, and choose the video layout during export.
 </p>
 
 <p align="center">
@@ -22,8 +22,8 @@
 ## Features
 
 **Recording**
-- Record your screen and webcam, side by side
-- Several open timelapses, one active recording
+- Record your screen and webcam separately
+- Multiple open timelapses, one active recording
 - Capture every few seconds to save disk space
 - Smart pause automatically skips inactive frames
 - Keeps your Mac and webcam awake
