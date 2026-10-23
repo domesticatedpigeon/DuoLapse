@@ -13,15 +13,12 @@
   <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
 </p>
 
-| Export PiP | Export Extra-wide |
+| Export Dialog | Settings |
 | :---: | :---: |
-| ![PiP](Design/Screenshots/export-pip.png) | ![Vertical](Design/Screenshots/export-extrawide.png) |
-| Export for Reel | Settings |
-| ![Vertical](Design/Screenshots/export-vertical.png) | ![Settings](Design/Screenshots/settings.png) |
+| ![PiP](Design/Screenshots/export-pip.png) | ![Settings](Design/Screenshots/settings.png) |
 
 ## Features
 
-**Recording**
 - Record your screen and webcam separately
 - Multiple open timelapses, one active recording
 - Capture every few seconds to save disk space
@@ -34,23 +31,18 @@
 
 **Export**
 - Frame rate: 30 fps
-- Video length:
-  - 30 seconds
-  - 1 minute
-  - full length
-  - custom
-- Video layout:
-  - Picture in Picture
-  - Extra-wide Side by Side
-  - Vertical Stack for Reels
-  - Fill screen or fit to screen
-  - Optional timestamp
+- Length: 30 seconds, 1 minute, full length or custom
+- Layout: Picture-in-Picture, side-by-side, vertical stack for reels.
+- Fill screen or fit to screen
+- Optional timestamp
 - HEVC or H.264
 - Customizable filename rule
 
 ## Install
 
-**Download:** get `DuoLapse.zip` from the [latest release](https://github.com/domesticatedpigeon/DuoLapse/releases/latest), unzip it and move `DuoLapse.app` to Applications.
+**Download:**
+1. Get `DuoLapse.zip` from the [latest release](https://github.com/domesticatedpigeon/DuoLapse/releases/latest).
+2. Unzip it and move `DuoLapse.app` to Applications.
 
 **Homebrew:**
 
@@ -59,7 +51,7 @@ brew tap domesticatedpigeon/duolapse https://github.com/domesticatedpigeon/DuoLa
 brew install --cask duolapse
 ```
 
-### First launch
+**First launch:**
 
 DuoLapse isn’t notarised, so macOS blocks it once.
 
@@ -67,7 +59,7 @@ DuoLapse isn’t notarised, so macOS blocks it once.
 2. In **System Settings › Privacy & Security**, click **Open Anyway** next to DuoLapse.
 3. Enter your password and click **Open Anyway** again.
 
-If macOS says the app “is damaged”, run this, then open it again:
+If macOS says the app is damaged, run this in Terminal, then open it again:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/DuoLapse.app
