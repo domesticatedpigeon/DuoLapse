@@ -16,7 +16,13 @@ final class DisplayStateMonitor {
     private init() {
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         observe(workspaceCenter, NSWorkspace.screensDidSleepNotification) { $0.areDisplaysAsleep = true }
-        observe(workspaceCenter, NSWorkspace.screensDidWakeNotification) { $0.areDisplaysAsleep = false }
+        observe(workspaceCenter, NSWorkspace.screensDidWakeNotification) { monitor in
+            monitor.areDisplaysAsleep = false
+            ScreenFrameSource.forgetDisplays()
+        }
+        observe(NotificationCenter.default, NSApplication.didChangeScreenParametersNotification) { _ in
+            ScreenFrameSource.forgetDisplays()
+        }
         observe(workspaceCenter, NSWorkspace.willSleepNotification) { $0.isSystemAsleep = true }
         observe(workspaceCenter, NSWorkspace.didWakeNotification) { monitor in
             monitor.isSystemAsleep = false
