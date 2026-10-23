@@ -14,6 +14,7 @@ struct ExportFileSettings: View {
                     Text("HEVC (smaller file)").tag(ExportCodec.hevc)
                     Text("H.264 (plays everywhere)").tag(ExportCodec.h264)
                 }
+                .untinted()
                 LabeledContent("Save to") {
                     HStack {
                         Text(outputFolder.lastPathComponent)
@@ -21,6 +22,7 @@ struct ExportFileSettings: View {
                             .truncationMode(.middle)
                         Button("Choose…") { isChoosingFolder = true }
                             .buttonStyle(.glass)
+                            .untinted()
                     }
                 }
             }

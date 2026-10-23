@@ -158,6 +158,7 @@ private struct ExportLengthSection: View {
                     Text(label(for: option)).tag(option)
                 }
             }
+            .untinted()
             if model.durationOption == .custom {
                 Stepper(value: $model.customDurationSeconds, in: 1...model.maximumCustomSeconds) {
                     LabeledContent("Custom length", value: formatted(seconds: Double(model.customDurationSeconds)))
@@ -203,11 +204,13 @@ private struct ExportLayoutSection: View {
                         Text("Picture in picture").tag(HorizontalArrangement.pictureInPicture)
                         Text("Side by side").tag(HorizontalArrangement.sideBySide)
                     }
+                    .untinted()
                 case .vertical:
                     Picker("On top", selection: $model.settings.layout.verticalOrder) {
                         Text("Screen").tag(VerticalOrder.screenOnTop)
                         Text("Camera").tag(VerticalOrder.cameraOnTop)
                     }
+                    .untinted()
                     LabeledContent("Screen / camera split") {
                         HStack {
                             Slider(
@@ -254,6 +257,7 @@ private struct ExportLayoutSection: View {
                     Text("Bottom left").tag(OverlayCorner.bottomLeading)
                     Text("Bottom right").tag(OverlayCorner.bottomTrailing)
                 }
+                .untinted()
             }
         }
     }
@@ -286,6 +290,7 @@ private struct FramingPicker: View {
             Text("Fill (crop edges)").tag(SourceFraming.fill)
             Text("Fit (show everything)").tag(SourceFraming.fit)
         }
+        .untinted()
     }
 }
 
@@ -299,11 +304,13 @@ private struct CameraOverlayControls: View {
             Text("Bottom left").tag(OverlayCorner.bottomLeading)
             Text("Bottom right").tag(OverlayCorner.bottomTrailing)
         }
+        .untinted()
         Picker("Size", selection: $overlay.size) {
             Text("Small").tag(OverlaySize.small)
             Text("Medium").tag(OverlaySize.medium)
             Text("Large").tag(OverlaySize.large)
         }
+        .untinted()
         Toggle("Circle", isOn: $overlay.isCircular)
         LabeledContent("Corner radius") {
             HStack {
@@ -348,6 +355,7 @@ private struct ExportActionBar: View {
                 Button("Cancel", role: .cancel, action: close)
                 Button("Export", action: model.startExport)
                     .buttonStyle(.glassProminent)
+                    .tint(.brandPink)
                     .keyboardShortcut(.defaultAction)
             case .exporting(let progress):
                 ProgressView(value: progress)
@@ -362,6 +370,7 @@ private struct ExportActionBar: View {
                 }
                 Button("Done", action: close)
                     .buttonStyle(.glassProminent)
+                    .tint(.brandPink)
                     .keyboardShortcut(.defaultAction)
             case .failed(let message):
                 Label(message, systemImage: "exclamationmark.triangle.fill")
@@ -371,6 +380,7 @@ private struct ExportActionBar: View {
             }
         }
         .buttonStyle(.glass)
+        .untinted()
         .controlSize(.extraLarge)
     }
 }

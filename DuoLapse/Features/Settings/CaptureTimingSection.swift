@@ -29,6 +29,7 @@ struct CaptureTimingSection: View {
                     Text(resolution.displayName).tag(resolution)
                 }
             }
+            .untinted()
         }
     }
 

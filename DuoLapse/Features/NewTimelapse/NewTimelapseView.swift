@@ -29,6 +29,7 @@ struct NewTimelapseView: View {
                             Text("Choose Sources in Settings…")
                         }
                         .buttonStyle(.glass)
+                        .untinted()
                     }
                 }
             }

@@ -5,3 +5,9 @@ extension ShapeStyle where Self == Color {
         Color("AccentColor", bundle: .main)
     }
 }
+
+extension View {
+    func untinted() -> some View {
+        tint(Color?.none)
+    }
+}
