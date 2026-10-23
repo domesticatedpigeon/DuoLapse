@@ -13,10 +13,6 @@
   <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
 </p>
 
-| Export Dialog | Settings |
-| :---: | :---: |
-| ![PiP](Design/Screenshots/export-pip.png) | ![Settings](Design/Screenshots/settings.png) |
-
 ## Features
 
 - **Dual Recording:** Capture screen and webcam separately.
