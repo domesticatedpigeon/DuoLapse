@@ -1,6 +1,6 @@
 # Releasing DuoLapse
 
-Releases are built, signed and published by `.github/workflows/release.yml` when a version tag is pushed. DuoLapse isn’t notarised, so it’s signed with a long-lived self-signed certificate instead of an Apple Developer ID.
+Releases are built, signed and published by `.github/workflows/release.yml`, started from the Actions tab or by pushing a version tag. DuoLapse isn’t notarised, so it’s signed with a long-lived self-signed certificate instead of an Apple Developer ID.
 
 ## One-time setup
 
@@ -57,15 +57,18 @@ Builds without `SPARKLE_PUBLIC_ED_KEY`, such as local Xcode builds, run normally
 ## Publishing a release
 
 1. Merge the release changes into `main`.
-2. Tag the merge commit and push the tag:
+2. Start the release, either way:
+   - On GitHub, open **Actions › Release › Run workflow**, keep the branch on `main`, and enter a version like `0.2.0`. Leave the version empty to bump the patch number of the latest release, for example 0.1.1 to 0.1.2.
+   - Or tag the merge commit and push the tag:
 
-   ```sh
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
+     ```sh
+     git tag v0.2.0
+     git push origin v0.2.0
+     ```
 
 3. The workflow:
-   - builds the Release configuration with the tag’s version and the run number as the build number
+   - creates the `v` tag on `main` when started from the Actions tab
+   - builds the Release configuration with the release version and the run number as the build number
    - signs Sparkle’s helpers and the app with the self-signed identity and the hardened runtime
    - zips the app, signs the zip for Sparkle and writes `appcast.xml`
    - publishes both to a GitHub release with generated notes
