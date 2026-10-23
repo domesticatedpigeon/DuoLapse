@@ -19,7 +19,7 @@
 - **Multiple Timelapses:** Seamlessly pause and resume between multiple recordings.
 - **Space Saving:** Smart pause skips inactive frames to save disk space.
 - **Global Shortcut:** Start or pause instantly with `⌃⌥⌘R`.
-- **Menu Bar Controls:** Monitor active length and switch sources easily.
+- **Menu Bar Controls:** Monitor active recording length and switch sources easily.
 - **Always Awake:** Keeps your Mac and webcam active during recording.
 - **Crash-Proof:** Timelapses survive crashes and power loss.
 
