@@ -1,51 +1,100 @@
-# DuoLapse
+<p align="center">
+  <img src="Design/AppIcon/preview.png" width="128" height="128" alt="DuoLapse app icon">
+</p>
 
-A simple, native macOS app for recording lightweight time-lapses of your screen and webcam. It captures screenshots at a set interval and automatically stitches them together into a final video. Multiple open time-lapses are supported, with one active recording at a time.
+<h1 align="center">DuoLapse</h1>
+
+<p align="center">
+  <strong>Lightweight time-lapses of your screen and webcam, for macOS.</strong><br>
+  DuoLapse captures your screen and webcam at a set interval and stitches the shots into a video.<br>
+  Keep several time-lapses open and record one at a time.
+</p>
+
+<p align="center">
+  <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
+</p>
 
 ## Features
-### Recording & Performance
-- **Lightweight:** Low memory and CPU footprint.
-- **Multi-source support:** Capture chosen screen with ScreenCaptureKit, and webcam with AVFoundation.
-- **Multi-session support:** Keep multiple timelapses open at once, allowing you to easily pause and resume sessions from the library. Note that only one timelapse can be recorded at a time.
-- **Custom capture rate:** Select the interval in seconds between screenshots.
-- **Smart pause:** Automatically stop and resume recording when no user input is detected for a minute.
-- **Keep awake:** Prevents your Mac and devices from sleeping during recording, even with smart pause on.
-- **Crash recovery:** Automatically restore your recording session after a crash or power outage.
 
-### Export & Output
-- **Built-in exporter:** Stitch screenshots together into a final `30 fps` timelapse.
-- **Video export options:** Choose your preferred video duration. Presets are `30 seconds`, `60 seconds`, `7 minutes`, `Full length`.
-- **Vertical video:** Choose to export videos in a vertical aspect ratio for mobile devices.
-- **Storage:** Choose where to save exported videos. The default folder is `~/Movies/DuoLapse Recordings`.
-- **Custom filename format:** Define how exported videos are named, with support for dynamic date and time variables. The default is `DuoLapse Recording YYYY-MM-DDThh:mm:ss`
-- **Timestamp export:** Include or hide timestamps in your final video.
+**Recording**
+- Screen and webcam, previewed side by side
+- Capture every few seconds, 2 by default
+- Switch display or webcam mid-recording
+- Smart pause when you step away
+- Keeps your Mac and webcam awake
+- Frames survive crashes and power loss
 
-### Customization & Controls
-- **Keyboard shortcut:** Choose custom keyboard shortcuts to start, stop or toggle recording.
-- **Menu bar:** Show DuoLapse icon and timer in the menu bar. Clicking on it reveals a Quick Access menu.
-- **Run on startup:** Automatically start DuoLapse when you log in.
-- **Icon customization:** Liquid Glass support, option to show or hide the app icon from the dock.
+**Library**
+- Several open time-lapses, one recording
+- Rename, close, reopen or trash
+- Keeps running in the menu bar
 
-## How to Install
+**Export**
+- `30 fps` video, previewed live
+- 30 seconds, 1 minute, 3 minutes, full length or custom
+- Picture in picture, side by side or vertical
+- Fill or fit for each source
+- HEVC or H.264
+- Optional timestamp
+- Custom folder and file name
 
-Install instructions go here.
+**Controls**
+- Start or pause from anywhere with ⌃⌥⌘R
+- Menu bar timer with previews and source switching
+- Open at login
+- Hide the Dock icon
 
-### Release
+## Install
 
-### Homebrew
+Requires macOS 26 Tahoe or later.
+
+**Download:** get `DuoLapse.zip` from the [latest release](https://github.com/domesticatedpigeon/DuoLapse/releases/latest), unzip it and move `DuoLapse.app` to Applications.
+
+**Homebrew:**
+
+```sh
+brew tap domesticatedpigeon/duolapse https://github.com/domesticatedpigeon/DuoLapse
+brew install --cask duolapse
+```
+
+DuoLapse updates itself. You can also choose **DuoLapse › Check for Updates…**.
+
+### First launch
+
+DuoLapse isn’t notarised, so macOS blocks it once.
+
+1. Open DuoLapse and click **Done** when macOS can’t verify it.
+2. In **System Settings › Privacy & Security**, click **Open Anyway** next to DuoLapse.
+3. Enter your password and click **Open Anyway** again.
+
+If macOS says the app “is damaged”, run this, then open it again:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/DuoLapse.app
+```
+
+### Permissions
+
+DuoLapse needs **Screen Recording** for your screen and **Camera** for your webcam. Check and grant both in **DuoLapse › Settings › Permissions**. Reopen DuoLapse after allowing Screen Recording.
 
 ## Build
 
-Build goes here.
+Requires Xcode 26.
 
-## Stack
+```sh
+brew install xcodegen
+git clone https://github.com/domesticatedpigeon/DuoLapse.git
+cd DuoLapse
+xcodegen generate
+open DuoLapse.xcodeproj
+```
 
-Stack goes here.
+- Run `xcodegen generate` again after pulling changes to `project.yml` or new files.
+- To keep permissions across rebuilds, install with `scripts/install-local.sh`. See [`RELEASING.md`](RELEASING.md).
+- Core tests: `swift test --package-path DuoLapseCore`.
 
-## Development
-
-`CLAUDE.md`
+Built with Swift 6, SwiftUI, ScreenCaptureKit and AVFoundation. See [`CLAUDE.md`](CLAUDE.md) for conventions and [`PLAN.md`](PLAN.md) for the roadmap.
 
 ## License
 
-License goes here.
+[GPL-3.0](LICENSE)

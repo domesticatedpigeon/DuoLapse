@@ -1,0 +1,37 @@
+# DuoLapse
+
+Native macOS time-lapse recorder for screen and webcam. `README.md` lists the features; `PLAN.md` holds the architecture, milestones and decisions behind them. Read `PLAN.md` before starting a milestone.
+
+## Layout
+
+- `project.yml`: XcodeGen spec. The `.xcodeproj` is generated and gitignored; never edit or commit it.
+- `DuoLapse/`: app target. `App/` holds the entry point and scenes, `Features/<Feature>/` holds SwiftUI views and their models, `Resources/` holds assets.
+- `DuoLapseCore/`: Swift package with two libraries.
+  - `DuoLapseCore`: pure Foundation logic (sessions, scheduling, sizing, naming). Builds and tests on Linux.
+  - `DuoLapseCapture`: Apple-framework capture code (ScreenCaptureKit, AVFoundation, AppKit). Defaults to `MainActor` isolation. Declared only on macOS in `Package.swift`.
+  - `DuoLapseExport`: decoding, Core Image compositing and video writing. Nonisolated; heavy entry points are `@concurrent` so they run off the main actor. macOS only.
+- `.github/workflows/ci.yml`: lint, core tests and app build on a `macos-26` runner.
+
+## Commands
+
+```sh
+xcodegen generate                                                   # create DuoLapse.xcodeproj
+xcodebuild build -project DuoLapse.xcodeproj -scheme DuoLapse -destination 'platform=macOS'
+swift test --package-path DuoLapseCore                              # core unit tests
+xcrun swift-format lint --strict --recursive DuoLapse DuoLapseCore  # lint
+xcrun swift-format format --in-place --recursive DuoLapse DuoLapseCore
+```
+
+On Linux (cloud sessions) there is no Xcode. A Swift 6.2 toolchain runs `swift-format` and `swift test` for `DuoLapseCore`; `DuoLapseCapture` and the app only compile on macOS, so CI is the source of truth for them. Keep anything that can be pure Foundation in `DuoLapseCore`.
+
+## Conventions
+
+- Swift 6 language mode. The app target defaults to `MainActor` isolation; move work off the main actor explicitly.
+- Objective-C exceptions from Apple frameworks must never be thrown. Swift can't catch them, and when AppKit swallows one on the main thread it leaves Swift's executor tracking corrupted, so the app later crashes somewhere unrelated inside `swift_task_isCurrentExecutor`. Follow each API's documented call order (for example, create an `AVAssetWriterInputPixelBufferAdaptor` before `startWriting()`), and cover framework setup code with a test that runs it on macOS.
+- No code comments. Names carry the meaning: types, functions and test names read as sentences.
+- Put logic in `DuoLapseCore` and keep views thin. New core code comes with Swift Testing tests.
+- Values persisted to disk (`session.json` fields, enum raw values) are a file format. Changing one needs a migration and a test.
+- No new third-party dependencies beyond those in `PLAN.md` without asking.
+- UI: system controls and materials, SF Symbols, Dynamic Type-friendly text styles, VoiceOver labels on every control, respect Reduce Motion.
+- Branches: one PR per milestone into `alpha`. CI must be green before merge.
+- Never put links to Claude Code sessions in commit messages, PR descriptions or comments.

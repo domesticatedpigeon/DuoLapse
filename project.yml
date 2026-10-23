@@ -1,0 +1,59 @@
+name: DuoLapse
+options:
+  bundleIdPrefix: com.domesticatedpigeon
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+packages:
+  DuoLapseCore:
+    path: DuoLapseCore
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: 2.0.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
+targets:
+  DuoLapse:
+    type: application
+    platform: macOS
+    sources:
+      - DuoLapse
+    dependencies:
+      - package: DuoLapseCore
+        product: DuoLapseCore
+      - package: DuoLapseCore
+        product: DuoLapseCapture
+      - package: DuoLapseCore
+        product: DuoLapseExport
+      - package: KeyboardShortcuts
+      - package: Sparkle
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.domesticatedpigeon.DuoLapse
+        PRODUCT_NAME: DuoLapse
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: DuoLapse/Info.plist
+        SPARKLE_PUBLIC_ED_KEY: ""
+        INFOPLIST_KEY_CFBundleDisplayName: DuoLapse
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_NSCameraUsageDescription: DuoLapse uses your camera to capture webcam frames for your time-lapse.
+        INFOPLIST_KEY_NSHumanReadableCopyright: Licensed under GPL-3.0.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: DuoLapse/DuoLapse.entitlements
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        SWIFT_APPROACHABLE_CONCURRENCY: YES
+schemes:
+  DuoLapse:
+    build:
+      targets:
+        DuoLapse: all

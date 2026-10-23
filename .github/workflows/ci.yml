@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main, alpha]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Lint
+        run: xcrun swift-format lint --strict --recursive --parallel DuoLapse DuoLapseCore
+
+      - name: Test DuoLapseCore
+        run: swift test --package-path DuoLapseCore
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build app
+        run: |
+          xcodebuild build \
+            -project DuoLapse.xcodeproj \
+            -scheme DuoLapse \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData
+
+      - name: Launch app
+        run: |
+          app=build/DerivedData/Build/Products/Debug/DuoLapse.app
+          "$app/Contents/MacOS/DuoLapse" > "$RUNNER_TEMP/launch.log" 2>&1 &
+          pid=$!
+          sleep 10
+          if ! kill -0 "$pid" 2>/dev/null; then
+            cat "$RUNNER_TEMP/launch.log"
+            echo "::error::DuoLapse exited within 10 seconds of launch"
+            exit 1
+          fi
+          sample "$pid" 3 -file "$RUNNER_TEMP/launch-sample.txt" > /dev/null 2>&1 || true
+          echo "--- Main thread 10 s after launch ---"
+          awk '/Call graph:/{found=1} found' "$RUNNER_TEMP/launch-sample.txt" | head -n 120
+          kill "$pid"
+          python3 scripts/check-main-thread-idle.py "$RUNNER_TEMP/launch-sample.txt"
+
+      - name: Check app icon
+        run: |
+          app=build/DerivedData/Build/Products/Debug/DuoLapse.app
+          icon_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconName' "$app/Contents/Info.plist")"
+          if [[ "$icon_name" != "AppIcon" ]]; then
+            echo "::error::CFBundleIconName is '$icon_name', expected AppIcon"
+            exit 1
+          fi
+          if [[ -e "$app/Contents/Resources/AppIcon.icon" ]]; then
+            echo "::error::AppIcon.icon was copied as a plain resource instead of being compiled"
+            exit 1
+          fi

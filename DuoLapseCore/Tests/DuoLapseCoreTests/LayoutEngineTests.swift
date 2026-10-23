@@ -1,0 +1,238 @@
+import Foundation
+import Testing
+
+@testable import DuoLapseCore
+
+struct LayoutEngineTests {
+    let macBookScreen = PixelSize(width: 1920, height: 1200)
+    let camera = PixelSize(width: 1280, height: 720)
+
+    @Test func horizontalCanvasFollowsScreenAspectRatio() {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.canvasSize == PixelSize(width: 1920, height: 1200))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 1920, height: 1200))
+    }
+
+    @Test func pictureInPictureSitsInChosenCornerWithMargin() {
+        let layout = ExportLayout(cameraOverlay: CameraOverlay(corner: .bottomTrailing, size: .medium))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.frame == LayoutRect(x: 1392, y: 882, width: 480, height: 270))
+        #expect(plan.camera?.contentMode == .fill)
+    }
+
+    @Test func topLeadingOverlayStartsAtMargin() {
+        let layout = ExportLayout(cameraOverlay: CameraOverlay(corner: .topLeading, size: .small))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.frame == LayoutRect(x: 48, y: 48, width: 384, height: 216))
+    }
+
+    @Test func cornerRadiusIsFractionOfShorterSide() {
+        let layout = ExportLayout(cameraOverlay: CameraOverlay(cornerRadiusFraction: 0.1))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.cornerRadius == 27)
+    }
+
+    @Test func circularOverlayIsSquareAndFullyRounded() {
+        let layout = ExportLayout(cameraOverlay: CameraOverlay(size: .medium, isCircular: true))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.frame.width == 480)
+        #expect(plan.camera?.frame.height == 480)
+        #expect(plan.camera?.cornerRadius == 240)
+    }
+
+    @Test func timestampMovesAwayFromTopTrailingOverlay() {
+        let layout = ExportLayout(cameraOverlay: CameraOverlay(corner: .topTrailing))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.timestampCorner == .topLeading)
+    }
+
+    @Test func sideBySideShowsBothSourcesWholeAtEqualHeight() {
+        let layout = ExportLayout(horizontalArrangement: .sideBySide)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.canvasSize == PixelSize(width: 1920, height: 568))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 909, height: 568))
+        #expect(plan.camera?.frame == LayoutRect(x: 909, y: 0, width: 1011, height: 568))
+    }
+
+    @Test func sideBySideKeepsPortraitCameraUncropped() throws {
+        let layout = ExportLayout(horizontalArrangement: .sideBySide)
+        let portraitCamera = PixelSize(width: 720, height: 1280)
+        let plan = LayoutEngine.plan(
+            layout: layout, screenSize: macBookScreen, cameraSize: portraitCamera, longEdge: 1920)
+        let cameraFrame = try #require(plan.camera?.frame)
+        #expect(abs(cameraFrame.width / cameraFrame.height - 720.0 / 1280.0) < 0.01)
+    }
+
+    @Test func verticalStacksScreenAtFullWidthOnTop() {
+        let layout = ExportLayout(orientation: .vertical, verticalOrder: .screenOnTop)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.canvasSize == PixelSize(width: 1080, height: 1920))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 0, width: 1080, height: 960))
+        #expect(plan.camera?.frame == LayoutRect(x: 0, y: 960, width: 1080, height: 960))
+    }
+
+    @Test func verticalCanPutCameraOnTop() {
+        let layout = ExportLayout(orientation: .vertical, verticalOrder: .cameraOnTop, verticalScreenShare: 0.4)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.frame == LayoutRect(x: 0, y: 0, width: 1080, height: 1152))
+        #expect(plan.screen?.frame == LayoutRect(x: 0, y: 1152, width: 1080, height: 768))
+    }
+
+    @Test func verticalScreenShareStaysWithinRange() {
+        let layout = ExportLayout(orientation: .vertical, verticalScreenShare: 0.95)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.screen?.frame.height == 1440)
+    }
+
+    @Test func layoutSavedBeforeScreenShareSplitsEvenly() throws {
+        let json = """
+            {
+              "orientation": "vertical",
+              "horizontalArrangement": "pictureInPicture",
+              "verticalOrder": "screenOnTop",
+              "cameraOverlay": {"corner": "bottomTrailing", "size": "medium", "cornerRadiusFraction": 0.1, "isCircular": false}
+            }
+            """
+        let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
+        #expect(layout.verticalScreenShare == ExportLayout.defaultVerticalScreenShare)
+    }
+
+    @Test func highQualityUsesLongerEdge() {
+        let layout = ExportLayout(orientation: .vertical)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 2560)
+        #expect(plan.canvasSize == PixelSize(width: 1440, height: 2560))
+    }
+
+    @Test(arguments: ExportOrientation.allCases)
+    func screenOnlyFillsCanvas(orientation: ExportOrientation) {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(orientation: orientation),
+            screenSize: macBookScreen,
+            cameraSize: nil,
+            longEdge: 1920
+        )
+        #expect(plan.camera == nil)
+        #expect(plan.screen?.frame.width == Double(plan.canvasSize.width))
+        #expect(plan.screen?.contentMode == .fit)
+    }
+
+    @Test func cameraOnlyHorizontalUsesCameraAspectRatio() {
+        let plan = LayoutEngine.plan(layout: ExportLayout(), screenSize: nil, cameraSize: camera, longEdge: 1920)
+        #expect(plan.canvasSize == PixelSize(width: 1920, height: 1080))
+        #expect(plan.camera?.contentMode == .fill)
+        #expect(plan.screen == nil)
+    }
+
+    @Test func defaultCornerRadiusIsTwentyPercentOfMaximum() {
+        let ratio = CameraOverlay().cornerRadiusFraction / CameraOverlay.maximumCornerRadiusFraction
+        #expect(abs(ratio - 0.2) < 1e-9)
+    }
+
+    @Test func screenFitsAndCameraFillsByDefault() {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(orientation: .vertical), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.screen?.contentMode == .fit)
+        #expect(plan.camera?.contentMode == .fill)
+    }
+
+    @Test(arguments: ExportOrientation.allCases)
+    func framingChoicesApplyToBothSources(orientation: ExportOrientation) {
+        let layout = ExportLayout(
+            orientation: orientation,
+            horizontalArrangement: .sideBySide,
+            screenFraming: .fill,
+            cameraFraming: .fit
+        )
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.screen?.contentMode == .fill)
+        #expect(plan.camera?.contentMode == .fit)
+    }
+
+    @Test func layoutSavedBeforeFramingChoicesKeepsPreviousBehaviour() throws {
+        let json = """
+            {
+              "orientation": "vertical",
+              "horizontalArrangement": "pictureInPicture",
+              "verticalOrder": "screenOnTop",
+              "cameraOverlay": {"corner": "bottomTrailing", "size": "medium", "cornerRadiusFraction": 0.1, "isCircular": false}
+            }
+            """
+        let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
+        #expect(layout.screenFraming == .fit)
+        #expect(layout.cameraFraming == .fill)
+    }
+
+    @Test(arguments: [(SourceFraming.fill, "fill"), (.fit, "fit")])
+    func framingRawValueIsStable(framing: SourceFraming, rawValue: String) {
+        #expect(framing.rawValue == rawValue)
+    }
+
+    @Test func screenFramingDoesNotMatterWhenItsAreaMatchesItsShape() throws {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        let screen = try #require(plan.screen)
+        #expect(!screen.framingMatters(forSourceOfSize: macBookScreen))
+    }
+
+    @Test func cameraFramingMattersInATallVerticalArea() throws {
+        let plan = LayoutEngine.plan(
+            layout: ExportLayout(orientation: .vertical), screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        let cameraPlacement = try #require(plan.camera)
+        #expect(cameraPlacement.framingMatters(forSourceOfSize: camera))
+    }
+
+    @Test(arguments: OverlayCorner.allCases)
+    func verticalTimestampGoesInChosenCorner(corner: OverlayCorner) {
+        let layout = ExportLayout(orientation: .vertical, timestampCorner: corner)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.timestampCorner == corner)
+    }
+
+    @Test func layoutSavedBeforeTimestampCornerKeepsTopRight() throws {
+        let json = """
+            {
+              "orientation": "vertical",
+              "horizontalArrangement": "pictureInPicture",
+              "verticalOrder": "screenOnTop",
+              "cameraOverlay": {"corner": "bottomTrailing", "size": "medium", "cornerRadiusFraction": 0.1, "isCircular": false}
+            }
+            """
+        let layout = try JSONDecoder().decode(ExportLayout.self, from: Data(json.utf8))
+        #expect(layout.timestampCorner == .topTrailing)
+    }
+
+    @Test(arguments: VerticalOrder.allCases)
+    func verticalSourcesHugTheSeamBetweenThem(order: VerticalOrder) {
+        let layout = ExportLayout(orientation: .vertical, verticalOrder: order)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        let screenOnTop = order == .screenOnTop
+        #expect(plan.screen?.verticalAlignment == (screenOnTop ? .bottom : .top))
+        #expect(plan.camera?.verticalAlignment == (screenOnTop ? .top : .bottom))
+    }
+
+    @Test func onlyHorizontalPictureInPictureOverlaysTheCamera() {
+        #expect(ExportLayout(horizontalArrangement: .pictureInPicture).overlaysCamera)
+        #expect(!ExportLayout(horizontalArrangement: .sideBySide).overlaysCamera)
+        #expect(!ExportLayout(orientation: .vertical, horizontalArrangement: .pictureInPicture).overlaysCamera)
+    }
+
+    @Test func pictureInPictureCameraAlwaysFills() {
+        let layout = ExportLayout(cameraFraming: .fit, cameraOverlay: CameraOverlay(isCircular: true))
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.camera?.contentMode == .fill)
+    }
+
+    @Test(arguments: OverlayCorner.allCases)
+    func sideBySideTimestampGoesInChosenCorner(corner: OverlayCorner) {
+        let layout = ExportLayout(horizontalArrangement: .sideBySide, timestampCorner: corner)
+        let plan = LayoutEngine.plan(layout: layout, screenSize: macBookScreen, cameraSize: camera, longEdge: 1920)
+        #expect(plan.timestampCorner == corner)
+    }
+
+    @Test func timestampCornerKeepsItsSavedKey() throws {
+        let data = try JSONEncoder().encode(ExportLayout(timestampCorner: .bottomLeading))
+        let json = try #require(String(data: data, encoding: .utf8))
+        #expect(json.contains("\"verticalTimestampCorner\":\"bottomLeading\""))
+    }
+}
