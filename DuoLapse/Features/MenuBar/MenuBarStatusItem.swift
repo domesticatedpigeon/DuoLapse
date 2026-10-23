@@ -11,6 +11,7 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
     private static let resumableItemLimit = 5
 
     private var statusItem: NSStatusItem?
+    private var buttonContent: MenuBarButtonContent?
     private var displays: [CapturableDisplay] = []
     private var previewRefreshTimer: Timer?
     private var liveScreenTask: Task<Void, Never>?
@@ -28,6 +29,8 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
             statusItem = makeStatusItem()
             refreshDisplays()
         } else if !isVisible, let statusItem {
+            buttonContent?.stop()
+            buttonContent = nil
             NSStatusBar.system.removeStatusItem(statusItem)
             self.statusItem = nil
         }
@@ -209,26 +212,9 @@ final class MenuBarStatusItem: NSObject, NSMenuDelegate {
         menu.delegate = self
         item.menu = menu
         if let button = item.button {
-            let label = PassthroughHostingView(
-                rootView: MenuBarLabel(library: library) { [weak item] width in
-                    item?.length = width
-                }
-            )
-            label.translatesAutoresizingMaskIntoConstraints = false
-            button.addSubview(label)
-            NSLayoutConstraint.activate([
-                label.leadingAnchor.constraint(equalTo: button.leadingAnchor),
-                label.topAnchor.constraint(equalTo: button.topAnchor),
-                label.bottomAnchor.constraint(equalTo: button.bottomAnchor),
-            ])
+            buttonContent = MenuBarButtonContent(button: button, library: library)
         }
         return item
-    }
-}
-
-private final class PassthroughHostingView<Content: View>: NSHostingView<Content> {
-    override func hitTest(_ point: NSPoint) -> NSView? {
-        nil
     }
 }
 
