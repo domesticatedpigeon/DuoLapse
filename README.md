@@ -31,13 +31,13 @@
   - full length
   - custom
 - Video layout:
-  - Picture in picture
-  - Side by side
-  - Vertical video for reels
-  - Fill or fit for each source
+  - Picture in Picture
+  - Extra-wide Side by Side
+  - Vertical Stack for Reels
+  - Fill screen or fit to screen
   - Optional timestamp
 - HEVC or H.264
-- Custom folder and file name
+- Customizable filename
 
 **Controls**
 - Start or pause from anywhere with `⌃⌥⌘R`
