@@ -8,7 +8,6 @@ struct SettingsView: View {
     let preferences: AppPreferences
     @State private var selection: SettingsPane? = .general
     @State private var searchText = ""
-    @FocusState private var isPaneListFocused: Bool
 
     var body: some View {
         HStack(spacing: 0) {
@@ -24,7 +23,7 @@ struct SettingsView: View {
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .frame(width: 600)
         .frame(minHeight: 440, idealHeight: 500)
-        .defaultFocus($isPaneListFocused, true)
+        .background(InitialFocusClearer())
     }
 
     private static let sidebarWidth: CGFloat = 220
@@ -39,7 +38,6 @@ struct SettingsView: View {
             }
             .listStyle(.sidebar)
             .scrollContentBackground(.hidden)
-            .focused($isPaneListFocused)
         }
         .padding(.top, 8)
         .background(.regularMaterial)
