@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, like 1.2.3. Leave empty to bump the patch number of the latest release."
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -21,14 +27,35 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Read version from tag
+      - name: Choose version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+              echo "::error::Run the release from main, not $GITHUB_REF_NAME"
+              exit 1
+            fi
+            version="${REQUESTED_VERSION#v}"
+            if [[ -z "$version" ]]; then
+              latest_tag="$(gh release view --json tagName --jq .tagName 2>/dev/null || echo v0.0.0)"
+              IFS=. read -r major minor patch <<< "${latest_tag#v}"
+              version="$major.$minor.$((patch + 1))"
+            fi
+            if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+              echo "::error::v$version is already released"
+              exit 1
+            fi
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
           if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Tag $GITHUB_REF_NAME must look like v1.2.3"
+            echo "::error::Version $version must look like 1.2.3"
             exit 1
           fi
           echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=v$version" >> "$GITHUB_ENV"
           echo "BUILD_NUMBER=${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - name: Check release secrets
@@ -125,8 +152,8 @@ jobs:
                 <sparkle:version>${BUILD_NUMBER}</sparkle:version>
                 <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
                 <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-                <sparkle:releaseNotesLink>${repository_url}/releases/tag/${GITHUB_REF_NAME}</sparkle:releaseNotesLink>
-                <enclosure url="${repository_url}/releases/download/${GITHUB_REF_NAME}/DuoLapse.zip" ${signature} type="application/octet-stream"/>
+                <sparkle:releaseNotesLink>${repository_url}/releases/tag/${RELEASE_TAG}</sparkle:releaseNotesLink>
+                <enclosure url="${repository_url}/releases/download/${RELEASE_TAG}/DuoLapse.zip" ${signature} type="application/octet-stream"/>
               </item>
             </channel>
           </rss>
@@ -137,7 +164,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" build/DuoLapse.zip build/appcast.xml \
+          gh release create "$RELEASE_TAG" build/DuoLapse.zip build/appcast.xml \
+            --target "$GITHUB_SHA" \
             --title "DuoLapse $VERSION" \
             --generate-notes
 
