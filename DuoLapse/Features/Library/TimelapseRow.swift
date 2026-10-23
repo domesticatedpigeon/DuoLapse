@@ -44,11 +44,12 @@ struct TimelapseRow: View {
                             isActive: recorder.isCapturing && !reducesMotion
                         )
                         .accessibilityHidden(true)
-                    TimelineView(.periodic(from: .now, by: 1)) { _ in
-                        Text(summary)
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-                            .lineLimit(1)
+                    if recorder.isCapturing {
+                        TimelineView(.periodic(from: .now, by: 1)) { _ in
+                            summaryText
+                        }
+                    } else {
+                        summaryText
                     }
                 }
                 .font(.caption)
@@ -56,6 +57,13 @@ struct TimelapseRow: View {
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: isRenaming ? .contain : .combine)
+    }
+
+    private var summaryText: some View {
+        Text(summary)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .lineLimit(1)
     }
 
     private var summary: String {

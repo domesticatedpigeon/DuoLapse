@@ -7,7 +7,6 @@ public final class TimelapseLibrary {
     public let store: SessionStore
     public private(set) var recorders: [TimelapseRecorder] = []
     public private(set) var interruptedRecorder: TimelapseRecorder?
-    public private(set) var heartbeat = Date.now
 
     @ObservationIgnored private let sleepAssertion = SleepAssertion()
     @ObservationIgnored private var hasLoaded = false
@@ -69,9 +68,6 @@ public final class TimelapseLibrary {
     public func superviseRecording() async {
         while !Task.isCancelled {
             await applyRecordingPolicy()
-            if hasRecordingInProgress {
-                heartbeat = .now
-            }
             try? await Task.sleep(for: .seconds(hasRecordingInProgress ? 1 : 5), tolerance: .milliseconds(500))
         }
         sleepAssertion.hold(false)
