@@ -16,6 +16,7 @@
 ## Features
 
 - **Dual Recording:** Capture screen and webcam separately.
+- **Multiple Timelapses:** Seamlessly pause and resume between multiple recordings.
 - **Space Saving:** Smart pause skips inactive frames to save disk space.
 - **Global Shortcut:** Start or pause instantly with `⌃⌥⌘R`.
 - **Menu Bar Controls:** Monitor active length and switch sources easily.
