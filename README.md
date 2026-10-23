@@ -4,9 +4,11 @@
 
 <h1 align="center">DuoLapse</h1>
 
-<p align="center">Lightweight time-lapses of your screen and webcam, for macOS.</p>
-
-DuoLapse captures your screen and webcam at a set interval and stitches the shots into a video. Keep several time-lapses open and record one at a time.
+<p align="center">
+  <strong>Lightweight time-lapses of your screen and webcam, for macOS.</strong><br>
+  DuoLapse captures your screen and webcam at a set interval and stitches the shots into a video.<br>
+  Keep several time-lapses open and record one at a time.
+</p>
 
 <p align="center">
   <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
