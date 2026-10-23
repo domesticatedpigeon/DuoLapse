@@ -5,7 +5,7 @@
 <h1 align="center">DuoLapse</h1>
 
 <p align="center">
-  <strong>DuoLapse captures lightweight timelapses of your screen and webcam.</strong><br>
+  DuoLapse captures lightweight timelapses of your screen and webcam.<br>
   Pause multiple recordings and resume them one by one.
 </p>
 
@@ -16,7 +16,7 @@
 | Export PiP | Export Extra-wide |
 | :---: | :---: |
 | ![PiP](Design/Screenshots/export-pip.png) | ![Vertical](Design/Screenshots/export-extrawide.png) |
-| **Export for Reel** | **Settings** |
+| Export for Reel | Settings |
 | ![Vertical](Design/Screenshots/export-vertical.png) | ![Settings](Design/Screenshots/settings.png) |
 
 ## Features
