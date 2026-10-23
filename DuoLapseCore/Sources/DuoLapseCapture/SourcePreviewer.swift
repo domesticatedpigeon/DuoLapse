@@ -10,7 +10,7 @@ public final class SourcePreviewer {
     private var screenImages: [String: CGImage] = [:]
     private var cameraImages: [String: CGImage] = [:]
 
-    @ObservationIgnored private let renderer = PreviewRenderer()
+    @ObservationIgnored private let renderer = PreviewRenderer.shared
     @ObservationIgnored private var camera: CameraFrameSource?
 
     public init() {}

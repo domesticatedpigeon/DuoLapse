@@ -79,7 +79,7 @@ struct RecorderSourcesPreview: View {
 @Observable
 final class StoredThumbnails {
     static let shared = StoredThumbnails()
-    private static let maximumSide: Double = 960
+    private static let maximumSide: Double = 640
 
     private var images: [UUID: [CaptureSource: CGImage]] = [:]
     @ObservationIgnored private var loadedKeys: [UUID: String] = [:]

@@ -38,7 +38,7 @@ enum ScreenFrameSource {
         return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
     }
 
-    private static let previewLongEdge = 960
+    private static let previewLongEdge = 640
 }
 
 nonisolated public enum ScreenCaptureError: LocalizedError {

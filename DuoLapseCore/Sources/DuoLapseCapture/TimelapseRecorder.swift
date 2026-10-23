@@ -18,7 +18,7 @@ public final class TimelapseRecorder {
     @ObservationIgnored private var captureTask: Task<Void, Never>?
     @ObservationIgnored private var cameraSource: CameraFrameSource?
     @ObservationIgnored private var segmentWriters: [CaptureSource: SegmentWriter] = [:]
-    @ObservationIgnored private let previewRenderer = PreviewRenderer()
+    @ObservationIgnored private let previewRenderer = PreviewRenderer.shared
     @ObservationIgnored private var capturingSince: SuspendingClock.Instant?
     @ObservationIgnored private var screenFailingSince: Date?
     @ObservationIgnored private var observedSystemWakeCount = 0

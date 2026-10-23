@@ -3,7 +3,8 @@ import CoreImage
 import CoreVideo
 
 nonisolated final class PreviewRenderer: @unchecked Sendable {
-    private static let maximumLongEdge: CGFloat = 960
+    static let shared = PreviewRenderer()
+    private static let maximumLongEdge: CGFloat = 640
 
     private let context = CIContext(options: [.cacheIntermediates: false])
 
