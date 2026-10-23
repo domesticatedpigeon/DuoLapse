@@ -19,24 +19,22 @@
 
 ## Features
 
-- Record your screen and webcam separately
-- Multiple open timelapses, one active recording
-- Capture every few seconds to save disk space
-- Smart pause automatically skips inactive frames
-- Start or pause from anywhere with `⌃⌥⌘R`
-- Menu bar icon shows the active timelapse length
-- Preview and switch source from the menu bar
-- Keeps your Mac and webcam awake
-- Timelapses survive crashes and power loss
+- **Dual Recording:** Capture screen and webcam separately.
+- **Space Saving:** Smart pause skips inactive frames to save disk space.
+- **Global Shortcut:** Start or pause instantly with `⌃⌥⌘R`.
+- **Menu Bar Controls:** Monitor active length and switch sources easily.
+- **Always Awake:** Keeps your Mac and webcam active during recording.
+- **Crash-Proof:** Timelapses survive crashes and power loss.
 
-**Export**
-- Frame rate: 30 fps
-- Length: 30 seconds, 1 minute, full length or custom
-- Layout: Picture-in-Picture, side-by-side, vertical stack for reels.
-- Fill screen or fit to screen
-- Optional timestamp
-- HEVC or H.264
-- Customizable filename rule
+**Export Options:**
+
+- **Frame Rate:** 30 fps
+- **Length:** 30s, 1m, full, or custom
+- **Layouts:** PiP, side-by-side, or vertical stack
+- **Screen Fit:** Fill or fit to screen
+- **Timestamp:** Optional overlay
+- **Codecs:** HEVC or H.264
+- **Naming:** Customizable file naming rules
 
 ## Install
 
