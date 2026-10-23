@@ -53,6 +53,10 @@ struct TimelapseRow: View {
                     }
                 }
                 .font(.caption)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
+                    [recorder.session.state.displayName, summary].joined(separator: ", ")
+                )
             }
         }
         .padding(.vertical, 2)
@@ -68,7 +72,6 @@ struct TimelapseRow: View {
 
     private var summary: String {
         [
-            recorder.session.state.displayName,
             recorder.recordedDuration.compactRecordingTime,
             Int64(recorder.bytesOnDisk).formatted(.byteCount(style: .file)),
         ]
