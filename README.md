@@ -5,7 +5,7 @@
 <h1 align="center">DuoLapse</h1>
 
 <p align="center">
-  DuoLapse records lightweight timelapses of your screen and webcam in tandem, with minimal memory and CPU footprint.<br>
+  DuoLapse records timelapses of your screen and webcam in tandem, with minimal memory and CPU footprint.<br>
   Seamlessly pause and resume between multiple recordings; choose the video layout at export.
 </p>
 
