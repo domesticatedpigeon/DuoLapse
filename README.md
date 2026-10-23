@@ -26,6 +26,9 @@
 - Multiple open timelapses, one active recording
 - Capture every few seconds to save disk space
 - Smart pause automatically skips inactive frames
+- Start or pause from anywhere with `⌃⌥⌘R`
+- Menu bar icon shows the active timelapse length
+- Preview and switch source from the menu bar
 - Keeps your Mac and webcam awake
 - Timelapses survive crashes and power loss
 
@@ -43,17 +46,9 @@
   - Fill screen or fit to screen
   - Optional timestamp
 - HEVC or H.264
-- Customizable filename
-
-**Controls**
-- Start or pause from anywhere with `⌃⌥⌘R`
-- Menu bar timer with previews and source switching
-- Open at login
-- Hide the Dock icon
+- Customizable filename rule
 
 ## Install
-
-Requires macOS 26 Tahoe or later.
 
 **Download:** get `DuoLapse.zip` from the [latest release](https://github.com/domesticatedpigeon/DuoLapse/releases/latest), unzip it and move `DuoLapse.app` to Applications.
 
@@ -63,8 +58,6 @@ Requires macOS 26 Tahoe or later.
 brew tap domesticatedpigeon/duolapse https://github.com/domesticatedpigeon/DuoLapse
 brew install --cask duolapse
 ```
-
-DuoLapse updates itself. You can also choose **DuoLapse › Check for Updates…**.
 
 ### First launch
 
@@ -79,10 +72,6 @@ If macOS says the app “is damaged”, run this, then open it again:
 ```sh
 xattr -dr com.apple.quarantine /Applications/DuoLapse.app
 ```
-
-### Permissions
-
-DuoLapse needs **Screen Recording** for your screen and **Camera** for your webcam. Check and grant both in **DuoLapse › Settings › Permissions**. Reopen DuoLapse after allowing Screen Recording.
 
 ## Build
 
