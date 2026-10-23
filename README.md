@@ -5,9 +5,8 @@
 <h1 align="center">DuoLapse</h1>
 
 <p align="center">
-  <strong>Lightweight time-lapses of your screen and webcam, for macOS.</strong><br>
-  DuoLapse captures your screen and webcam at a set interval and stitches the shots into a video.<br>
-  Keep several time-lapses open and record one at a time.
+  <strong>DuoLapse captures lightweight timelapses of your screen and webcam.</strong><br>
+  Pause multiple recordings and resume them one by one.
 </p>
 
 <p align="center">
@@ -17,29 +16,31 @@
 ## Features
 
 **Recording**
-- Screen and webcam, previewed side by side
-- Capture every few seconds, 2 by default
-- Switch display or webcam mid-recording
-- Smart pause when you step away
+- Record your screen and webcam, side by side
+- Several open timelapses, one active recording
+- Capture every few seconds to save disk space
+- Smart pause automatically skips inactive frames
 - Keeps your Mac and webcam awake
-- Frames survive crashes and power loss
-
-**Library**
-- Several open time-lapses, one recording
-- Rename, close, reopen or trash
-- Keeps running in the menu bar
+- Timelapses survive crashes and power loss
 
 **Export**
-- `30 fps` video, previewed live
-- 30 seconds, 1 minute, 3 minutes, full length or custom
-- Picture in picture, side by side or vertical
-- Fill or fit for each source
+- Frame rate: 30 fps
+- Video length:
+  - 30 seconds
+  - 1 minute
+  - full length
+  - custom
+- Video layout:
+  - Picture in picture
+  - Side by side
+  - Vertical video for reels
+  - Fill or fit for each source
+  - Optional timestamp
 - HEVC or H.264
-- Optional timestamp
 - Custom folder and file name
 
 **Controls**
-- Start or pause from anywhere with ⌃⌥⌘R
+- Start or pause from anywhere with `⌃⌥⌘R`
 - Menu bar timer with previews and source switching
 - Open at login
 - Hide the Dock icon
