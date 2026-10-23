@@ -13,6 +13,12 @@
   <img src="Design/Screenshots/new-timelapse.png" width="720" alt="The DuoLapse library with a new timelapse previewing the screen and webcam side by side">
 </p>
 
+| Export PiP | Export Extra-wide |
+| :---: | :---: |
+| ![PiP](Design/Screenshots/export-pip.png) | ![Vertical](Design/Screenshots/export-extrawide.png) |
+| **Export for Reel** | **Settings** |
+| ![Vertical](Design/Screenshots/export-vertical.png) | ![Settings](Design/Screenshots/settings.png) |
+
 ## Features
 
 **Recording**
